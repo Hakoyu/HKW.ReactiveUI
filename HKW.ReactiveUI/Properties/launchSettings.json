@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "HKW.ReactiveUI": {
+      "commandName": "Project"
+    },
+    "配置文件 2": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\HKW.ReactiveUI.Test\\HKW.ReactiveUI.Test.csproj"
+    }
+  }
+}
