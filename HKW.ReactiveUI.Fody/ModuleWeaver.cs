@@ -18,7 +18,7 @@ public class ModuleWeaver : BaseModuleWeaver
     public override void Execute()
     {
         //Debugger.Launch();
-        var logger = new ModuleWeaverLogger(this, true);
+        var logger = new ModuleWeaverLogger(this, false);
         var propertyWeaver = new ReactivePropertyWeaver
         {
             ModuleDefinition = ModuleDefinition,

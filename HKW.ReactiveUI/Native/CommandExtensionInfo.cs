@@ -27,9 +27,3 @@ internal class CommandExtensionInfo
             : ArgumentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
 }
-
-public class AttributeAndData
-{
-    public string AttributeName { get; set; } = string.Empty;
-    public List<NameTypeAndValue> AttributeData { get; set; } = new();
-}

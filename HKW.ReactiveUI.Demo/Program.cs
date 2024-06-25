@@ -14,7 +14,7 @@ internal class Program
     }
 }
 
-internal partial class TestModel : ReactiveObjectX
+partial class TestModel : ReactiveObjectX
 {
     public TestModel() { }
 
