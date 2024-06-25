@@ -13,21 +13,8 @@ namespace HKW.HKWReactiveUI.Fody;
 /// Weaver that replaces properties marked with `[DataMember]` on subclasses of `ReactiveObject` with an
 /// implementation that invokes `RaisePropertyChanged` as is required for ReactiveUI.
 /// </summary>
-public class ReactivePropertyWeaver
+internal static class ReactivePropertyWeaver
 {
-    /// <summary>
-    /// Gets or sets the module definition.
-    /// </summary>
-    /// <value>
-    /// The module definition.
-    /// </value>
-    public ModuleDefinition? ModuleDefinition { get; set; }
-
-    /// <summary>
-    /// Gets or sets a action that will log an MessageImportance.High message to MSBuild. OPTIONAL.
-    /// </summary>
-    public ModuleWeaverLogger? Logger { get; set; }
-
     /// <summary>
     /// Executes this property weaver.
     /// </summary>
@@ -40,80 +27,27 @@ public class ReactivePropertyWeaver
     /// or
     /// [ReactiveProperty] is decorating " + property.DeclaringType.FullName + "." + property.Name + ", but the property has no setter so there would be nothing to react to.  Consider removing the attribute.
     /// </exception>
-    public void Execute()
+    public static void Execute(ModuleDefinition moduleDefinition)
     {
-        Logger?.LogInfo(nameof(ReactivePropertyWeaver));
-        if (ModuleDefinition is null)
-        {
-            Logger?.LogError("The module definition has not been defined.");
-            return;
-        }
+        ModuleWeaver.Logger.LogInfo(nameof(ReactivePropertyWeaver));
 
-        var reactiveUI = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (reactiveUI is null)
-        {
-            Logger?.LogError(
-                "Could not find assembly: ReactiveUI ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return;
-        }
-
-        Logger?.LogInfo($"{reactiveUI.Name} {reactiveUI.Version}");
-        var hkwReactiveUI = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (hkwReactiveUI is null)
-        {
-            Logger?.LogError(
-                "Could not find assembly: HKW.ReactiveUI ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return;
-        }
-
-        Logger?.LogInfo($"{hkwReactiveUI.Name} {hkwReactiveUI.Version}");
-        var reactiveObject = new TypeReference(
-            "ReactiveUI",
-            "IReactiveObject",
-            ModuleDefinition,
-            reactiveUI
-        );
-        var targetTypes = ModuleDefinition
-            .GetAllTypes()
-            .Where(x => x.BaseType is not null && reactiveObject.IsAssignableFrom(x.BaseType));
-        var reactiveObjectExtensions =
-            new TypeReference(
-                "ReactiveUI",
-                "IReactiveObjectExtensions",
-                ModuleDefinition,
-                reactiveUI
-            ).Resolve() ?? throw new Exception("reactiveObjectExtensions is null");
-        var raiseAndSetIfChangedMethod =
-            ModuleDefinition.ImportReference(
-                reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
-            ) ?? throw new Exception("raiseAndSetIfChangedMethod is null");
-        var reactiveAttribute =
-            ModuleDefinition.FindType(
+        var reactivePropertyAttribute =
+            moduleDefinition.FindType(
                 "HKW.HKWReactiveUI",
                 "ReactivePropertyAttribute",
-                hkwReactiveUI
+                ModuleWeaver.HKWReactiveUI
             ) ?? throw new Exception("ReactivePropertyAttribute is null");
-        foreach (var targetType in targetTypes)
+        foreach (var targetType in ModuleWeaver.IReactiveObjectDerivedClasses)
         {
             foreach (
-                var property in targetType.Properties.Where(x => x.IsDefined(reactiveAttribute))
+                var property in targetType.Properties.Where(x =>
+                    x.IsDefined(reactivePropertyAttribute)
+                )
             )
             {
                 if (property.SetMethod is null)
                 {
-                    Logger?.LogError(
+                    ModuleWeaver.Logger.LogError(
                         $"Property {property.DeclaringType.FullName}.{property.Name} has no setter, therefore it is not possible for the property to change, and thus should not be marked with [ReactiveProperty]"
                     );
                     continue;
@@ -177,7 +111,7 @@ public class ReactivePropertyWeaver
                     genericTargetType = genericDeclaration;
                 }
 
-                var methodReference = raiseAndSetIfChangedMethod.MakeGenericMethod(
+                var methodReference = ModuleWeaver.RaiseAndSetIfChangedMethod.MakeGenericMethod(
                     genericTargetType,
                     property.PropertyType
                 );

@@ -14,104 +14,46 @@ namespace HKW.HKWReactiveUI.Fody;
 /// <summary>
 /// Weaver that converts observables as property helper.
 /// </summary>
-public class ObservableAsPropertyWeaver
+internal static class ObservableAsPropertyWeaver
 {
-    /// <summary>
-    /// Gets or sets the module definition.
-    /// </summary>
-    /// <value>
-    /// The module definition.
-    /// </value>
-    public ModuleDefinition ModuleDefinition { get; set; }
-
-    /// <summary>
-    /// Gets or sets a action that will log an MessageImportance.High message to MSBuild. OPTIONAL.
-    /// </summary>
-    public ModuleWeaverLogger Logger { get; set; }
-
-    /// <summary>
-    /// Gets a function that will find a type from referenced assemblies by name.
-    /// </summary>
-    public Func<string, TypeDefinition> FindType { get; internal set; }
-
     /// <summary>
     /// Executes this property weaver.
     /// </summary>
-    public void Execute()
+    public static void Execute(
+        ModuleDefinition moduleDefinition,
+        Func<string, TypeDefinition> findType
+    )
     {
-        Logger?.LogInfo(nameof(ObservableAsPropertyWeaver));
-        if (ModuleDefinition is null)
-        {
-            Logger?.LogError("The module definition has not been defined.");
-            return;
-        }
-
-        var reactiveUI = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (reactiveUI is null)
-        {
-            Logger?.LogError(
-                "Could not find assembly: ReactiveUI ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return;
-        }
-
-        Logger?.LogInfo($"{reactiveUI.Name} {reactiveUI.Version}");
-        var helpers = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (helpers is null)
-        {
-            Logger?.LogError(
-                "Could not find assembly: HKW.ReactiveUI ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return;
-        }
-
-        Logger?.LogInfo($"{helpers.Name} {helpers.Version}");
+        ModuleWeaver.Logger.LogInfo(nameof(ObservableAsPropertyWeaver));
 
         var exceptionName = typeof(Exception).FullName;
 
         if (exceptionName is null)
         {
-            Logger?.LogError("Could not find the full name for System.Exception");
+            ModuleWeaver.Logger.LogError("Could not find the full name for System.Exception");
             return;
         }
 
-        var reactiveObject = ModuleDefinition.FindType("ReactiveUI", "ReactiveObject", reactiveUI);
-
-        // The types we will scan are subclasses of ReactiveObject
-        var targetTypes = ModuleDefinition
-            .GetAllTypes()
-            .Where(x => x.BaseType is not null && reactiveObject.IsAssignableFrom(x.BaseType));
-
-        var observableAsPropertyHelper = ModuleDefinition.FindType(
+        var observableAsPropertyHelper = moduleDefinition.FindType(
             "ReactiveUI",
             "ObservableAsPropertyHelper`1",
-            reactiveUI,
+            ModuleWeaver.ReactiveUI,
             "T"
         );
-        var observableAsPropertyAttribute = ModuleDefinition.FindType(
+        var observableAsPropertyAttribute = moduleDefinition.FindType(
             "HKW.HKWReactiveUI",
             "ObservableAsPropertyAttribute",
-            helpers
+            ModuleWeaver.HKWReactiveUI
         );
-        var observableAsPropertyHelperGetValue = ModuleDefinition.ImportReference(
+        var observableAsPropertyHelperGetValue = moduleDefinition.ImportReference(
             observableAsPropertyHelper.Resolve().Properties.Single(x => x.Name == "Value").GetMethod
         );
-        var exceptionDefinition = FindType?.Invoke(exceptionName);
+        var exceptionDefinition = findType.Invoke(exceptionName);
         var constructorDefinition = exceptionDefinition
             .GetConstructors()
             .Single(x => x.Parameters.Count == 1);
-        var exceptionConstructor = ModuleDefinition.ImportReference(constructorDefinition);
-        foreach (var targetType in targetTypes)
+        var exceptionConstructor = moduleDefinition.ImportReference(constructorDefinition);
+        foreach (var targetType in ModuleWeaver.IReactiveObjectDerivedClasses)
         {
             foreach (
                 var property in targetType.Properties.Where(x =>
@@ -124,7 +66,7 @@ public class ObservableAsPropertyWeaver
                     observableAsPropertyHelper.MakeGenericInstanceType(property.PropertyType);
                 var genericObservableAsPropertyHelperGetValue =
                     observableAsPropertyHelperGetValue.Bind(genericObservableAsPropertyHelper);
-                ModuleDefinition.ImportReference(genericObservableAsPropertyHelperGetValue);
+                moduleDefinition.ImportReference(genericObservableAsPropertyHelperGetValue);
 
                 // Declare a field to store the property value
                 var field = new FieldDefinition(
@@ -168,7 +110,12 @@ public class ObservableAsPropertyWeaver
                     il.Emit(OpCodes.Dup); // Put an extra copy of this.$PropertyName onto the stack
                     il.Emit(OpCodes.Brtrue, isValid); // If the helper is null, return the default value for the property
                     il.Emit(OpCodes.Pop); // Drop this.$PropertyName
-                    EmitDefaultValue(property.GetMethod.Body, il, property.PropertyType); // Put the default value onto the stack
+                    EmitDefaultValue(
+                        moduleDefinition,
+                        property.GetMethod.Body,
+                        il,
+                        property.PropertyType
+                    ); // Put the default value onto the stack
                     il.Emit(OpCodes.Ret); // Return that default value
                     il.Append(isValid); // Add a marker for if the helper is not null
                     il.Emit(OpCodes.Callvirt, genericObservableAsPropertyHelperGetValue); // pop -> this.$PropertyName.Value
@@ -184,7 +131,12 @@ public class ObservableAsPropertyWeaver
     /// <param name="methodBody">The method body.</param>
     /// <param name="il">The il.</param>
     /// <param name="type">The type.</param>
-    public void EmitDefaultValue(MethodBody methodBody, ILProcessor il, TypeReference type)
+    public static void EmitDefaultValue(
+        ModuleDefinition moduleDefinition,
+        MethodBody methodBody,
+        ILProcessor il,
+        TypeReference type
+    )
     {
 #if NET6_0_OR_GREATER
         ArgumentNullException.ThrowIfNull(methodBody);
@@ -201,26 +153,26 @@ public class ObservableAsPropertyWeaver
         }
 #endif
 
-        if (ModuleDefinition is not null)
+        if (moduleDefinition is not null)
         {
             if (
-                type.CompareTo(ModuleDefinition.TypeSystem.Boolean)
-                || type.CompareTo(ModuleDefinition.TypeSystem.Byte)
-                || type.CompareTo(ModuleDefinition.TypeSystem.Int16)
-                || type.CompareTo(ModuleDefinition.TypeSystem.Int32)
+                type.CompareTo(moduleDefinition.TypeSystem.Boolean)
+                || type.CompareTo(moduleDefinition.TypeSystem.Byte)
+                || type.CompareTo(moduleDefinition.TypeSystem.Int16)
+                || type.CompareTo(moduleDefinition.TypeSystem.Int32)
             )
             {
                 il.Emit(OpCodes.Ldc_I4_0);
             }
-            else if (type.CompareTo(ModuleDefinition.TypeSystem.Single))
+            else if (type.CompareTo(moduleDefinition.TypeSystem.Single))
             {
                 il.Emit(OpCodes.Ldc_R4, 0F);
             }
-            else if (type.CompareTo(ModuleDefinition.TypeSystem.Int64))
+            else if (type.CompareTo(moduleDefinition.TypeSystem.Int64))
             {
                 il.Emit(OpCodes.Ldc_I8, 0L);
             }
-            else if (type.CompareTo(ModuleDefinition.TypeSystem.Double))
+            else if (type.CompareTo(moduleDefinition.TypeSystem.Double))
             {
                 il.Emit(OpCodes.Ldc_R8, 0D);
             }

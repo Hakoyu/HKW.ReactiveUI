@@ -12,21 +12,8 @@ namespace HKW.HKWReactiveUI.Fody;
 /// <summary>
 /// Weaver that generates an ObservableAsPropertyHelper.
 /// </summary>
-public class ReactiveDependencyPropertyWeaver
+internal static class ReactiveDependencyPropertyWeaver
 {
-    /// <summary>
-    /// Gets or sets the module definition.
-    /// </summary>
-    /// <value>
-    /// The module definition.
-    /// </value>
-    public ModuleDefinition? ModuleDefinition { get; set; }
-
-    /// <summary>
-    /// Gets or sets a action that will log an MessageImportance.High message to MSBuild. OPTIONAL.
-    /// </summary>
-    public ModuleWeaverLogger? Logger { get; set; }
-
     /// <summary>
     /// Executes this instance.
     /// </summary>
@@ -37,72 +24,18 @@ public class ReactiveDependencyPropertyWeaver
     /// or
     /// reactiveDecoratorAttribute is null.
     /// </exception>
-    public void Execute()
+    public static void Execute(ModuleDefinition moduleDefinition)
     {
-        Logger?.LogInfo(nameof(ReactiveDependencyPropertyWeaver));
-        if (ModuleDefinition is null)
-        {
-            Logger?.LogError("The module definition has not been defined.");
-            return;
-        }
+        ModuleWeaver.Logger.LogInfo(nameof(ReactiveDependencyPropertyWeaver));
 
-        var reactiveUI = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (reactiveUI is null)
-        {
-            Logger?.LogError(
-                "Could not find assembly: ReactiveUI ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return;
-        }
-
-        Logger?.LogInfo($"{reactiveUI.Name} {reactiveUI.Version}");
-        var helpers = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (helpers is null)
-        {
-            Logger?.LogError(
-                "Could not find assembly: HKW.ReactiveUI ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return;
-        }
-
-        Logger?.LogInfo($"{helpers.Name} {helpers.Version}");
-        var reactiveObject = new TypeReference(
-            "ReactiveUI",
-            "IReactiveObject",
-            ModuleDefinition,
-            reactiveUI
-        );
-
-        var targetTypes = ModuleDefinition
-            .GetAllTypes()
-            .Where(x => x.BaseType is not null && reactiveObject.IsAssignableFrom(x.BaseType));
-
-        var reactiveObjectExtensions =
-            new TypeReference(
-                "ReactiveUI",
-                "IReactiveObjectExtensions",
-                ModuleDefinition,
-                reactiveUI
-            ).Resolve() ?? throw new Exception("reactiveObjectExtensions is null");
-        var raisePropertyChangedMethod =
-            ModuleDefinition.ImportReference(
-                reactiveObjectExtensions.Methods.Single(x => x.Name == "RaisePropertyChanged")
-            ) ?? throw new Exception("raisePropertyChangedMethod is null");
         var reactiveDependencyAttribute =
-            ModuleDefinition.FindType("HKW.HKWReactiveUI", "ReactiveDependencyAttribute", helpers)
-            ?? throw new Exception("reactiveDecoratorAttribute is null");
+            moduleDefinition.FindType(
+                "HKW.HKWReactiveUI",
+                "ReactiveDependencyAttribute",
+                ModuleWeaver.HKWReactiveUI
+            ) ?? throw new Exception("reactiveDecoratorAttribute is null");
         foreach (
-            var targetType in targetTypes.Where(x =>
+            var targetType in ModuleWeaver.IReactiveObjectDerivedClasses.Where(x =>
                 x.Properties.Any(y => y.IsDefined(reactiveDependencyAttribute))
             )
         )
@@ -120,7 +53,7 @@ public class ReactiveDependencyPropertyWeaver
                     ) || facadeProperty.GetMethod.Body.HasVariables
                 )
                 {
-                    Logger?.LogError(
+                    ModuleWeaver.Logger.LogError(
                         $"Property {facadeProperty.Name} is not an auto property and therefore not suitable for ReactiveDependency weaving"
                     );
                     continue;
@@ -134,7 +67,7 @@ public class ReactiveDependencyPropertyWeaver
                 var targetValue = targetNamedArgument.Value?.ToString();
                 if (string.IsNullOrEmpty(targetValue))
                 {
-                    Logger?.LogError("No target property defined on the object");
+                    ModuleWeaver.Logger.LogError("No target property defined on the object");
                     continue;
                 }
 
@@ -143,7 +76,7 @@ public class ReactiveDependencyPropertyWeaver
                     && targetType.Fields.All(x => x.Name != targetValue)
                 )
                 {
-                    Logger?.LogError(
+                    ModuleWeaver.Logger.LogError(
                         $"dependency object property/field name '{targetValue}' not found on target type {targetType.Name}"
                     );
                     continue;
@@ -160,7 +93,7 @@ public class ReactiveDependencyPropertyWeaver
 
                 if (objDependencyTargetType is null)
                 {
-                    Logger?.LogError("Couldn't result the dependency type");
+                    ModuleWeaver.Logger.LogError("Couldn't result the dependency type");
                     continue;
                 }
 
@@ -179,7 +112,7 @@ public class ReactiveDependencyPropertyWeaver
 
                 if (objDependencyTargetType.Properties.All(x => x.Name != destinationPropertyName))
                 {
-                    Logger?.LogError(
+                    ModuleWeaver.Logger.LogError(
                         $"Target property {destinationPropertyName} on dependency of type {objDependencyTargetType.DeclaringType.Name} not found"
                     );
                     continue;
@@ -192,7 +125,7 @@ public class ReactiveDependencyPropertyWeaver
                 // The property on the facade/decorator should have a setter
                 if (facadeProperty.SetMethod is null)
                 {
-                    Logger?.LogError(
+                    ModuleWeaver.Logger.LogError(
                         $"Property {facadeProperty.DeclaringType.FullName}.{facadeProperty.Name} has no setter, therefore it is not possible for the property to change, and thus should not be marked with [ReactiveDecorator]"
                     );
                     continue;
@@ -201,7 +134,7 @@ public class ReactiveDependencyPropertyWeaver
                 // The property on the dependency should have a setter e.g. Dependency.SomeProperty = value;
                 if (destinationProperty.SetMethod is null)
                 {
-                    Logger?.LogError(
+                    ModuleWeaver.Logger.LogError(
                         $"Dependency object's property {destinationProperty.DeclaringType.FullName}.{destinationProperty.Name} has no setter, therefore it is not possible for the property to change, and thus should not be marked with [ReactiveDecorator]"
                     );
                     continue;
@@ -274,7 +207,7 @@ public class ReactiveDependencyPropertyWeaver
                     genericTargetType = genericDeclaration;
                 }
 
-                var methodReference = raisePropertyChangedMethod.MakeGenericMethod(
+                var methodReference = ModuleWeaver.RaiseAndSetIfChangedMethod.MakeGenericMethod(
                     genericTargetType
                 );
                 facadeProperty.SetMethod.Body = new MethodBody(facadeProperty.SetMethod);

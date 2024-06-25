@@ -6,7 +6,7 @@
 
 namespace HKW.HKWReactiveUI.Fody;
 
-public class ModuleWeaverLogger(ModuleWeaver moduleWeaver, bool noInfo = false)
+internal class ModuleWeaverLogger(ModuleWeaver moduleWeaver, bool noInfo = false)
 {
     private readonly Action<string> _logInfo = moduleWeaver.WriteInfo;
     private readonly Action<string> _logWarning = moduleWeaver.WriteWarning;

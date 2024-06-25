@@ -56,8 +56,8 @@ internal static class ReactiveCommandGenerator
         };
 
         // 如果不是ReactiveObject的派生类,则跳过
-        //if (classSymbol.AnyBaseTypeIs(NativeData.ReactiveObjectFullName) is false)
-        //    return false;
+        if (classSymbol.AnyBaseTypeIs(NativeData.ReactiveObjectFullName) is false)
+            return false;
         return true;
     }
 
@@ -164,7 +164,7 @@ internal static class ReactiveCommandGenerator
             {
                 var outputType = commandExtensionInfo.GetOutputTypeText();
                 var inputType = commandExtensionInfo.GetInputTypeText();
-                var feildName = $"_{commandExtensionInfo.MethodName.FirstLetterToLower()}Command";
+                var fieldName = $"_{commandExtensionInfo.MethodName.FirstLetterToLower()}Command";
                 var propretyName = $"{commandExtensionInfo.MethodName}Command";
                 // 添加DebuggerBrowsable,防止调试器显示
                 writer.WriteLine(
@@ -173,14 +173,14 @@ internal static class ReactiveCommandGenerator
                 // 添加ReactiveCommand字段
                 writer.WriteLine(
                     $"private ReactiveUI.ReactiveCommand<{inputType}, {outputType}> "
-                        + $"{feildName};"
+                        + $"{fieldName};"
                 );
                 // 添加ReactiveCommand属性
                 writer.WriteLine(
                     $"public ReactiveUI.ReactiveCommand<{inputType}, {outputType}> "
                         + $"{propretyName} => "
                 );
-                writer.Write($"{feildName} ?? ({feildName} = ");
+                writer.Write($"{fieldName} ?? ({fieldName} = ");
                 writer.Write($"ReactiveUI.ReactiveCommand.");
                 // 检测异步和参数
                 if (commandExtensionInfo.ArgumentType is null)
@@ -216,12 +216,10 @@ internal static class ReactiveCommandGenerator
                 )
                 {
                     writer.Write(
-                        $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, x => x.{reactiveCommandData.Value}))"
+                        $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, x => x.{reactiveCommandData.Value})"
                     );
                 }
-                else
-                    writer.Write(")");
-                writer.WriteLine(");");
+                writer.WriteLine("));");
                 writer.WriteLine();
             }
         }

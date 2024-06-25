@@ -5,6 +5,8 @@
 
 using System.Diagnostics;
 using Fody;
+using Mono.Cecil;
+using Mono.Cecil.Rocks;
 
 namespace HKW.HKWReactiveUI.Fody;
 
@@ -14,42 +16,103 @@ namespace HKW.HKWReactiveUI.Fody;
 /// <seealso cref="BaseModuleWeaver" />
 public class ModuleWeaver : BaseModuleWeaver
 {
+    internal static ModuleWeaverLogger Logger { get; private set; } = null!;
+
     /// <inheritdoc/>
     public override void Execute()
     {
         //Debugger.Launch();
-        var logger = new ModuleWeaverLogger(this, false);
-        var propertyWeaver = new ReactivePropertyWeaver
-        {
-            ModuleDefinition = ModuleDefinition,
-            Logger = logger
-        };
-        propertyWeaver.Execute();
+        Logger ??= new ModuleWeaverLogger(this, false);
 
-        var observableAsPropertyWeaver = new ObservableAsPropertyWeaver
-        {
-            ModuleDefinition = ModuleDefinition,
-            FindType = FindTypeDefinition,
-            Logger = logger
-        };
-        observableAsPropertyWeaver.Execute();
+        if (Check(ModuleDefinition) is false)
+            return;
 
-        var reactiveDependencyWeaver = new ReactiveDependencyPropertyWeaver
-        {
-            ModuleDefinition = ModuleDefinition,
-            Logger = logger
-        };
-        reactiveDependencyWeaver.Execute();
+        ReactivePropertyWeaver.Execute(ModuleDefinition);
+
+        ObservableAsPropertyWeaver.Execute(ModuleDefinition, FindTypeDefinition);
+
+        ReactiveDependencyPropertyWeaver.Execute(ModuleDefinition);
     }
 
     /// <inheritdoc/>
     public override IEnumerable<string> GetAssembliesForScanning()
     {
-        yield return "mscorlib";
-        yield return "netstandard";
-        yield return "System";
-        yield return "System.Runtime";
-        yield return "ReactiveUI";
-        yield return "HKW.ReactiveUI";
+        return
+        [
+            "mscorlib",
+            "netstandard",
+            "System",
+            "System.Runtime",
+            "ReactiveUI",
+            "HKW.ReactiveUI"
+        ];
+    }
+
+    internal static AssemblyNameReference ReactiveUI { get; private set; } = null!;
+    internal static AssemblyNameReference HKWReactiveUI { get; private set; } = null!;
+
+    internal static TypeDefinition[] IReactiveObjectDerivedClasses { get; private set; } = null!;
+    internal static TypeReference IReactiveObject { get; private set; } = null!;
+    internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
+    internal static TypeReference IReactiveObjectExtensions { get; private set; } = null!;
+
+    private bool Check(ModuleDefinition moduleDefinition)
+    {
+        Logger.LogInfo(nameof(ReactivePropertyWeaver));
+        ReactiveUI = ModuleDefinition
+            .AssemblyReferences.Where(x => x.Name == "ReactiveUI")
+            .OrderByDescending(x => x.Version)
+            .FirstOrDefault();
+        if (ReactiveUI is null)
+        {
+            Logger.LogError(
+                "Could not find assembly: ReactiveUI ("
+                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
+                    + ")"
+            );
+            return false;
+        }
+        Logger.LogInfo($"{ReactiveUI.Name} {ReactiveUI.Version}");
+
+        HKWReactiveUI = ModuleDefinition
+            .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
+            .OrderByDescending(x => x.Version)
+            .FirstOrDefault();
+        if (HKWReactiveUI is null)
+        {
+            Logger.LogError(
+                "Could not find assembly: HKW.ReactiveUI ("
+                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
+                    + ")"
+            );
+            return false;
+        }
+        Logger.LogInfo($"{HKWReactiveUI.Name} {HKWReactiveUI.Version}");
+
+        IReactiveObject = new TypeReference(
+            "ReactiveUI",
+            "IReactiveObject",
+            moduleDefinition,
+            ReactiveUI
+        );
+
+        var reactiveObjectExtensions =
+            new TypeReference(
+                "ReactiveUI",
+                "IReactiveObjectExtensions",
+                moduleDefinition,
+                ReactiveUI
+            ).Resolve() ?? throw new Exception("reactiveObjectExtensions is null");
+
+        RaiseAndSetIfChangedMethod =
+            moduleDefinition.ImportReference(
+                reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
+            ) ?? throw new Exception("raiseAndSetIfChangedMethod is null");
+
+        IReactiveObjectDerivedClasses = moduleDefinition
+            .GetAllTypes()
+            .Where(x => x.BaseType is not null && IReactiveObject.IsAssignableFrom(x.BaseType))
+            .ToArray();
+        return true;
     }
 }

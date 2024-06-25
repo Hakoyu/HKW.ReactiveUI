@@ -24,7 +24,7 @@ partial class TestModel : ReactiveObject
     public TestModel() { }
 
     [ReactiveProperty]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
 
     public bool CanExecute => string.IsNullOrWhiteSpace(Name);
 
