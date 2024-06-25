@@ -20,19 +20,17 @@ internal static class GeneratorExtensions
         attributeValues = [];
         if (
             attributeData.AttributeConstructor?.Parameters
-            is ImmutableArray<IParameterSymbol> constructorParams
+            is not ImmutableArray<IParameterSymbol> constructorParams
         )
             return false;
-        // Start with an indexed list of names for mandatory args
 
         var allArguments = attributeData
             .ConstructorArguments
-            // For unnamed args, we get the name from the array we just made
+            // 如果参数未命名,则从参数顺序获取名称
             .Select((info, index) => (constructorParams[index].Name, info))
-            // Then we use name + value from the named values
+            // 然后合并参数和值
             .Union(attributeData.NamedArguments.Select(x => (x.Key, x.Value)))
-            .Distinct()
-            .ToArray();
+            .Distinct();
 
         foreach (var (name, info) in allArguments)
         {

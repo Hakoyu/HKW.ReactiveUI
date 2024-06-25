@@ -49,15 +49,15 @@ internal class Generator : ISourceGenerator
                     $"public ReactiveUI.ReactiveCommand<{inputType}, {outputType}> "
                         + $"{commandExtensionInfo.MethodName}Command {{ get; private set; }}"
                 );
-                var commandName = $"{commandExtensionInfo.MethodName}Command";
-                if (
-                    commandExtensionInfo.ReactiveCommandDatas.Any(d =>
-                        d.Name == nameof(ReactiveCommandAttribute.CanExecute)
-                    )
-                )
-                {
-                    writer.WriteLine($"protected bool {commandName}CanExecute {{ get; set; }}");
-                }
+                //var commandName = $"{commandExtensionInfo.MethodName}Command";
+                //if (
+                //    commandExtensionInfo.ReactiveCommandDatas.FindIndex(d =>
+                //        d.Name == nameof(ReactiveCommandAttribute.CanExecute)
+                //    ) != -1
+                //)
+                //{
+                //    writer.WriteLine($"protected bool {commandName}CanExecute {{ get; set; }}");
+                //}
             }
 
             writer.WriteLine();
@@ -104,14 +104,14 @@ internal class Generator : ISourceGenerator
                     );
                 }
                 if (
-                    commandExtensionInfo.ReactiveCommandDatas.Any(d =>
+                    commandExtensionInfo.ReactiveCommandDatas.FirstOrDefault(d =>
                         d.Name == nameof(ReactiveCommandAttribute.CanExecute)
                     )
+                    is NameTypeAndValue reactiveCommandData
                 )
                 {
-                    var canExecutePropertyName = $"{commandName}CanExecute";
                     writer.WriteLine(
-                        $", ReactiveUI.WhenAnyMixin.WhenAnyValue(this, x => x.{canExecutePropertyName}));"
+                        $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, x => x.{reactiveCommandData.Value}));"
                     );
                 }
                 else
@@ -189,19 +189,15 @@ internal class Generator : ISourceGenerator
                     var reactiveCommandDatas = new List<ReactiveCommandData>();
                     if (attributeData.TryGetAttributeAndValues(out var values))
                     {
-                        for (var i = 0; i < values.Count; i++)
-                        {
-                            var parameterName = values[i].Name;
-                            if (values[i].Name == nameof(ReactiveCommandAttribute.CanExecute))
-                            {
-                                var memberName = values[i].Value.ToString();
-                                declaredClass.Members.Any(m =>
-                                    m is MethodDeclarationSyntax p
-                                    && p.Identifier.Text == memberName
-                                );
-                            }
-                        }
+                        // 删除空的CanExecute
+                        var index = values.FindIndex(v =>
+                            v.Name == nameof(ReactiveCommandAttribute.CanExecute)
+                            && string.IsNullOrWhiteSpace(v.Value.ToString())
+                        );
+                        if (index != -1)
+                            values.RemoveAt(index);
                     }
+
                     // 是否为异步方法
                     bool isTask = IsTaskReturnType(methodSymbol.ReturnType);
                     var realReturnType = isTask
@@ -219,8 +215,8 @@ internal class Generator : ISourceGenerator
                             MethodName = methodSymbol.Name,
                             MethodReturnType = isReturnTypeVoid ? null : realReturnType,
                             IsTask = isTask,
-                            ArgumentType = methodSymbol.Parameters.SingleOrDefault()?.Type!,
-                            ReactiveCommandDatas = reactiveCommandDatas
+                            ArgumentType = methodSymbol.Parameters.SingleOrDefault()?.Type,
+                            ReactiveCommandDatas = values
                         }
                     );
                 }
@@ -254,10 +250,10 @@ internal class Generator : ISourceGenerator
     }
 }
 
-public class ReactiveCommandData : NameTypeAndValue
+public class ReactiveCommandData(NameTypeAndValue nameTypeAndValue, string canExecutePropertyName)
 {
-    public bool CanExecuteTargetIsMethod { get; set; }
-
-    public ReactiveCommandData(string name, string typeFullName, object value)
-        : base(name, typeFullName, value) { }
+    /// <summary>
+    /// 名称和值
+    /// </summary>
+    public NameTypeAndValue NameTypeAndValue { get; } = nameTypeAndValue;
 }

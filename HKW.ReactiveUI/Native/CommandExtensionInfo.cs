@@ -11,8 +11,7 @@ internal class CommandExtensionInfo
     public ITypeSymbol? MethodReturnType { get; set; }
     public ITypeSymbol? ArgumentType { get; set; }
     public bool IsTask { get; set; }
-
-    public List<ReactiveCommandData> ReactiveCommandDatas { get; set; } = new();
+    public List<NameTypeAndValue> ReactiveCommandDatas { get; set; } = new();
 
     public string GetOutputTypeText()
     {

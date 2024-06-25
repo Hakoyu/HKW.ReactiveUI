@@ -1,4 +1,8 @@
-﻿using ReactiveUI;
+﻿using System.Diagnostics;
+using System.Reactive.Linq;
+using System.Windows.Input;
+using DynamicData.Binding;
+using ReactiveUI;
 
 namespace HKW.HKWReactiveUI.Demo;
 
@@ -15,7 +19,9 @@ internal partial class TestModel : ReactiveObjectX
     public TestModel() { }
 
     [ReactiveProperty]
-    public bool CanExecute { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    public bool CanExecute => string.IsNullOrWhiteSpace(Name);
 
     public bool CanExecuteM()
     {
