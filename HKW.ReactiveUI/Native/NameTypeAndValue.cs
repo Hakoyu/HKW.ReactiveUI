@@ -1,11 +1,11 @@
 ﻿// Source from https://github.com/SparkyTD/ReactiveCommand.SourceGenerator
 
-namespace HKW.HKWReactiveUI.SourceGenerator;
+namespace HKW.HKWReactiveUI;
 
 /// <summary>
 /// 名称类型和数据
 /// </summary>
-public class NameTypeAndValue(string name, string typeFullName, object value)
+internal class NameTypeAndValue(string name, string typeFullName, object value)
 {
     /// <summary>
     /// 名称

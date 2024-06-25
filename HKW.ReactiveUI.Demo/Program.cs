@@ -8,13 +8,18 @@ namespace HKW.HKWReactiveUI.Demo;
 
 internal class Program
 {
+    //private string $Name;
+    //public string Name { get; set; } = string.Empty;
+
+
     static void Main(string[] args)
     {
         var t = new TestModel();
+        return;
     }
 }
 
-partial class TestModel : ReactiveObjectX
+partial class TestModel : ReactiveObject
 {
     public TestModel() { }
 

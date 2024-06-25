@@ -55,10 +55,9 @@ internal static class ReactiveCommandGenerator
             DeclarationSyntax = declaredClass,
         };
 
-        if (classSymbol.AnyBaseTypeIs(NativeData.ReactiveObjectXFullName))
-            classExtensionInfo.IsReactiveObjectX = true;
-        else if (classSymbol.AnyBaseTypeIs(NativeData.ReactiveObjectFullName) is false)
-            return false; // 如果不是ReactiveObject的派生类,则跳过
+        // 如果不是ReactiveObject的派生类,则跳过
+        //if (classSymbol.AnyBaseTypeIs(NativeData.ReactiveObjectFullName) is false)
+        //    return false;
         return true;
     }
 
@@ -145,10 +144,6 @@ internal static class ReactiveCommandGenerator
 
         GeneratorReactiveCommandProperty(classExtensionInfo, writer);
 
-        writer.WriteLine();
-
-        GeneratorInitializeCommands(classExtensionInfo, writer);
-
         writer.Indent--;
         writer.WriteLine("}");
         writer.Indent--;
@@ -169,36 +164,24 @@ internal static class ReactiveCommandGenerator
             {
                 var outputType = commandExtensionInfo.GetOutputTypeText();
                 var inputType = commandExtensionInfo.GetInputTypeText();
+                var feildName = $"_{commandExtensionInfo.MethodName.FirstLetterToLower()}Command";
+                var propretyName = $"{commandExtensionInfo.MethodName}Command";
+                // 添加DebuggerBrowsable,防止调试器显示
+                writer.WriteLine(
+                    "[System.Diagnostics.DebuggerBrowsable(System.Diagnostics.DebuggerBrowsableState.Never)]"
+                );
+                // 添加ReactiveCommand字段
+                writer.WriteLine(
+                    $"private ReactiveUI.ReactiveCommand<{inputType}, {outputType}> "
+                        + $"{feildName};"
+                );
+                // 添加ReactiveCommand属性
                 writer.WriteLine(
                     $"public ReactiveUI.ReactiveCommand<{inputType}, {outputType}> "
-                        + $"{commandExtensionInfo.MethodName}Command {{ get; private set; }}"
+                        + $"{propretyName} => "
                 );
-            }
-        }
-
-        static void GeneratorInitializeCommands(
-            ClassExtensionInfo classExtensionInfo,
-            IndentedTextWriter writer
-        )
-        {
-            // 如果是ReactiveObjectX的派生类,则重写方法
-            if (classExtensionInfo.IsReactiveObjectX)
-            {
-                writer.WriteLine("protected override void InitializeCommands()");
-            }
-            else
-            {
-                writer.WriteLine("protected void InitializeCommands()");
-            }
-            writer.WriteLine("{");
-            writer.Indent++;
-            foreach (var commandExtensionInfo in classExtensionInfo.CommandExtensionInfos)
-            {
-                var commandName = $"{commandExtensionInfo.MethodName}Command";
-                var outputType = commandExtensionInfo.GetOutputTypeText();
-                var inputType = commandExtensionInfo.GetInputTypeText();
-
-                writer.Write($"{commandName} = ReactiveUI.ReactiveCommand.");
+                writer.Write($"{feildName} ?? ({feildName} = ");
+                writer.Write($"ReactiveUI.ReactiveCommand.");
                 // 检测异步和参数
                 if (commandExtensionInfo.ArgumentType is null)
                 {
@@ -232,15 +215,15 @@ internal static class ReactiveCommandGenerator
                     is NameTypeAndValue reactiveCommandData
                 )
                 {
-                    writer.WriteLine(
-                        $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, x => x.{reactiveCommandData.Value}));"
+                    writer.Write(
+                        $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, x => x.{reactiveCommandData.Value}))"
                     );
                 }
                 else
-                    writer.WriteLine(");");
+                    writer.Write(")");
+                writer.WriteLine(");");
+                writer.WriteLine();
             }
-            writer.Indent--;
-            writer.WriteLine("}");
         }
     }
 }
