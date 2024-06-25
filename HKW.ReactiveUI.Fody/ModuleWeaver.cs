@@ -3,6 +3,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
 using Fody;
 
 namespace HKW.HKWReactiveUI.Fody;
@@ -16,10 +17,12 @@ public class ModuleWeaver : BaseModuleWeaver
     /// <inheritdoc/>
     public override void Execute()
     {
-        var propertyWeaver = new ReactiveUIPropertyWeaver
+        //Debugger.Launch();
+        var logger = new ModuleWeaverLogger(this, true);
+        var propertyWeaver = new ReactivePropertyWeaver
         {
             ModuleDefinition = ModuleDefinition,
-            Logger = new(this)
+            Logger = logger
         };
         propertyWeaver.Execute();
 
@@ -27,14 +30,14 @@ public class ModuleWeaver : BaseModuleWeaver
         {
             ModuleDefinition = ModuleDefinition,
             FindType = FindTypeDefinition,
-            Logger = new(this)
+            Logger = logger
         };
         observableAsPropertyWeaver.Execute();
 
         var reactiveDependencyWeaver = new ReactiveDependencyPropertyWeaver
         {
             ModuleDefinition = ModuleDefinition,
-            Logger = new(this)
+            Logger = logger
         };
         reactiveDependencyWeaver.Execute();
     }

@@ -7,17 +7,15 @@
 		<Nullable>Enable</Nullable>
 		<IncludeSymbols>False</IncludeSymbols>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RootNamespace>HKW.HKWReactiveUI.Test</RootNamespace>
+		<RootNamespace>HKW.HKWReactiveUI.Demo</RootNamespace>
 		<PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
 		<EmitCompilerGeneratedFiles>True</EmitCompilerGeneratedFiles>
-		<Version>0.1.0</Version>
-		<Company>HKW</Company>
-		<Authors>HKW</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="False" />
 		<ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="True" />
+		
+		<ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="False" />
 		<WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
 	</ItemGroup>
 	<ItemGroup>

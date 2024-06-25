@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HKW.ReactiveUI.Demo", "HKW.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HKW.ReactiveUI", "HKW.ReactiveUI\HKW.ReactiveUI.csproj", "{881402AC-1354-42A3-A38A-CD238DDA5256}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HKW.ReactiveUI.Fody", "HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj", "{10A87A89-16F2-4A53-B19B-7532676836B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HKW.ReactiveUI.Fody", "HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj", "{EEDE4891-DC50-4C13-92BD-E21198335C04}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{881402AC-1354-42A3-A38A-CD238DDA5256}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{881402AC-1354-42A3-A38A-CD238DDA5256}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{881402AC-1354-42A3-A38A-CD238DDA5256}.Release|Any CPU.Build.0 = Release|Any CPU
-		{10A87A89-16F2-4A53-B19B-7532676836B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{10A87A89-16F2-4A53-B19B-7532676836B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{10A87A89-16F2-4A53-B19B-7532676836B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{10A87A89-16F2-4A53-B19B-7532676836B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEDE4891-DC50-4C13-92BD-E21198335C04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEDE4891-DC50-4C13-92BD-E21198335C04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEDE4891-DC50-4C13-92BD-E21198335C04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEDE4891-DC50-4C13-92BD-E21198335C04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

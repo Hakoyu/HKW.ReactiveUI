@@ -1,6 +1,7 @@
 ﻿// Source from https://github.com/SparkyTD/ReactiveCommand.SourceGenerator
 
 using System.CodeDom.Compiler;
+using HKW.HKWReactiveUI.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
 [Generator]
-public class Generator : ISourceGenerator
+internal class Generator : ISourceGenerator
 {
     public Generator() { }
 
@@ -163,21 +164,9 @@ public class Generator : ISourceGenerator
                     ClassNamespace = classNamespace,
                     DeclarationSyntax = declaredClass,
                 };
-                // 遍历基类
-                for (
-                    var baseClassType = classSymbol.BaseType;
-                    baseClassType is not null;
-                    baseClassType = baseClassType.BaseType
-                )
-                {
-                    // 如果基类为ReactiveObjectX
-                    if (baseClassType.Name == "ReactiveObjectX")
-                    {
-                        classExtensionInfo.IsReactiveObjectXDerivedClass = true;
-                        break;
-                    }
-                }
-                // 通过MemberName在ClassDeclarationSyntax中获取MethodDeclarationSyntax
+                if (classSymbol.AnyBaseTypeIs("HKW.HKWReactiveUI.ReactiveObjectX"))
+                    classExtensionInfo.IsReactiveObjectXDerivedClass = true;
+
                 // 解析方法
                 var methodMembers = declaredClass.Members.OfType<MethodDeclarationSyntax>();
                 foreach (var methodSyntax in methodMembers)
@@ -198,16 +187,19 @@ public class Generator : ISourceGenerator
                     // 获取特性的参数
 
                     var reactiveCommandDatas = new List<ReactiveCommandData>();
-                    TryGetAttributeAndValues(attributeData, semanticModel, out var values);
-                    for (var i = 0; i < values.Count; i++)
+                    if (attributeData.TryGetAttributeAndValues(out var values))
                     {
-                        var parameterName = values[i].Name;
-                        if (values[i].Name == nameof(ReactiveCommandAttribute.CanExecute))
+                        for (var i = 0; i < values.Count; i++)
                         {
-                            var memberName = values[i].Value.ToString();
-                            declaredClass.Members.Any(m =>
-                                m is MethodDeclarationSyntax p && p.Identifier.Text == memberName
-                            );
+                            var parameterName = values[i].Name;
+                            if (values[i].Name == nameof(ReactiveCommandAttribute.CanExecute))
+                            {
+                                var memberName = values[i].Value.ToString();
+                                declaredClass.Members.Any(m =>
+                                    m is MethodDeclarationSyntax p
+                                    && p.Identifier.Text == memberName
+                                );
+                            }
                         }
                     }
                     // 是否为异步方法
@@ -239,40 +231,6 @@ public class Generator : ISourceGenerator
         }
     }
 
-    public static bool TryGetAttributeAndValues(
-        AttributeData attributeData,
-        SemanticModel model,
-        out List<NameTypeAndValue> attributeValues
-    )
-    {
-        attributeValues = new();
-        var constructorParams = attributeData.AttributeConstructor.Parameters;
-
-        // Start with an indexed list of names for mandatory args
-
-        var allArguments = attributeData
-            .ConstructorArguments
-            // For unnamed args, we get the name from the array we just made
-            .Select((info, index) => (Name: constructorParams[index].Name, Constant: info))
-            // Then we use name + value from the named values
-            .Union(attributeData.NamedArguments.Select(x => (Name: x.Key, Constant: x.Value)))
-            .Distinct();
-
-        foreach (var argument in allArguments)
-        {
-            attributeValues.Add(
-                new NameTypeAndValue(
-                    name: argument.Name,
-                    typeFullName: argument.Constant.Type.Name,
-                    value: argument.Constant.Value
-                )
-            );
-        }
-        if (attributeValues.Count == 0)
-            return false;
-        return true;
-    }
-
     private static ITypeSymbol GetTaskReturnType(Compilation compilation, ITypeSymbol typeSymbol)
     {
         if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } namedTypeSymbol)
@@ -302,18 +260,4 @@ public class ReactiveCommandData : NameTypeAndValue
 
     public ReactiveCommandData(string name, string typeFullName, object value)
         : base(name, typeFullName, value) { }
-}
-
-public class NameTypeAndValue
-{
-    public string Name { get; }
-    public string TypeFullName { get; }
-    public object Value { get; }
-
-    public NameTypeAndValue(string name, string typeFullName, object value)
-    {
-        Name = name;
-        TypeFullName = typeFullName;
-        Value = value;
-    }
 }

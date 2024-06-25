@@ -13,7 +13,7 @@ namespace HKW.HKWReactiveUI.Fody;
 /// Weaver that replaces properties marked with `[DataMember]` on subclasses of `ReactiveObject` with an
 /// implementation that invokes `RaisePropertyChanged` as is required for ReactiveUI.
 /// </summary>
-public class ReactiveUIPropertyWeaver
+public class ReactivePropertyWeaver
 {
     /// <summary>
     /// Gets or sets the module definition.
@@ -38,11 +38,11 @@ public class ReactiveUIPropertyWeaver
     /// or
     /// reactiveAttribute is null
     /// or
-    /// [Reactive] is decorating " + property.DeclaringType.FullName + "." + property.Name + ", but the property has no setter so there would be nothing to react to.  Consider removing the attribute.
+    /// [ReactiveProperty] is decorating " + property.DeclaringType.FullName + "." + property.Name + ", but the property has no setter so there would be nothing to react to.  Consider removing the attribute.
     /// </exception>
     public void Execute()
     {
-        Logger?.LogInfo(nameof(ReactiveUIPropertyWeaver));
+        Logger?.LogInfo(nameof(ReactivePropertyWeaver));
         if (ModuleDefinition is null)
         {
             Logger?.LogError("The module definition has not been defined.");
@@ -64,11 +64,11 @@ public class ReactiveUIPropertyWeaver
         }
 
         Logger?.LogInfo($"{reactiveUI.Name} {reactiveUI.Version}");
-        var helpers = ModuleDefinition
+        var hkwReactiveUI = ModuleDefinition
             .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
             .OrderByDescending(x => x.Version)
             .FirstOrDefault();
-        if (helpers is null)
+        if (hkwReactiveUI is null)
         {
             Logger?.LogError(
                 "Could not find assembly: HKW.ReactiveUI ("
@@ -78,7 +78,7 @@ public class ReactiveUIPropertyWeaver
             return;
         }
 
-        Logger?.LogInfo($"{helpers.Name} {helpers.Version}");
+        Logger?.LogInfo($"{hkwReactiveUI.Name} {hkwReactiveUI.Version}");
         var reactiveObject = new TypeReference(
             "ReactiveUI",
             "IReactiveObject",
@@ -87,8 +87,7 @@ public class ReactiveUIPropertyWeaver
         );
         var targetTypes = ModuleDefinition
             .GetAllTypes()
-            .Where(x => x.BaseType is not null && reactiveObject.IsAssignableFrom(x.BaseType))
-            .ToArray();
+            .Where(x => x.BaseType is not null && reactiveObject.IsAssignableFrom(x.BaseType));
         var reactiveObjectExtensions =
             new TypeReference(
                 "ReactiveUI",
@@ -101,20 +100,21 @@ public class ReactiveUIPropertyWeaver
                 reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
             ) ?? throw new Exception("raiseAndSetIfChangedMethod is null");
         var reactiveAttribute =
-            ModuleDefinition.FindType("HKW.HKWReactiveUI", "ReactiveAttribute", helpers)
-            ?? throw new Exception("reactiveAttribute is null");
+            ModuleDefinition.FindType(
+                "HKW.HKWReactiveUI",
+                "ReactivePropertyAttribute",
+                hkwReactiveUI
+            ) ?? throw new Exception("ReactivePropertyAttribute is null");
         foreach (var targetType in targetTypes)
         {
             foreach (
-                var property in targetType
-                    .Properties.Where(x => x.IsDefined(reactiveAttribute))
-                    .ToArray()
+                var property in targetType.Properties.Where(x => x.IsDefined(reactiveAttribute))
             )
             {
                 if (property.SetMethod is null)
                 {
                     Logger?.LogError(
-                        $"Property {property.DeclaringType.FullName}.{property.Name} has no setter, therefore it is not possible for the property to change, and thus should not be marked with [Reactive]"
+                        $"Property {property.DeclaringType.FullName}.{property.Name} has no setter, therefore it is not possible for the property to change, and thus should not be marked with [ReactiveProperty]"
                     );
                     continue;
                 }
@@ -186,7 +186,7 @@ public class ReactiveUIPropertyWeaver
                 if (property.SetMethod is null)
                 {
                     throw new Exception(
-                        "[Reactive] is decorating "
+                        "[ReactiveProperty] is decorating "
                             + property.DeclaringType.FullName
                             + "."
                             + property.Name

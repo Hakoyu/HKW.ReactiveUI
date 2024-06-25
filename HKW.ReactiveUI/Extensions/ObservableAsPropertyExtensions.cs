@@ -9,7 +9,7 @@ using System.Reactive.Concurrency;
 using System.Reflection;
 using ReactiveUI;
 
-namespace HKW.HKWReactiveUI.Fody;
+namespace HKW.HKWReactiveUI;
 
 /// <summary>
 /// Extension methods for observable as property helpers.

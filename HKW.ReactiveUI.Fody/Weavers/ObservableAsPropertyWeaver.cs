@@ -114,12 +114,10 @@ public class ObservableAsPropertyWeaver
         foreach (var targetType in targetTypes)
         {
             foreach (
-                var property in targetType
-                    .Properties.Where(x =>
-                        x.IsDefined(observableAsPropertyAttribute)
-                        || (x.GetMethod?.IsDefined(observableAsPropertyAttribute) ?? false)
-                    )
-                    .ToArray()
+                var property in targetType.Properties.Where(x =>
+                    x.IsDefined(observableAsPropertyAttribute)
+                    || (x.GetMethod?.IsDefined(observableAsPropertyAttribute) ?? false)
+                )
             )
             {
                 var genericObservableAsPropertyHelper =

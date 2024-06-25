@@ -6,19 +6,19 @@
 
 namespace HKW.HKWReactiveUI.Fody;
 
-public class ModuleWeaverLogger(ModuleWeaver moduleWeaver)
+public class ModuleWeaverLogger(ModuleWeaver moduleWeaver, bool noInfo = false)
 {
     private readonly Action<string> _logInfo = moduleWeaver.WriteInfo;
     private readonly Action<string> _logWarning = moduleWeaver.WriteWarning;
     private readonly Action<string> _logError = moduleWeaver.WriteError;
+    private readonly bool _noInfo = noInfo;
 
     public void LogInfo(string message)
     {
-#if !Release
-        _logWarning?.Invoke(message);
-#else
-        _logInfo?.Invoke(message);
-#endif
+        if (_noInfo)
+            _logWarning?.Invoke(message);
+        else
+            _logInfo?.Invoke(message);
     }
 
     public void LogWarning(string message)

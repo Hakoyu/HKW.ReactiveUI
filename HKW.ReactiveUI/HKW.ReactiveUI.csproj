@@ -41,4 +41,5 @@
 		<!-- Package the Newtonsoft.Json dependency alongside the generator assembly -->
 		<None Include="$(PKGReactiveUI)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
+
 </Project>

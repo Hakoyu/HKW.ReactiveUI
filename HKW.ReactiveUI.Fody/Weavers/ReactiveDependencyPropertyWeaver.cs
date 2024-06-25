@@ -85,8 +85,8 @@ public class ReactiveDependencyPropertyWeaver
 
         var targetTypes = ModuleDefinition
             .GetAllTypes()
-            .Where(x => x.BaseType is not null && reactiveObject.IsAssignableFrom(x.BaseType))
-            .ToArray();
+            .Where(x => x.BaseType is not null && reactiveObject.IsAssignableFrom(x.BaseType));
+
         var reactiveObjectExtensions =
             new TypeReference(
                 "ReactiveUI",
@@ -102,15 +102,15 @@ public class ReactiveDependencyPropertyWeaver
             ModuleDefinition.FindType("HKW.HKWReactiveUI", "ReactiveDependencyAttribute", helpers)
             ?? throw new Exception("reactiveDecoratorAttribute is null");
         foreach (
-            var targetType in targetTypes
-                .Where(x => x.Properties.Any(y => y.IsDefined(reactiveDependencyAttribute)))
-                .ToArray()
+            var targetType in targetTypes.Where(x =>
+                x.Properties.Any(y => y.IsDefined(reactiveDependencyAttribute))
+            )
         )
         {
             foreach (
-                var facadeProperty in targetType
-                    .Properties.Where(x => x.IsDefined(reactiveDependencyAttribute))
-                    .ToArray()
+                var facadeProperty in targetType.Properties.Where(x =>
+                    x.IsDefined(reactiveDependencyAttribute)
+                )
             )
             {
                 // If the property already has a body then do not weave to prevent loss of instructions

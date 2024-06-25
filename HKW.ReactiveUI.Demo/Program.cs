@@ -14,7 +14,7 @@ internal partial class TestModel : ReactiveObjectX
 {
     public TestModel() { }
 
-    [Reactive]
+    [ReactiveProperty]
     public bool CanExecute { get; set; }
 
     public bool CanExecuteM()
