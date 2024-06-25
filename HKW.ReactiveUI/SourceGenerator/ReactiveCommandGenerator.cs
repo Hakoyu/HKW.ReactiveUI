@@ -55,8 +55,11 @@ internal static class ReactiveCommandGenerator
             DeclarationSyntax = declaredClass,
         };
 
-        // 如果不是ReactiveObject的派生类,则跳过
-        if (classSymbol.AnyBaseTypeIs(NativeData.ReactiveObjectFullName) is false)
+        // 如果没有实现IReactiveObject接口,则跳过
+        if (
+            classSymbol.AllInterfaces.Any(i => i.ToString() == NativeData.IReactiveObjectFullName)
+            is false
+        )
             return false;
         return true;
     }
