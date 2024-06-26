@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<Version>0.1.0</Version>
+		<Company>HKW</Company>
+		<Authors>HKW</Authors>
+		<PackageDescription>Noop</PackageDescription>
+		<PackageTags>mvvm;reactiveui;observable</PackageTags>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<RootNamespace>HKW.HKWReactiveUI</RootNamespace>
@@ -14,14 +19,9 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
-		<!-- Generates a package at build -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
-		<!-- Do not include the generator as a lib dependency -->
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-		<Version>0.1.0</Version>
-		<Company>HKW</Company>
-		<Authors>HKW</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
@@ -38,7 +38,7 @@
 		<!-- Package the generator in the analyzer directory of the nuget package -->
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
-		<!-- Package the Newtonsoft.Json dependency alongside the generator assembly -->
+		<!-- Package the ReactiveUI dependency alongside the generator assembly -->
 		<None Include="$(PKGReactiveUI)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 
