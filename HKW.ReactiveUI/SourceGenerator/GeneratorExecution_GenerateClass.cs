@@ -7,7 +7,6 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 
 internal partial class GeneratorExecution
 {
-    #region Generator
     private void GenerateClass(ClassInfo classInfo)
     {
         var stringStream = new StringWriter();
@@ -35,7 +34,7 @@ internal partial class GeneratorExecution
         writer.WriteLine("}");
 
         ExecutionContext.AddSource(
-            $"{classInfo.ClassName}.ReactiveCommand.g.cs",
+            $"{classInfo.ClassName}.ReactiveUI.g.cs",
             stringStream.ToString()
         );
 
@@ -114,11 +113,11 @@ internal partial class GeneratorExecution
     {
         if (classExtensionInfo.IsReactiveObjectX)
         {
-            writer.WriteLine("protected override void Initialize()");
+            writer.WriteLine("protected override void InitializeReactiveObject()");
         }
         else
         {
-            writer.WriteLine("protected void Initialize()");
+            writer.WriteLine("protected void InitializeReactiveObject()");
         }
         writer.WriteLine("{");
         writer.Indent++;
@@ -142,5 +141,4 @@ internal partial class GeneratorExecution
         writer.Indent--;
         writer.WriteLine("}");
     }
-    #endregion
 }

@@ -59,9 +59,9 @@ partial class TestModel : ReactiveObjectX
     }
 
     [ReactiveCommand]
-    public async Task Test1Async()
+    public async Task TestAsync()
     {
         await Task.Delay(1000);
-        Console.WriteLine(nameof(Test1Async));
+        Console.WriteLine(nameof(TestAsync));
     }
 }

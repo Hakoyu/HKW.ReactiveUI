@@ -7,19 +7,54 @@ namespace HKW.HKWReactiveUI;
 
 /// <summary>
 /// 从当前属性通知目标属性改变
-/// </summary>
+/// <para>
+/// 示例:
+/// <code><![CDATA[
+/// partial class MyViewModel : ReactiveObject
+/// {
+///     [ReactiveProperty]
+///     [NotifyPropertyChangedFor(nameof(IsEnabled))]
+///     public string Name { get; set; } = string.Empty;
+///
+///     public string IsEnabled => !string.IsNullOrWhiteSpace(Name);
+///
+///     protected void InitializeReactiveObject() { }
+/// }
+/// ]]></code>
+/// </para>
+/// 这样就会生成代码
+/// <code><![CDATA[
+/// partial class MyViewModel : ReactiveObject
+/// {
+///     public string Name
+///     {
+///         get => $Name;
+///         set => this.RaiseAndSetIfChanged(ref $Name, value);
+///     }
+///
+///     public string IsEnabled => !string.IsNullOrWhiteSpace(Name);
+///
+///     protected void InitializeReactiveObject()
+///     {
+///         this.WhenValueChanged(static x => x.Name).Subscribe(x =>
+///         {
+///             this.RaisePropertyChanged(nameof(IsEnabled));
+///         });
+///     }
+/// }
+/// ]]></code></summary>
+/// <remarks>
+/// 如果继承了 <see cref="ReactiveObjectX"/> 则会重写 <see cref="ReactiveObjectX.InitializeReactiveObject"/> 方法,不需要手动运行
+/// <para>
+/// 否则需要手动运行生成的 <see langword="InitializeReactiveObject"/> 方法
+/// </para>
+/// </remarks>
+/// <param name="propertyNames">属性名称</param>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class NotifyPropertyChangedForAttribute : Attribute
+public sealed class NotifyPropertyChangedForAttribute(params string[] propertyNames) : Attribute
 {
-    /// <inheritdoc/>
-    /// <param name="propertyNames">属性名称</param>
-    public NotifyPropertyChangedForAttribute(params string[] propertyNames)
-    {
-        PropertyNames.AddRange(propertyNames);
-    }
-
     /// <summary>
     /// 属性名称
     /// </summary>
-    public List<string> PropertyNames { get; } = [];
+    public string[] PropertyNames { get; } = propertyNames;
 }

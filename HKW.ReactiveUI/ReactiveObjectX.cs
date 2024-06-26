@@ -8,11 +8,11 @@ public partial class ReactiveObjectX : ReactiveObject
     /// <inheritdoc/>
     public ReactiveObjectX()
     {
-        Initialize();
+        InitializeReactiveObject();
     }
 
     /// <summary>
     /// 初始化
     /// </summary>
-    protected virtual void Initialize() { }
+    protected virtual void InitializeReactiveObject() { }
 }
