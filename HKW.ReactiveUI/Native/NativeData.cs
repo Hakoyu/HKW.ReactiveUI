@@ -2,7 +2,7 @@
 
 internal static class NativeData
 {
-    public static string TaskTypeFullName = "global::System.Threading.Tasks.Task";
-    public static string IReactiveObjectFullName = "ReactiveUI.IReactiveObject";
-    public static string ReactiveObjectXFullName = "HKW.HKWReactiveUI.ReactiveObjectX";
+    public const string TaskTypeFullName = "global::System.Threading.Tasks.Task";
+    public const string IReactiveObjectFullName = "ReactiveUI.IReactiveObject";
+    public const string ReactiveObjectXFullName = "HKW.HKWReactiveUI.ReactiveObjectX";
 }

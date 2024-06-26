@@ -3,12 +3,11 @@
 using System.CodeDom.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
 [Generator]
-internal class Generator : ISourceGenerator
+internal partial class Generator : ISourceGenerator
 {
     public Generator() { }
 
@@ -16,6 +15,6 @@ internal class Generator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        ReactiveCommandGenerator.Execute(context);
+        GeneratorExecution.Load(context).Execute();
     }
 }

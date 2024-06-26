@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace HKW.HKWReactiveUI;
 
-internal static class GeneratorExtensions
+internal static class NativeExtensions
 {
     /// <summary>
     /// 尝试获取属性的值
@@ -35,9 +35,15 @@ internal static class GeneratorExtensions
 
         foreach (var (name, info) in allArguments)
         {
-            attributeValues.Add(
-                new NameTypeAndValue(name: name, typeFullName: info.Type!.Name, value: info.Value!)
-            );
+            // 如果是多值 (params) 则添加多值
+            if (info.Kind is TypedConstantKind.Array)
+            {
+                attributeValues.Add(new NameTypeAndValue(name: name, values: info.Values));
+            }
+            else
+            {
+                attributeValues.Add(new NameTypeAndValue(name: name, value: info));
+            }
         }
         if (attributeValues.Count == 0)
             return false;
