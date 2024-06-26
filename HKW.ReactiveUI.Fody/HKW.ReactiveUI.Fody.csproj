@@ -3,6 +3,8 @@
 		<Version>0.1.0</Version>
 		<Company>HKW</Company>
 		<Authors>HKW</Authors>
+		<PackageDescription>Noop</PackageDescription>
+		<PackageTags>mvvm;reactiveui;observable;fody</PackageTags>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -10,8 +12,6 @@
 		<RootNamespace>HKW.HKWReactiveUI.Fody</RootNamespace>
 		<PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
 		<IsPackable>False</IsPackable>
-		<PackageDescription>Noop</PackageDescription>
-		<PackageTags>mvvm;reactiveui;observable;fody</PackageTags>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<PackageLicenseExpression>TIM</PackageLicenseExpression>
 	</PropertyGroup>
