@@ -98,7 +98,7 @@ internal partial class GeneratorExecution
             )
             {
                 writer.Write(
-                    $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{reactiveCommandData.Value?.Value})"
+                    $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{reactiveCommandData.Value?.Value}, true)"
                 );
             }
             writer.WriteLine("));");
@@ -124,9 +124,9 @@ internal partial class GeneratorExecution
         foreach (var commandExtensionInfo in classExtensionInfo.NotifyPropertyChanged)
         {
             writer.WriteLine(
-                $"DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{commandExtensionInfo.Key})"
+                $"System.ObservableExtensions.Subscribe(DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{commandExtensionInfo.Key})"
             );
-            writer.WriteLine(".Subscribe(x =>");
+            writer.WriteLine(", (x =>");
             writer.WriteLine("{");
             writer.Indent++;
             foreach (var propertyName in commandExtensionInfo.Value)
@@ -136,7 +136,7 @@ internal partial class GeneratorExecution
                 );
             }
             writer.Indent--;
-            writer.WriteLine("});");
+            writer.WriteLine("}));");
         }
         writer.Indent--;
         writer.WriteLine("}");

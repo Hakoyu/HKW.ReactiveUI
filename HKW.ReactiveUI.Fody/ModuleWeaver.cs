@@ -74,18 +74,25 @@ public class ModuleWeaver : BaseModuleWeaver
         }
         Logger.LogInfo($"{ReactiveUI.Name} {ReactiveUI.Version}");
 
-        HKWReactiveUI = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (HKWReactiveUI is null)
+        if (moduleDefinition.Assembly.Name.Name == "HKW.ReactiveUI")
         {
-            Logger.LogError(
-                "Could not find assembly: HKW.ReactiveUI ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return false;
+            HKWReactiveUI = moduleDefinition.Assembly.Name;
+        }
+        else
+        {
+            HKWReactiveUI = ModuleDefinition
+                .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
+                .OrderByDescending(x => x.Version)
+                .FirstOrDefault();
+            if (HKWReactiveUI is null)
+            {
+                Logger.LogError(
+                    "Could not find assembly: HKW.ReactiveUI ("
+                        + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
+                        + ")"
+                );
+                return false;
+            }
         }
         Logger.LogInfo($"{HKWReactiveUI.Name} {HKWReactiveUI.Version}");
 

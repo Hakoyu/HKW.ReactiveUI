@@ -19,4 +19,8 @@
 	<ItemGroup>
 		<PackageReference Include="FodyHelpers" Version="6.8.1" />
 	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	  <Exec Command="copy $(OutDir)\$(AssemblyName).dll $(OutDir)\HKW.ReactiveUI.dll" />
+	</Target>
 </Project>

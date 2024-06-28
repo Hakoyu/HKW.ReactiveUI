@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Windows.Input;
 using DynamicData.Binding;
+using HKW.HKWReactiveUI;
 using ReactiveUI;
 
 namespace HKW.HKWReactiveUI.Demo;
@@ -15,10 +16,15 @@ internal class Program
     static void Main(string[] args)
     {
         var t = new TestModel();
+        var c = t.TestCommand as ICommand;
         t.PropertyChanged += TestModel_PropertyChanged;
+        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
         t.ID = "114";
+        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
         t.Name = "514";
+        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
         t.ID = "514";
+        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
         return;
     }
 
@@ -46,11 +52,6 @@ partial class TestModel : ReactiveObjectX
 
     [NotifyPropertyChangedFrom(nameof(ID), nameof(Name))]
     public bool CanExecute => Name == ID;
-
-    public bool CanExecuteM()
-    {
-        return false;
-    }
 
     [ReactiveCommand(CanExecute = nameof(CanExecute))]
     public void Test()

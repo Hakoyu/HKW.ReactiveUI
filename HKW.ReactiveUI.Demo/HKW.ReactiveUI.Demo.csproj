@@ -3,23 +3,23 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>Enable</ImplicitUsings>
 		<Nullable>Enable</Nullable>
-		<IncludeSymbols>False</IncludeSymbols>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<IncludeSymbols>false</IncludeSymbols>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<RootNamespace>HKW.HKWReactiveUI.Demo</RootNamespace>
 		<PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
-		<EmitCompilerGeneratedFiles>True</EmitCompilerGeneratedFiles>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="True" />
-		
-		<ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="False" />
+		<ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+
 		<WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Fody" Version="6.8.1" PrivateAssets="all" />
+		<PackageReference Include="Fody" Version="6.8.1"/>
 		<PackageReference Include="ReactiveUI" Version="20.1.1" />
 	</ItemGroup>
 </Project>

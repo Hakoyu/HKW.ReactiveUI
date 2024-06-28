@@ -36,6 +36,12 @@ namespace HKW.HKWReactiveUI;
 ///         _testAsyncCommand ?? (_testAsyncCommand = ReactiveCommand.CreateFromTask(TestAsync));
 /// }
 /// ]]></code></summary>
+/// <remarks>
+/// 如果继承了 <see cref="ReactiveObjectX"/> 则会重写 <see cref="ReactiveObjectX.InitializeReactiveObject"/> 方法,不需要手动运行
+/// <para>
+/// 否则需要手动运行生成的 <see langword="InitializeReactiveObject"/> 方法
+/// </para>
+/// </remarks>
 [AttributeUsage(AttributeTargets.Method)]
 public class ReactiveCommandAttribute : Attribute
 {

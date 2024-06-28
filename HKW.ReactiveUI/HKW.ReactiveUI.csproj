@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>0.1.0</Version>
+		<Version>0.1.1</Version>
 		<Company>HKW</Company>
 		<Authors>HKW</Authors>
 		<PackageDescription>Noop</PackageDescription>
@@ -19,27 +19,28 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
-		<IncludeBuildOutput>false</IncludeBuildOutput>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<ProduceReferenceAssembly>true</ProduceReferenceAssembly>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageId>HKW.ReactiveUI</PackageId>
+		<WeaverDirPath>..\HKW.ReactiveUI.Fody\bin\$(Configuration)\</WeaverDirPath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- Take a private dependency on Newtonsoft.Json (PrivateAssets=all) Consumers of this generator will not reference it.
-         Set GeneratePathProperty=true so we can reference the binaries via the PKGReactiveUI property -->
-		<PackageReference Include="ReactiveUI" Version="20.1.1" PrivateAssets="all" GeneratePathProperty="true" />
-
-		<!-- Package the generator in the analyzer directory of the nuget package -->
-		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-
-		<!-- Package the ReactiveUI dependency alongside the generator assembly -->
+		<PackageReference Include="ReactiveUI" Version="20.1.1" GeneratePathProperty="true" />
 		<None Include="$(PKGReactiveUI)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Fody" Version="6.8.1"/>
+		<ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
+		<PackageReference Include="FodyPackaging" Version="6.8.1" PrivateAssets="all" />
+		<None Include="$(PKGFodyPackaging)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
 </Project>
