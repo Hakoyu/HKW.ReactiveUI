@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using DynamicData.Binding;
@@ -28,10 +29,7 @@ internal class Program
         return;
     }
 
-    private static void TestModel_PropertyChanged(
-        object? sender,
-        System.ComponentModel.PropertyChangedEventArgs e
-    )
+    private static void TestModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (sender is not TestModel model)
             return;
@@ -47,13 +45,13 @@ partial class TestModel : ReactiveObjectX
     [ReactiveProperty]
     public string ID { get; set; } = string.Empty;
 
-    [ReactiveProperty]
+    [I18nProperty("Program.I18nResource", nameof(ID))]
     public string Name { get; set; } = string.Empty;
 
     [NotifyPropertyChangedFrom(nameof(ID), nameof(Name))]
     public bool CanExecute => Name == ID;
 
-    [ReactiveCommand(CanExecute = nameof(CanExecute))]
+    [ReactiveCommand(nameof(CanExecute))]
     public void Test()
     {
         Console.WriteLine(nameof(Test));
@@ -65,4 +63,44 @@ partial class TestModel : ReactiveObjectX
         await Task.Delay(1000);
         Console.WriteLine(nameof(TestAsync));
     }
+}
+
+internal static class TestExtensions
+{
+    public static IObservable<(T? Previous, T? Current)> Zip<T>(this IObservable<T> source)
+    {
+        return source.Scan(
+            (Previous: default(T), Current: default(T)),
+            (pair, current) => (pair.Current, current)
+        );
+    }
+}
+
+/// <summary>
+/// I18n属性
+/// </summary>
+/// <param name="ResourceName">资源名称</param>
+/// <param name="KeyPropertyName">键属性值</param>
+/// <param name="RetentionValueOnKeyChange">当键改变时保留值</param>
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class I18nPropertyAttribute(
+    string ResourceName,
+    string KeyPropertyName,
+    bool RetentionValueOnKeyChange = false
+) : Attribute
+{
+    /// <summary>
+    /// 资源名称
+    /// </summary>
+    public string ResourceName { get; } = ResourceName;
+
+    /// <summary>
+    /// 键属性值
+    /// </summary>
+    public string KeyPropertyName { get; } = KeyPropertyName;
+
+    /// <summary>
+    /// 当键改变时保留值
+    /// </summary>
+    public bool RetentionValueOnKeyChange { get; } = RetentionValueOnKeyChange;
 }

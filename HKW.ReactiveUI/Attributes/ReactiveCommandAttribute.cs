@@ -43,8 +43,17 @@ namespace HKW.HKWReactiveUI;
 /// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method)]
-public class ReactiveCommandAttribute : Attribute
+public sealed class ReactiveCommandAttribute : Attribute
 {
+    /// <inheritdoc/>
+    public ReactiveCommandAttribute() { }
+
+    /// <inheritdoc/>
+    public ReactiveCommandAttribute(string CanExecute)
+    {
+        this.CanExecute = CanExecute;
+    }
+
     /// <summary>
     /// 可执行 填入目标属性名或方法名
     /// <para>

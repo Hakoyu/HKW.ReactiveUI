@@ -49,12 +49,12 @@ namespace HKW.HKWReactiveUI;
 /// 否则需要手动运行生成的 <see langword="InitializeReactiveObject"/> 方法
 /// </para>
 /// </remarks>
-/// <param name="propertyNames">属性名称</param>
+/// <param name="PropertyNames">属性名称</param>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class NotifyPropertyChangedFromAttribute(params string[] propertyNames) : Attribute
+public sealed class NotifyPropertyChangedFromAttribute(params string[] PropertyNames) : Attribute
 {
     /// <summary>
     /// 属性名称
     /// </summary>
-    public string[] PropertyNames { get; } = propertyNames;
+    public string[] PropertyNames { get; } = PropertyNames;
 }

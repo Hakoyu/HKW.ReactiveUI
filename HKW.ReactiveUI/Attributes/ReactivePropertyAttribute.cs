@@ -24,6 +24,8 @@ namespace HKW.HKWReactiveUI;
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
+///     private string $Name;
+///
 ///     public string Name
 ///     {
 ///         get => $Name;

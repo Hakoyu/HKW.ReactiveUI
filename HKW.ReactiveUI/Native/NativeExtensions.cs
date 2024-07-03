@@ -15,7 +15,7 @@ internal static class NativeExtensions
     /// <returns>成功为 <see langword="true"/> 失败为 <see langword="false"/></returns>
     public static bool TryGetAttributeAndValues(
         this AttributeData attributeData,
-        out List<NameTypeAndValue> attributeValues
+        out Dictionary<string, TypeAndValue> attributeValues
     )
     {
         attributeValues = [];
@@ -38,11 +38,11 @@ internal static class NativeExtensions
             // 如果是多值 (params) 则添加多值
             if (info.Kind is TypedConstantKind.Array)
             {
-                attributeValues.Add(new NameTypeAndValue(name: name, values: info.Values));
+                attributeValues.Add(name, new TypeAndValue(info.Values));
             }
             else
             {
-                attributeValues.Add(new NameTypeAndValue(name: name, value: info));
+                attributeValues.Add(name, new TypeAndValue(info));
             }
         }
         if (attributeValues.Count == 0)

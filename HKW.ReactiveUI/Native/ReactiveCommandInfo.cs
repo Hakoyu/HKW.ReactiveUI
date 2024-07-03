@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI;
 
-internal class CommandExtensionInfo
+internal class ReactiveCommandInfo
 {
     private const string UnitTypeName = "System.Reactive.Unit";
 
@@ -11,7 +11,11 @@ internal class CommandExtensionInfo
     public ITypeSymbol? MethodReturnType { get; set; }
     public ITypeSymbol? ArgumentType { get; set; }
     public bool IsTask { get; set; }
-    public List<NameTypeAndValue> ReactiveCommandDatas { get; set; } = new();
+
+    /// <summary>
+    /// (ParamName, TypeAndValue)
+    /// </summary>
+    public Dictionary<string, TypeAndValue> ReactiveCommandDatas { get; set; } = [];
 
     public string GetOutputTypeText()
     {

@@ -17,7 +17,7 @@ internal partial class GeneratorExecution
         ParseProperty(semanticModel, declaredClass, classInfo);
     }
 
-    #region MethodParse
+    #region Method
     private void ParseMethod(
         SemanticModel semanticModel,
         ClassDeclarationSyntax declaredClass,
@@ -51,12 +51,11 @@ internal partial class GeneratorExecution
         if (attributeData.TryGetAttributeAndValues(out var values))
         {
             // 删除空的CanExecute
-            var index = values.FindIndex(v =>
-                v.Name == nameof(ReactiveCommandAttribute.CanExecute)
-                && string.IsNullOrWhiteSpace(v.Value.ToString())
-            );
-            if (index != -1)
-                values.RemoveAt(index);
+            if (
+                values.TryGetValue(nameof(ReactiveCommandAttribute.CanExecute), out var name)
+                && string.IsNullOrWhiteSpace(name.Value.ToString())
+            )
+                values.Remove(nameof(ReactiveCommandAttribute.CanExecute));
         }
 
         // 是否为异步方法
@@ -70,7 +69,7 @@ internal partial class GeneratorExecution
         // 是否为空返回值
         var isReturnTypeVoid = ExecutionContext.Compilation.IsVoid(realReturnType);
 
-        classInfo.CommandExtensionInfos.Add(
+        classInfo.ReactiveCommandInfos.Add(
             new()
             {
                 MethodName = methodSymbol.Name,
@@ -84,7 +83,7 @@ internal partial class GeneratorExecution
 
     #endregion
 
-    #region PropertyParse
+    #region ParseProperty
     private void ParseProperty(
         SemanticModel semanticModel,
         ClassDeclarationSyntax declaredClass,
@@ -98,13 +97,12 @@ internal partial class GeneratorExecution
             var propertySymbol = (IPropertySymbol)
                 ModelExtensions.GetDeclaredSymbol(semanticModel, propertySyntax)!;
             ParseNotifyPropertyChanged(classInfo, propertySymbol);
+            ParseI18nProperty(classInfo, propertySymbol);
         }
     }
 
-    private static void ParseNotifyPropertyChanged(
-        ClassInfo classInfo,
-        IPropertySymbol propertySymbol
-    )
+    #endregion
+    private void ParseNotifyPropertyChanged(ClassInfo classInfo, IPropertySymbol propertySymbol)
     {
         // 获取特性数据
         var forAttributeData = propertySymbol
@@ -121,15 +119,20 @@ internal partial class GeneratorExecution
                 is false
             )
                 properties = classInfo.NotifyPropertyChanged[propertySymbol.Name] = [];
-            foreach (var fromValue in forValues)
+            if (
+                forValues.TryGetValue(
+                    nameof(NotifyPropertyChangedForAttribute.PropertyNames),
+                    out var value
+                )
+            )
             {
-                if (fromValue.Value?.Value is string propertyName)
+                if (value.Value?.Value is string propertyName)
                 {
                     properties.Add(propertyName);
                 }
-                else if (fromValue.Values is not null)
+                else if (value.Values is not null)
                 {
-                    foreach (var propertyType in fromValue.Values)
+                    foreach (var propertyType in value.Values)
                     {
                         if (propertyType.Value is string propertyName1)
                             properties.Add(propertyName1);
@@ -147,9 +150,14 @@ internal partial class GeneratorExecution
         if (fromAttributeData?.TryGetAttributeAndValues(out var fromValues) is true)
         {
             // PropertySymbol 是目标 AttributeValue 是源
-            foreach (var fromValue in fromValues)
+            if (
+                fromValues.TryGetValue(
+                    nameof(NotifyPropertyChangedFromAttribute.PropertyNames),
+                    out var value
+                )
+            )
             {
-                if (fromValue.Value?.Value is string propertyName)
+                if (value.Value?.Value is string propertyName)
                 {
                     if (
                         classInfo.NotifyPropertyChanged.TryGetValue(
@@ -161,9 +169,9 @@ internal partial class GeneratorExecution
                         properties = classInfo.NotifyPropertyChanged[propertyName] = [];
                     properties.Add(propertySymbol.Name);
                 }
-                else if (fromValue.Values is not null)
+                else if (value.Values is not null)
                 {
-                    foreach (var propertyType in fromValue.Values)
+                    foreach (var propertyType in value.Values)
                     {
                         if (propertyType.Value is string propertyName1)
                         {
@@ -182,5 +190,37 @@ internal partial class GeneratorExecution
             }
         }
     }
-    #endregion
+
+    private void ParseI18nProperty(ClassInfo classInfo, IPropertySymbol propertySymbol)
+    {
+        // 获取特性数据
+        var attributeData = propertySymbol
+            .GetAttributes()
+            .FirstOrDefault(a =>
+                a.AttributeClass!.ToString() == "HKW.HKWUtils.I18nPropertyAttribute"
+            );
+        if (attributeData?.TryGetAttributeAndValues(out var values) is true)
+        {
+            if (values.TryGetValue("ResourceName", out var resourceNameType) is false)
+                return;
+            if (
+                resourceNameType.Value?.Value is not string resourceName
+                || string.IsNullOrWhiteSpace(resourceName)
+            )
+                return;
+            if (values.TryGetValue("KeyPropertyName", out var keyNameType) is false)
+                return;
+            if (
+                keyNameType.Value?.Value is not string keyName
+                || string.IsNullOrWhiteSpace(keyName)
+            )
+                return;
+            values.TryGetValue("RetentionValueOnKeyChange", out var retentionValueOnKeyChange);
+            if (classInfo.I18nResourceToProperties.TryGetValue(resourceName, out var list) is false)
+                list = classInfo.I18nResourceToProperties[resourceName] = [];
+            list.Add(
+                (keyName, propertySymbol.Name, retentionValueOnKeyChange?.Value?.Value is true)
+            );
+        }
+    }
 }

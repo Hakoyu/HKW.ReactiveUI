@@ -26,7 +26,8 @@ internal partial class GeneratorExecution
         writer.Indent++;
 
         GeneratorReactiveCommand(classInfo, writer);
-        GeneratorNotifyPropertyChanged(classInfo, writer);
+        writer.WriteLine();
+        GeneratorInitializeReactiveObject(classInfo, writer);
 
         writer.Indent--;
         writer.WriteLine("}");
@@ -41,9 +42,9 @@ internal partial class GeneratorExecution
         //Console.Out.WriteLine(stringStream);
     }
 
-    private void GeneratorReactiveCommand(ClassInfo classExtensionInfo, IndentedTextWriter writer)
+    private void GeneratorReactiveCommand(ClassInfo classInfo, IndentedTextWriter writer)
     {
-        foreach (var commandExtensionInfo in classExtensionInfo.CommandExtensionInfos)
+        foreach (var commandExtensionInfo in classInfo.ReactiveCommandInfos)
         {
             var outputType = commandExtensionInfo.GetOutputTypeText();
             var inputType = commandExtensionInfo.GetInputTypeText();
@@ -91,10 +92,10 @@ internal partial class GeneratorExecution
             }
             // 如果有CanExecute则添加canExecute参数
             if (
-                commandExtensionInfo.ReactiveCommandDatas.FirstOrDefault(d =>
-                    d.Name == nameof(ReactiveCommandAttribute.CanExecute)
+                commandExtensionInfo.ReactiveCommandDatas.TryGetValue(
+                    nameof(ReactiveCommandAttribute.CanExecute),
+                    out var reactiveCommandData
                 )
-                is NameTypeAndValue reactiveCommandData
             )
             {
                 writer.Write(
@@ -106,12 +107,9 @@ internal partial class GeneratorExecution
         }
     }
 
-    private void GeneratorNotifyPropertyChanged(
-        ClassInfo classExtensionInfo,
-        IndentedTextWriter writer
-    )
+    private void GeneratorInitializeReactiveObject(ClassInfo classInfo, IndentedTextWriter writer)
     {
-        if (classExtensionInfo.IsReactiveObjectX)
+        if (classInfo.IsReactiveObjectX)
         {
             writer.WriteLine("protected override void InitializeReactiveObject()");
         }
@@ -121,24 +119,57 @@ internal partial class GeneratorExecution
         }
         writer.WriteLine("{");
         writer.Indent++;
-        foreach (var commandExtensionInfo in classExtensionInfo.NotifyPropertyChanged)
+
+        GeneratorNotifyPropertyChanged(classInfo, writer);
+        writer.WriteLine();
+        GeneratorI18nObject(classInfo, writer);
+
+        writer.Indent--;
+        writer.WriteLine("}");
+    }
+
+    private void GeneratorNotifyPropertyChanged(ClassInfo classInfo, IndentedTextWriter writer)
+    {
+        if (classInfo.NotifyPropertyChanged.Count == 0)
+            return;
+        writer.WriteLine($"PropertyChanged += static (s, e) =>");
+        writer.WriteLine("{");
+        writer.Indent++;
+        writer.WriteLine("if (s is not TestModel m) return;");
+        foreach (var commandExtensionInfo in classInfo.NotifyPropertyChanged)
         {
-            writer.WriteLine(
-                $"System.ObservableExtensions.Subscribe(DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{commandExtensionInfo.Key})"
-            );
-            writer.WriteLine(", (x =>");
+            writer.WriteLine($"if (e.PropertyName == nameof({commandExtensionInfo.Key}))");
             writer.WriteLine("{");
             writer.Indent++;
             foreach (var propertyName in commandExtensionInfo.Value)
             {
                 writer.WriteLine(
-                    $"ReactiveUI.IReactiveObjectExtensions.RaisePropertyChanged(this, nameof({propertyName}));"
+                    $"ReactiveUI.IReactiveObjectExtensions.RaisePropertyChanged(m, nameof({propertyName}));"
                 );
             }
             writer.Indent--;
-            writer.WriteLine("}));");
+            writer.WriteLine("}");
         }
         writer.Indent--;
-        writer.WriteLine("}");
+        writer.WriteLine("};");
+    }
+
+    private void GeneratorI18nObject(ClassInfo classInfo, IndentedTextWriter writer)
+    {
+        var isFirst = true;
+        foreach (var i18Info in classInfo.I18nResourceToProperties)
+        {
+            writer.WriteLine($"{i18Info.Key}.I18nObjects.Add(new(this));");
+            if (isFirst)
+                writer.WriteLine($"var i18nObject = {i18Info.Key}.I18nObjects.Last();");
+            else
+                writer.WriteLine($"i18nObject = {i18Info.Key}.I18nObjects.Last();");
+            foreach (var (keyName, targetName, retentionValueOnKeyChange) in i18Info.Value)
+                writer.WriteLine(
+                    $"i18nObject.AddProperty(nameof({keyName}), x => (({classInfo.ClassName})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
+                );
+            writer.WriteLine();
+            isFirst = false;
+        }
     }
 }

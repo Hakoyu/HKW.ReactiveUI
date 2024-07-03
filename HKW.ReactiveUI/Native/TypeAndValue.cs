@@ -8,29 +8,25 @@ namespace HKW.HKWReactiveUI;
 /// <summary>
 /// 名称类型和数据
 /// </summary>
-internal class NameTypeAndValue
+internal class TypeAndValue
 {
-    public NameTypeAndValue(string name, TypedConstant value)
+    public TypeAndValue(TypedConstant value)
     {
-        Name = name;
         Value = value;
     }
 
-    public NameTypeAndValue(string name, ImmutableArray<TypedConstant> values)
+    public TypeAndValue(ImmutableArray<TypedConstant> values)
     {
-        Name = name;
         Values = values;
     }
-
-    /// <summary>
-    /// 名称
-    /// </summary>
-    public string Name { get; }
 
     /// <summary>
     /// 数据
     /// </summary>
     public TypedConstant? Value { get; }
 
+    /// <summary>
+    /// 数据
+    /// </summary>
     public ImmutableArray<TypedConstant>? Values { get; }
 }

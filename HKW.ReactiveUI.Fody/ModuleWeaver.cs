@@ -58,7 +58,6 @@ public class ModuleWeaver : BaseModuleWeaver
 
     private bool Check(ModuleDefinition moduleDefinition)
     {
-        Logger.LogInfo(nameof(ReactivePropertyWeaver));
         ReactiveUI = ModuleDefinition
             .AssemblyReferences.Where(x => x.Name == "ReactiveUI")
             .OrderByDescending(x => x.Version)
