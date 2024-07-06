@@ -45,7 +45,6 @@ partial class TestModel : ReactiveObjectX
     [ReactiveProperty]
     public string ID { get; set; } = string.Empty;
 
-    [I18nProperty("Program.I18nResource", nameof(ID))]
     public string Name { get; set; } = string.Empty;
 
     [NotifyPropertyChangedFrom(nameof(ID), nameof(Name))]
@@ -74,33 +73,4 @@ internal static class TestExtensions
             (pair, current) => (pair.Current, current)
         );
     }
-}
-
-/// <summary>
-/// I18n属性
-/// </summary>
-/// <param name="ResourceName">资源名称</param>
-/// <param name="KeyPropertyName">键属性值</param>
-/// <param name="RetentionValueOnKeyChange">当键改变时保留值</param>
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class I18nPropertyAttribute(
-    string ResourceName,
-    string KeyPropertyName,
-    bool RetentionValueOnKeyChange = false
-) : Attribute
-{
-    /// <summary>
-    /// 资源名称
-    /// </summary>
-    public string ResourceName { get; } = ResourceName;
-
-    /// <summary>
-    /// 键属性值
-    /// </summary>
-    public string KeyPropertyName { get; } = KeyPropertyName;
-
-    /// <summary>
-    /// 当键改变时保留值
-    /// </summary>
-    public bool RetentionValueOnKeyChange { get; } = RetentionValueOnKeyChange;
 }
