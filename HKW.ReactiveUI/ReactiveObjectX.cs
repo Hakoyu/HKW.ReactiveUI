@@ -12,7 +12,7 @@ public partial class ReactiveObjectX : ReactiveObject
     }
 
     /// <summary>
-    /// 初始化
+    /// 初始化 (用于自动生成)
     /// </summary>
     protected virtual void InitializeReactiveObject() { }
 }

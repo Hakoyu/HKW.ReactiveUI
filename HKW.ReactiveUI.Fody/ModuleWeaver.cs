@@ -22,7 +22,7 @@ public class ModuleWeaver : BaseModuleWeaver
     public override void Execute()
     {
         //Debugger.Launch();
-        Logger ??= new ModuleWeaverLogger(this, false);
+        Logger = new ModuleWeaverLogger(this, false);
 
         if (Check(ModuleDefinition) is false)
             return;

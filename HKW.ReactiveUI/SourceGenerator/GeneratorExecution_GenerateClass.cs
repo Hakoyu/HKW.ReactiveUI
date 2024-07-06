@@ -135,7 +135,7 @@ internal partial class GeneratorExecution
         writer.WriteLine($"PropertyChanged += static (s, e) =>");
         writer.WriteLine("{");
         writer.Indent++;
-        writer.WriteLine("if (s is not TestModel m) return;");
+        writer.WriteLine($"if (s is not {classInfo.ClassName} m) return;");
         foreach (var commandExtensionInfo in classInfo.NotifyPropertyChanged)
         {
             writer.WriteLine($"if (e.PropertyName == nameof({commandExtensionInfo.Key}))");
