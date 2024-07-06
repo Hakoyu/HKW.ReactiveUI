@@ -26,6 +26,8 @@ namespace HKW.HKWReactiveUI;
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
+///     [ReactiveProperty]
+///     [NotifyPropertyChangedFor(nameof(IsEnabled))]
 ///     public string Name
 ///     {
 ///         get => $Name;
@@ -36,10 +38,14 @@ namespace HKW.HKWReactiveUI;
 ///
 ///     protected void InitializeReactiveObject()
 ///     {
-///         this.WhenValueChanged(static x => x.Name).Subscribe(x =>
+///         PropertyChanged += static (s, e) =>
 ///         {
-///             this.RaisePropertyChanged(nameof(IsEnabled));
-///         });
+///             if (s is not MyViewModel m) return;
+///             if (e.PropertyName == nameof(ID))
+///             {
+///             	ReactiveUI.IReactiveObjectExtensions.RaisePropertyChanged(m, nameof(Name));
+///             }
+///         };
 ///     }
 /// }
 /// ]]></code></summary>

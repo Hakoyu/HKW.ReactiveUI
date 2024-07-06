@@ -26,6 +26,7 @@ namespace HKW.HKWReactiveUI;
 /// {
 ///     private string $Name;
 ///
+///     [ReactiveProperty]
 ///     public string Name
 ///     {
 ///         get => $Name;
