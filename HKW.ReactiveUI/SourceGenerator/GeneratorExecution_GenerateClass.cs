@@ -34,10 +34,8 @@ internal partial class GeneratorExecution
         // 获取可访问性
         var accessibility = classInfo.DeclarationSyntax.Modifiers.GetAccessibility();
         writer.WriteLine(
-            $"{accessibility} {(isAbstract ? SyntaxKind.AbstractKeyword : null)} partial class {classInfo.ClassName}"
+            $"{accessibility} {(isAbstract ? SyntaxKind.AbstractKeyword : null)} partial class {classInfo.ClassFullName}"
         );
-        // 添加基类和接口
-        writer.WriteLine($"{classInfo.DeclarationSyntax.TypeParameterList}");
         // 添加约束列表
         writer.WriteLine($"{classInfo.DeclarationSyntax.ConstraintClauses}");
         writer.WriteLine("{");
@@ -153,7 +151,7 @@ internal partial class GeneratorExecution
         writer.WriteLine($"PropertyChanged += static (s, e) =>");
         writer.WriteLine("{");
         writer.Indent++;
-        writer.WriteLine($"if (s is not {classInfo.ClassName} m) return;");
+        writer.WriteLine($"if (s is not {classInfo.ClassFullName} m) return;");
         foreach (var commandExtensionInfo in classInfo.NotifyPropertyChanged)
         {
             writer.WriteLine($"if (e.PropertyName == nameof({commandExtensionInfo.Key}))");

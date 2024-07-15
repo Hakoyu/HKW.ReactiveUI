@@ -9,6 +9,8 @@ internal sealed class ClassInfo
 {
     public string ClassNamespace { get; set; } = string.Empty;
     public string ClassName { get; set; } = string.Empty;
+
+    public string ClassFullName => $"{ClassName}{DeclarationSyntax.TypeParameterList}";
     public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
     public bool IsReactiveObjectX { get; set; }
     public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
