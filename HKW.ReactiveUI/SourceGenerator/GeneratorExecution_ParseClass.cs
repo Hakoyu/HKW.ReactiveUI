@@ -28,6 +28,9 @@ internal partial class GeneratorExecution
         var methodMembers = declaredClass.Members.OfType<MethodDeclarationSyntax>();
         foreach (var methodSyntax in methodMembers)
         {
+            // 获取注释
+            //var t = methodSyntax.GetLeadingTrivia();
+
             var methodSymbol = (IMethodSymbol)
                 ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax)!;
             ParseReactiveCommand(classInfo, methodSymbol);
@@ -76,7 +79,8 @@ internal partial class GeneratorExecution
                 MethodReturnType = isReturnTypeVoid ? null : realReturnType,
                 IsTask = isTask,
                 ArgumentType = methodSymbol.Parameters.SingleOrDefault()?.Type,
-                ReactiveCommandDatas = values
+                ReactiveCommandDatas = values,
+                Comment = methodSymbol.GetDocumentationCommentXml() ?? string.Empty
             }
         );
     }

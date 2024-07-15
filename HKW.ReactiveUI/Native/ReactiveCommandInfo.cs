@@ -5,8 +5,9 @@ namespace HKW.HKWReactiveUI;
 
 internal class ReactiveCommandInfo
 {
-    private const string UnitTypeName = "System.Reactive.Unit";
+    public const string UnitTypeName = "System.Reactive.Unit";
 
+    public string Comment { get; set; } = string.Empty;
     public string MethodName { get; set; } = string.Empty;
     public ITypeSymbol? MethodReturnType { get; set; }
     public ITypeSymbol? ArgumentType { get; set; }

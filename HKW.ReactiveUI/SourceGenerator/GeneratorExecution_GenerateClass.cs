@@ -60,12 +60,12 @@ internal partial class GeneratorExecution
 
     private void GeneratorReactiveCommand(ClassInfo classInfo, IndentedTextWriter writer)
     {
-        foreach (var commandExtensionInfo in classInfo.ReactiveCommandInfos)
+        foreach (var commandInfo in classInfo.ReactiveCommandInfos)
         {
-            var outputType = commandExtensionInfo.GetOutputTypeText();
-            var inputType = commandExtensionInfo.GetInputTypeText();
-            var fieldName = $"_{commandExtensionInfo.MethodName.FirstLetterToLower()}Command";
-            var propretyName = $"{commandExtensionInfo.MethodName}Command";
+            var outputType = commandInfo.GetOutputTypeText();
+            var inputType = commandInfo.GetInputTypeText();
+            var fieldName = $"_{commandInfo.MethodName.FirstLetterToLower()}Command";
+            var propretyName = $"{commandInfo.MethodName}Command";
             // 添加DebuggerBrowsable,防止调试器显示
             writer.WriteLine(
                 "[System.Diagnostics.DebuggerBrowsable(System.Diagnostics.DebuggerBrowsableState.Never)]"
@@ -73,6 +73,10 @@ internal partial class GeneratorExecution
             // 添加ReactiveCommand字段
             writer.WriteLine(
                 $"private ReactiveUI.ReactiveCommand<{inputType}, {outputType}> " + $"{fieldName};"
+            );
+            // 添加属性注释
+            writer.WriteLine(
+                $"/// <inheritdoc cref=\"{commandInfo.MethodName}({(commandInfo.ArgumentType is null ? string.Empty : inputType)})\"/>"
             );
             // 添加ReactiveCommand属性
             writer.WriteLine(
@@ -82,33 +86,33 @@ internal partial class GeneratorExecution
             writer.Write($"{fieldName} ?? ({fieldName} = ");
             writer.Write($"ReactiveUI.ReactiveCommand.");
             // 检测异步和参数
-            if (commandExtensionInfo.ArgumentType is null)
+            if (commandInfo.ArgumentType is null)
             {
                 writer.Write(
-                    commandExtensionInfo.IsTask is false
-                        ? $"Create({commandExtensionInfo.MethodName}"
-                        : $"CreateFromTask({commandExtensionInfo.MethodName}"
+                    commandInfo.IsTask is false
+                        ? $"Create({commandInfo.MethodName}"
+                        : $"CreateFromTask({commandInfo.MethodName}"
                 );
             }
-            else if (commandExtensionInfo.MethodReturnType is not null)
+            else if (commandInfo.MethodReturnType is not null)
             {
                 writer.Write(
-                    commandExtensionInfo.IsTask is false
-                        ? $"Create<{inputType}, {outputType}>({commandExtensionInfo.MethodName}"
-                        : $"CreateFromTask<{inputType}, {outputType}>({commandExtensionInfo.MethodName}"
+                    commandInfo.IsTask is false
+                        ? $"Create<{inputType}, {outputType}>({commandInfo.MethodName}"
+                        : $"CreateFromTask<{inputType}, {outputType}>({commandInfo.MethodName}"
                 );
             }
-            else if (commandExtensionInfo.MethodReturnType is null)
+            else if (commandInfo.MethodReturnType is null)
             {
                 writer.Write(
-                    commandExtensionInfo.IsTask is false
-                        ? $"Create<{inputType}>({commandExtensionInfo.MethodName}"
-                        : $"CreateFromTask<{inputType}>({commandExtensionInfo.MethodName}"
+                    commandInfo.IsTask is false
+                        ? $"Create<{inputType}>({commandInfo.MethodName}"
+                        : $"CreateFromTask<{inputType}>({commandInfo.MethodName}"
                 );
             }
             // 如果有CanExecute则添加canExecute参数
             if (
-                commandExtensionInfo.ReactiveCommandDatas.TryGetValue(
+                commandInfo.ReactiveCommandDatas.TryGetValue(
                     nameof(ReactiveCommandAttribute.CanExecute),
                     out var reactiveCommandData
                 )
@@ -125,6 +129,7 @@ internal partial class GeneratorExecution
 
     private void GeneratorInitializeReactiveObject(ClassInfo classInfo, IndentedTextWriter writer)
     {
+        writer.WriteLine("/// <inheritdoc/>");
         if (classInfo.IsReactiveObjectX)
         {
             writer.WriteLine("protected override void InitializeReactiveObject()");

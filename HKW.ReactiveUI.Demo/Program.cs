@@ -51,12 +51,19 @@ partial class TestModel : ReactiveObjectX
     [NotifyPropertyChangedFrom(nameof(ID), nameof(Name))]
     public bool CanExecute => Name == ID;
 
+    /// <summary>
+    /// Test
+    /// </summary>
     [ReactiveCommand(nameof(CanExecute))]
     public void Test()
     {
         Console.WriteLine(nameof(Test));
     }
 
+    /// <summary>
+    /// TestAsync
+    /// </summary>
+    /// <returns></returns>
     [ReactiveCommand]
     public async Task TestAsync()
     {
