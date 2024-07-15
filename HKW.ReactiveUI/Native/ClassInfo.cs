@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using HKW.HKWReactiveUI.SourceGenerator;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI;
@@ -8,7 +9,7 @@ internal sealed class ClassInfo
 {
     public string ClassNamespace { get; set; } = string.Empty;
     public string ClassName { get; set; } = string.Empty;
-
+    public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
     public bool IsReactiveObjectX { get; set; }
     public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
     public List<ReactiveCommandInfo> ReactiveCommandInfos { get; } = [];

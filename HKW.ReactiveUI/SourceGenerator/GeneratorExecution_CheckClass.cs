@@ -9,6 +9,7 @@ internal partial class GeneratorExecution
 {
     #region Check
     private bool CheckClass(
+        SyntaxTree compilationSyntaxTree,
         SemanticModel semanticModel,
         ClassDeclarationSyntax declaredClass,
         out ClassInfo classInfo
@@ -24,11 +25,12 @@ internal partial class GeneratorExecution
 
         var classNamespace = classSymbol.ContainingNamespace.ToString();
         var typeName = declaredClass.Identifier.ValueText;
-
+        var usings = ((CompilationUnitSyntax)compilationSyntaxTree.GetRoot()).Usings;
         classInfo = new ClassInfo
         {
             ClassName = typeName,
             ClassNamespace = classNamespace,
+            Usings = usings,
             DeclarationSyntax = declaredClass,
         };
 

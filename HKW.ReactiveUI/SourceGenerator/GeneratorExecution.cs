@@ -33,13 +33,20 @@ internal partial class GeneratorExecution
             .OfType<ClassDeclarationSyntax>();
         foreach (var declaredClass in declaredClasses)
         {
-            ParseClassInfo(semanticModel, declaredClass);
+            ParseClassInfo(compilationSyntaxTree, semanticModel, declaredClass);
         }
     }
 
-    private void ParseClassInfo(SemanticModel semanticModel, ClassDeclarationSyntax declaredClass)
+    private void ParseClassInfo(
+        SyntaxTree compilationSyntaxTree,
+        SemanticModel semanticModel,
+        ClassDeclarationSyntax declaredClass
+    )
     {
-        if (CheckClass(semanticModel, declaredClass, out var classInfo) is false)
+        if (
+            CheckClass(compilationSyntaxTree, semanticModel, declaredClass, out var classInfo)
+            is false
+        )
             return;
 
         ParseClass(semanticModel, declaredClass, classInfo);
