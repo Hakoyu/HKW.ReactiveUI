@@ -27,5 +27,5 @@ internal sealed class ClassInfo
     public Dictionary<
         string,
         List<(string KeyName, string TargetName, bool RetentionValueOnKeyChange)>
-    > I18nResourceToProperties { get; } = [];
+    > I18nResourceByName { get; } = [];
 }

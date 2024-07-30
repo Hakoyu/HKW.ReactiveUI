@@ -25,7 +25,7 @@ internal partial class GeneratorExecution
         if (isFirst)
         {
             // 添加ReferenceType特性,并引用ReactiveObject
-            // 防止编译器优化,如果整个项目中不引用ReactiveUI,则ReactiveUI的Assembly不会呗程序集引用,会导致Fody无法正常生成
+            // 防止编译器优化,如果整个项目中不引用ReactiveUI,则ReactiveUI的Assembly不会被程序集引用,会导致Fody无法正常构建
             writer.WriteLine("[HKW.HKWReactiveUI.ReferenceType(typeof(ReactiveObject))]");
             isFirst = false;
         }
@@ -34,7 +34,7 @@ internal partial class GeneratorExecution
         // 获取可访问性
         var accessibility = classInfo.DeclarationSyntax.Modifiers.GetAccessibility();
         writer.WriteLine(
-            $"{accessibility} {(isAbstract ? SyntaxKind.AbstractKeyword : null)} partial class {classInfo.ClassFullName}"
+            $"{accessibility}{(isAbstract ? " abstract" : string.Empty)} partial class {classInfo.ClassFullName}"
         );
         // 添加约束列表
         writer.WriteLine($"{classInfo.DeclarationSyntax.ConstraintClauses}");
@@ -178,7 +178,7 @@ internal partial class GeneratorExecution
     private void GeneratorI18nObject(ClassInfo classInfo, IndentedTextWriter writer)
     {
         var isFirst = true;
-        foreach (var i18Info in classInfo.I18nResourceToProperties)
+        foreach (var i18Info in classInfo.I18nResourceByName)
         {
             writer.WriteLine($"{i18Info.Key}.I18nObjects.Add(new(this));");
             if (isFirst)

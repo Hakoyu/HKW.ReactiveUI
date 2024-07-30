@@ -220,8 +220,8 @@ internal partial class GeneratorExecution
             )
                 return;
             values.TryGetValue("RetentionValueOnKeyChange", out var retentionValueOnKeyChange);
-            if (classInfo.I18nResourceToProperties.TryGetValue(resourceName, out var list) is false)
-                list = classInfo.I18nResourceToProperties[resourceName] = [];
+            if (classInfo.I18nResourceByName.TryGetValue(resourceName, out var list) is false)
+                list = classInfo.I18nResourceByName[resourceName] = [];
             list.Add(
                 (keyName, propertySymbol.Name, retentionValueOnKeyChange?.Value?.Value is true)
             );
