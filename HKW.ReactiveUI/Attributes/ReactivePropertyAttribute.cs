@@ -34,5 +34,12 @@ namespace HKW.HKWReactiveUI;
 ///     }
 /// }
 /// ]]></code></summary>
+/// <param name="SkipCheck">跳过检查</param>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class ReactivePropertyAttribute : Attribute { }
+public sealed class ReactivePropertyAttribute(bool SkipCheck = false) : Attribute
+{
+    /// <summary>
+    /// 跳过检查
+    /// </summary>
+    public bool SkipCheck { get; } = SkipCheck;
+}

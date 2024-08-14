@@ -21,7 +21,7 @@ public class ModuleWeaver : BaseModuleWeaver
     /// <inheritdoc/>
     public override void Execute()
     {
-        //Debugger.Launch();
+        Debugger.Launch();
         Logger = new ModuleWeaverLogger(this, false);
 
         if (Check(ModuleDefinition) is false)
@@ -54,6 +54,7 @@ public class ModuleWeaver : BaseModuleWeaver
     internal static TypeDefinition[] IReactiveObjectDerivedClasses { get; private set; } = null!;
     internal static TypeReference IReactiveObject { get; private set; } = null!;
     internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
+    internal static MethodReference RaiseAndSetMethod { get; private set; } = null!;
     internal static TypeReference IReactiveObjectExtensions { get; private set; } = null!;
 
     private bool Check(ModuleDefinition moduleDefinition)
@@ -114,6 +115,19 @@ public class ModuleWeaver : BaseModuleWeaver
             moduleDefinition.ImportReference(
                 reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
             ) ?? throw new Exception("raiseAndSetIfChangedMethod is null");
+
+        var iReactiveObjectExtensions =
+            new TypeReference(
+                "HKW.HKWReactiveUI.Extensions",
+                "IReactiveObjectExtensions",
+                moduleDefinition,
+                HKWReactiveUI
+            ).Resolve() ?? throw new Exception("iReactiveObjectExtensions is null");
+
+        RaiseAndSetMethod =
+            moduleDefinition.ImportReference(
+                iReactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSet")
+            ) ?? throw new Exception("raiseAndSetMethod is null");
 
         IReactiveObjectDerivedClasses = moduleDefinition
             .GetAllTypes()

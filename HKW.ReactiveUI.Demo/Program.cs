@@ -43,7 +43,7 @@ partial class TestModel : ReactiveObjectX
 {
     public TestModel() { }
 
-    [ReactiveProperty]
+    [ReactiveProperty(true)]
     public string ID { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;

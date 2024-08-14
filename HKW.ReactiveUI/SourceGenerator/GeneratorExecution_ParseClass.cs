@@ -62,7 +62,7 @@ internal partial class GeneratorExecution
         }
 
         // 是否为异步方法
-        bool isTask = methodSymbol.ReturnType.AnyBaseTypeIs(
+        bool isTask = methodSymbol.ReturnType.InheritedFrom(
             NativeData.TaskTypeFullName,
             SymbolDisplayFormat.FullyQualifiedFormat
         );

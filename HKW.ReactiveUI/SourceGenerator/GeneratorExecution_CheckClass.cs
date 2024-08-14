@@ -35,7 +35,7 @@ internal partial class GeneratorExecution
         };
 
         // 如果实现了ReactiveObjectX,则标记
-        if (classSymbol.AnyBaseTypeIs(NativeData.ReactiveObjectXFullName))
+        if (classSymbol.InheritedFrom(NativeData.ReactiveObjectXFullName))
             classInfo.IsReactiveObjectX = true;
         else if (
             classSymbol.AllInterfaces.Any(i => i.ToString() == NativeData.IReactiveObjectFullName)

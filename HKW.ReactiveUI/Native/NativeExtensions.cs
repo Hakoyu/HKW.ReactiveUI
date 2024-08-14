@@ -51,13 +51,13 @@ internal static class NativeExtensions
     }
 
     /// <summary>
-    /// 任意基类是
+    /// 继承自基类类型
     /// </summary>
     /// <param name="typeSymbol">类型符号</param>
     /// <param name="baseTypeFullName">基类全名</param>
     /// <param name="symbolDisplayFormat">显示名称格式</param>
-    /// <returns>有任意基类全名是为 <see langword="true"/> 没有为 <see langword="false"/></returns>
-    public static bool AnyBaseTypeIs(
+    /// <returns>当类型继承基类时为 <see langword="true"/> 未继承为 <see langword="false"/></returns>
+    public static bool InheritedFrom(
         this ITypeSymbol typeSymbol,
         string baseTypeFullName,
         SymbolDisplayFormat? symbolDisplayFormat = null

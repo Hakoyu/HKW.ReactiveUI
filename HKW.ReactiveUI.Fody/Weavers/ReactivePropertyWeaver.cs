@@ -52,6 +52,14 @@ internal static class ReactivePropertyWeaver
                     );
                     continue;
                 }
+                var skipCheck =
+                    property
+                        .CustomAttributes.First(x =>
+                            x.AttributeType.FullName == reactivePropertyAttribute.FullName
+                        )
+                        ?.ConstructorArguments[0]
+                        .Value
+                        is true;
 
                 // Declare a field to store the property value
                 var field = new FieldDefinition(
@@ -111,10 +119,15 @@ internal static class ReactivePropertyWeaver
                     genericTargetType = genericDeclaration;
                 }
 
-                var methodReference = ModuleWeaver.RaiseAndSetIfChangedMethod.MakeGenericMethod(
-                    genericTargetType,
-                    property.PropertyType
-                );
+                var methodReference = skipCheck
+                    ? ModuleWeaver.RaiseAndSetMethod.MakeGenericMethod(
+                        genericTargetType,
+                        property.PropertyType
+                    )
+                    : ModuleWeaver.RaiseAndSetIfChangedMethod.MakeGenericMethod(
+                        genericTargetType,
+                        property.PropertyType
+                    );
 
                 // Build out the setter which fires the RaiseAndSetIfChanged method
                 if (property.SetMethod is null)
