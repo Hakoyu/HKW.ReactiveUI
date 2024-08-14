@@ -33,7 +33,7 @@ public static class IReactiveObjectExtensions
         if (propertyName is null)
             throw new ArgumentNullException(nameof(propertyName));
 
-        reactiveObject.RaisePropertyChanged(new(propertyName));
+        reactiveObject.RaisePropertyChanging(new(propertyName));
         backingField = newValue;
         reactiveObject.RaisePropertyChanged(new(propertyName));
         return newValue;

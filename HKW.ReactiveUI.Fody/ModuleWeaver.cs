@@ -21,7 +21,7 @@ public class ModuleWeaver : BaseModuleWeaver
     /// <inheritdoc/>
     public override void Execute()
     {
-        Debugger.Launch();
+        //Debugger.Launch();
         Logger = new ModuleWeaverLogger(this, false);
 
         if (Check(ModuleDefinition) is false)
