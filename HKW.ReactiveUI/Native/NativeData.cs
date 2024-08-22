@@ -1,4 +1,7 @@
-﻿namespace HKW.HKWReactiveUI;
+﻿using System.Text;
+using Microsoft.CodeAnalysis;
+
+namespace HKW.HKWReactiveUI;
 
 internal static class NativeData
 {
@@ -7,3 +10,5 @@ internal static class NativeData
     public const string ReactiveObjectXFullName = "HKW.HKWReactiveUI.ReactiveObjectX";
     public const string AttributeFullName = "HKW.HKWReactiveUI.ReactiveCommandAttribute";
 }
+
+internal static class NativeUtils { }

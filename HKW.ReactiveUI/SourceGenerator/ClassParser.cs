@@ -1,21 +1,27 @@
 ﻿using System.CodeDom.Compiler;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
-internal partial class GeneratorExecution
+internal class ClassParser
 {
-    private void ParseClass(
+    public static void Execute(
+        GeneratorExecutionContext executionContext,
         SemanticModel semanticModel,
         ClassDeclarationSyntax declaredClass,
         ClassInfo classInfo
     )
     {
-        ParseMethod(semanticModel, declaredClass, classInfo);
-        ParseProperty(semanticModel, declaredClass, classInfo);
+        var t = new ClassParser() { ExecutionContext = executionContext, };
+
+        t.ParseMethod(semanticModel, declaredClass, classInfo);
+        t.ParseProperty(semanticModel, declaredClass, classInfo);
     }
+
+    public GeneratorExecutionContext ExecutionContext { get; private set; }
 
     #region Method
     private void ParseMethod(
@@ -28,9 +34,6 @@ internal partial class GeneratorExecution
         var methodMembers = declaredClass.Members.OfType<MethodDeclarationSyntax>();
         foreach (var methodSyntax in methodMembers)
         {
-            // 获取注释
-            //var t = methodSyntax.GetLeadingTrivia();
-
             var methodSymbol = (IMethodSymbol)
                 ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax)!;
             ParseReactiveCommand(classInfo, methodSymbol);
@@ -100,97 +103,68 @@ internal partial class GeneratorExecution
         {
             var propertySymbol = (IPropertySymbol)
                 ModelExtensions.GetDeclaredSymbol(semanticModel, propertySyntax)!;
-            ParseNotifyPropertyChanged(classInfo, propertySymbol);
+            ParseNotifyPropertyChangedFrom(classInfo, propertySymbol);
             ParseI18nProperty(classInfo, propertySymbol);
         }
     }
 
     #endregion
-    private void ParseNotifyPropertyChanged(ClassInfo classInfo, IPropertySymbol propertySymbol)
-    {
-        // 获取特性数据
-        var forAttributeData = propertySymbol
-            .GetAttributes()
-            .FirstOrDefault(a =>
-                a.AttributeClass!.ToString() == typeof(NotifyPropertyChangedForAttribute).FullName
-            );
-        // 获取特性的参数
-        if (forAttributeData?.TryGetAttributeAndValues(out var forValues) is true)
-        {
-            // AttributeValue 是目标 PropertySymbol 是源
-            if (
-                classInfo.NotifyPropertyChanged.TryGetValue(propertySymbol.Name, out var properties)
-                is false
-            )
-                properties = classInfo.NotifyPropertyChanged[propertySymbol.Name] = [];
-            if (
-                forValues.TryGetValue(
-                    nameof(NotifyPropertyChangedForAttribute.PropertyNames),
-                    out var value
-                )
-            )
-            {
-                if (value.Value?.Value is string propertyName)
-                {
-                    properties.Add(propertyName);
-                }
-                else if (value.Values is not null)
-                {
-                    foreach (var propertyType in value.Values)
-                    {
-                        if (propertyType.Value is string propertyName1)
-                            properties.Add(propertyName1);
-                    }
-                }
-            }
-        }
 
+    private void ParseNotifyPropertyChangedFrom(ClassInfo classInfo, IPropertySymbol propertySymbol)
+    {
+        if (propertySymbol.GetMethod is null)
+            return;
         // 获取特性数据
-        var fromAttributeData = propertySymbol
+        var attributeData = propertySymbol
             .GetAttributes()
             .FirstOrDefault(a =>
                 a.AttributeClass!.ToString() == typeof(NotifyPropertyChangedFromAttribute).FullName
             );
-        if (fromAttributeData?.TryGetAttributeAndValues(out var fromValues) is true)
+        // 获取特性的参数
+        if (attributeData?.TryGetAttributeAndValues(out var attributeArgs) is not true)
+            return;
+
+        if (
+            attributeArgs.TryGetValue(
+                nameof(NotifyPropertyChangedFromAttribute.PropertyNames),
+                out var value
+            )
+            is false
+        )
+            return;
+
+        var methodSyntax = propertySymbol.GetMethod.DeclaringSyntaxReferences.First().GetSyntax();
+        var method = propertySymbol.GetGetMethodInfo();
+        if (method is null)
+            return;
+        if (value.Value?.Value is string propertyName)
         {
-            // PropertySymbol 是目标 AttributeValue 是源
             if (
-                fromValues.TryGetValue(
-                    nameof(NotifyPropertyChangedFromAttribute.PropertyNames),
-                    out var value
-                )
+                classInfo.NotifyPropertyChangedFromInfos.TryGetValue(propertyName, out var infos)
+                is false
             )
             {
-                if (value.Value?.Value is string propertyName)
-                {
-                    if (
-                        classInfo.NotifyPropertyChanged.TryGetValue(
-                            propertyName,
-                            out var properties
-                        )
-                        is false
+                infos = classInfo.NotifyPropertyChangedFromInfos[propertyName] = [];
+            }
+            infos.Add(method);
+        }
+        else if (value.Values is not null)
+        {
+            foreach (var propertyType in value.Values)
+            {
+                if (propertyType.Value is not string propertyName1)
+                    continue;
+                if (
+                    classInfo.NotifyPropertyChangedFromInfos.TryGetValue(
+                        propertyName1,
+                        out var infos
                     )
-                        properties = classInfo.NotifyPropertyChanged[propertyName] = [];
-                    properties.Add(propertySymbol.Name);
-                }
-                else if (value.Values is not null)
+                    is false
+                )
                 {
-                    foreach (var propertyType in value.Values)
-                    {
-                        if (propertyType.Value is string propertyName1)
-                        {
-                            if (
-                                classInfo.NotifyPropertyChanged.TryGetValue(
-                                    propertyName1,
-                                    out var properties
-                                )
-                                is false
-                            )
-                                properties = classInfo.NotifyPropertyChanged[propertyName1] = [];
-                            properties.Add(propertySymbol.Name);
-                        }
-                    }
+                    infos = classInfo.NotifyPropertyChangedFromInfos[propertyName1] = [];
                 }
+                infos.Add(method);
             }
         }
     }

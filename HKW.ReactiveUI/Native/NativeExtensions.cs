@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Text;
 using HKW.HKWReactiveUI.SourceGenerator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -138,5 +139,34 @@ internal static class NativeExtensions
         var array = str.ToCharArray();
         array[0] = char.ToLowerInvariant(array[0]);
         return new string(array);
+    }
+
+    /// <summary>
+    /// 获取Get方法
+    /// </summary>
+    /// <param name="propertySymbol">属性</param>
+    /// <returns>属性Get方法信息</returns>
+    public static PropertyGetMethodInfo? GetGetMethodInfo(this IPropertySymbol propertySymbol)
+    {
+        if (propertySymbol.GetMethod is null)
+            return null;
+        var getMethod = propertySymbol
+            .GetMethod.DeclaringSyntaxReferences.First()
+            .GetSyntax()
+            .ToString();
+        var sb = new StringBuilder(getMethod);
+        var isBodied = getMethod.Last() != '}';
+        if (isBodied)
+        {
+            sb.Remove(0, getMethod.IndexOf("=>") + 2);
+        }
+        else
+        {
+            var index = getMethod.LastIndexOf(';');
+            sb.Remove(index + 1, getMethod.Length - index - 1);
+            index = getMethod.IndexOf('{');
+            sb.Remove(0, index + 1);
+        }
+        return new(propertySymbol.Name, propertySymbol.Type, sb, isBodied);
     }
 }

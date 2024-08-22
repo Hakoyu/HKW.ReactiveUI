@@ -1,14 +1,14 @@
-﻿using System.CodeDom.Compiler;
+﻿// Source from https://github.com/SparkyTD/ReactiveCommand.SourceGenerator
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
-internal partial class GeneratorExecution
+internal class ClassChecker
 {
-    #region Check
-    private bool CheckClass(
+    public static bool Execute(
         SyntaxTree compilationSyntaxTree,
         SemanticModel semanticModel,
         ClassDeclarationSyntax declaredClass,
@@ -44,5 +44,4 @@ internal partial class GeneratorExecution
             return false; // 如果没有实现IReactiveObject接口,则跳过
         return true;
     }
-    #endregion
 }

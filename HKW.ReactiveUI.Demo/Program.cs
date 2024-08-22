@@ -18,15 +18,17 @@ internal class Program
     static void Main(string[] args)
     {
         var t = new TestModel();
-        var c = t.TestCommand as ICommand;
+
+        //var c = t.TestCommand as ICommand;
         t.PropertyChanged += TestModel_PropertyChanged;
-        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
+        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
         t.ID = "114";
-        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
+        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
         t.Name = "514";
-        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
+        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
         t.ID = "514";
-        Debug.WriteLine($"{t.CanExecute} | {c.CanExecute(null)}");
+        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
+        t.Name = "114";
         return;
     }
 
@@ -34,27 +36,31 @@ internal class Program
     {
         if (sender is not TestModel model)
             return;
-        if (e.PropertyName == nameof(model.CanExecute))
-            Debug.WriteLine(model.CanExecute);
+        Console.WriteLine(
+            $"{e.PropertyName} = {typeof(TestModel).GetProperty(e.PropertyName!)!.GetValue(sender)}"
+        );
     }
 }
 
 partial class TestModel : ReactiveObjectX
 {
-    public TestModel() { }
+    public TestModel()
+    {
+        //CanExecute1 = false;
+    }
 
-    [ReactiveProperty(true)]
+    [ReactiveProperty]
     public string ID { get; set; } = string.Empty;
 
+    [ReactiveProperty]
     public string Name { get; set; } = string.Empty;
 
-    [NotifyPropertyChangedFrom(nameof(ID), nameof(Name))]
+    [NotifyPropertyChangedFrom(nameof(Name), nameof(ID))]
     public bool CanExecute => Name == ID;
 
     /// <summary>
     /// Test
     /// </summary>
-    [ReactiveCommand(nameof(CanExecute))]
     public void Test()
     {
         Console.WriteLine(nameof(Test));

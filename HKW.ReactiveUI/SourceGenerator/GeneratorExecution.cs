@@ -2,7 +2,6 @@
 
 using System.CodeDom.Compiler;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
@@ -44,13 +43,19 @@ internal partial class GeneratorExecution
     )
     {
         if (
-            CheckClass(compilationSyntaxTree, semanticModel, declaredClass, out var classInfo)
+            ClassChecker.Execute(
+                compilationSyntaxTree,
+                semanticModel,
+                declaredClass,
+                out var classInfo
+            )
             is false
         )
             return;
 
-        ParseClass(semanticModel, declaredClass, classInfo);
+        ClassParser.Execute(ExecutionContext, semanticModel, declaredClass, classInfo);
 
-        GenerateClass(classInfo);
+        var generateInfo = ClassAnalyzer.Execute(classInfo);
+        ClassGenerator.Execute(ExecutionContext, generateInfo);
     }
 }

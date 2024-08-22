@@ -28,6 +28,7 @@ public class ModuleWeaver : BaseModuleWeaver
             return;
 
         ReactivePropertyWeaver.Execute(ModuleDefinition);
+        NotifyPropertyChangedFromWeaver.Execute(ModuleDefinition);
 
         ObservableAsPropertyWeaver.Execute(ModuleDefinition, FindTypeDefinition);
 
