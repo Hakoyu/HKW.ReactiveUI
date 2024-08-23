@@ -55,10 +55,10 @@ partial class TestModel : ReactiveObjectX
     [ReactiveProperty]
     public string Name { get; set; } = string.Empty;
 
-    [NotifyPropertyChangedFrom(nameof(Name), nameof(ID))]
+    [NotifyPropertyChangeFrom(true, nameof(Name), nameof(ID))]
     public bool CanExecute => Name == ID;
 
-    [NotifyPropertyChangedFrom(nameof(Name), nameof(ID))]
+    [NotifyPropertyChangeFrom(nameof(Name))]
     public List<int> List => new List<int>();
 
     /// <summary>

@@ -118,7 +118,7 @@ internal class ClassParser
         var attributeData = propertySymbol
             .GetAttributes()
             .FirstOrDefault(a =>
-                a.AttributeClass!.ToString() == typeof(NotifyPropertyChangedFromAttribute).FullName
+                a.AttributeClass!.ToString() == typeof(NotifyPropertyChangeFromAttribute).FullName
             );
         // 获取特性的参数
         if (attributeData?.TryGetAttributeAndValues(out var attributeArgs) is not true)
@@ -126,7 +126,7 @@ internal class ClassParser
 
         if (
             attributeArgs.TryGetValue(
-                nameof(NotifyPropertyChangedFromAttribute.PropertyNames),
+                nameof(NotifyPropertyChangeFromAttribute.PropertyNames),
                 out var value
             )
             is false
@@ -134,38 +134,41 @@ internal class ClassParser
             return;
 
         var methodSyntax = propertySymbol.GetMethod.DeclaringSyntaxReferences.First().GetSyntax();
-        var method = propertySymbol.GetGetMethodInfo();
-        if (method is null)
+        var methodBuilder = propertySymbol.GetGetMethodInfo();
+        if (methodBuilder is null)
             return;
-        if (value.Value?.Value is string propertyName)
+        var info = new NotifyPropertyChangeFromInfo(
+            propertySymbol.Name,
+            propertySymbol.Type,
+            methodBuilder,
+            true
+        );
+
+        if (
+            attributeArgs.TryGetValue(
+                nameof(NotifyPropertyChangeFromAttribute.NotifyOnInitialValue),
+                out var notifyOnInitialValue
+            )
+        )
         {
+            info.NotifyOnInitialValue = notifyOnInitialValue.Value?.Value is true;
+        }
+
+        if (value.Values is null)
+            return;
+
+        foreach (var propertyType in value.Values)
+        {
+            if (propertyType.Value is not string propertyName1)
+                continue;
             if (
-                classInfo.NotifyPropertyChangedFromInfos.TryGetValue(propertyName, out var infos)
+                classInfo.NotifyPropertyChangedFromInfos.TryGetValue(propertyName1, out var infos)
                 is false
             )
             {
-                infos = classInfo.NotifyPropertyChangedFromInfos[propertyName] = [];
+                infos = classInfo.NotifyPropertyChangedFromInfos[propertyName1] = [];
             }
-            infos.Add(method);
-        }
-        else if (value.Values is not null)
-        {
-            foreach (var propertyType in value.Values)
-            {
-                if (propertyType.Value is not string propertyName1)
-                    continue;
-                if (
-                    classInfo.NotifyPropertyChangedFromInfos.TryGetValue(
-                        propertyName1,
-                        out var infos
-                    )
-                    is false
-                )
-                {
-                    infos = classInfo.NotifyPropertyChangedFromInfos[propertyName1] = [];
-                }
-                infos.Add(method);
-            }
+            infos.Add(info);
         }
     }
 

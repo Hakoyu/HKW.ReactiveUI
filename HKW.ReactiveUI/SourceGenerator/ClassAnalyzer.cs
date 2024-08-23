@@ -115,18 +115,16 @@ internal class ClassAnalyzer
                 var sb = new StringBuilder();
                 var fieldName = $"_{propertyInfo.PropertyName.FirstLetterToLower()}";
 
-                if (propertyInfo.IsBodied)
-                {
-                    sb.AppendLine(
-                        $"ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {propertyInfo.Builder}, nameof({propertyInfo.PropertyName}));"
-                    );
-                }
-                else
-                {
-                    throw new NotImplementedException("暂不支持使用代码块构造的get方法");
-                    //propertyInfo.Builder.Replace("return ", $"{fieldName} = ");
-                    //sb.AppendLine(propertyInfo.Builder.ToString());
-                }
+                sb.AppendLine(
+                    $"ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {propertyInfo.Builder}, nameof({propertyInfo.PropertyName}));"
+                );
+                //if (propertyInfo.IsBodied) { }
+                //else
+                //{
+                //    throw new NotImplementedException("暂不支持使用代码块构造的get方法");
+                //    //propertyInfo.Builder.Replace("return ", $"{fieldName} = ");
+                //    //sb.AppendLine(propertyInfo.Builder.ToString());
+                //}
 
                 if (
                     generateInfo.PropertyChangedMembers.TryGetValue(pair.Key, out var members)
@@ -138,6 +136,10 @@ internal class ClassAnalyzer
                 members.Add(sb.ToString());
                 if (fields.Add(fieldName))
                 {
+                    if (propertyInfo.NotifyOnInitialValue)
+                    {
+                        generateInfo.InitializeMembers.Add(sb.ToString());
+                    }
                     generateInfo.Members.Add(
                         "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
                             + Environment.NewLine

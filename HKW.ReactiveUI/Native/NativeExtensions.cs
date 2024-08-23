@@ -146,7 +146,7 @@ internal static class NativeExtensions
     /// </summary>
     /// <param name="propertySymbol">属性</param>
     /// <returns>属性Get方法信息</returns>
-    public static PropertyGetMethodInfo? GetGetMethodInfo(this IPropertySymbol propertySymbol)
+    public static StringBuilder? GetGetMethodInfo(this IPropertySymbol propertySymbol)
     {
         if (propertySymbol.GetMethod is null)
             return null;
@@ -167,6 +167,6 @@ internal static class NativeExtensions
             index = getMethod.IndexOf('{');
             sb.Remove(0, index + 1);
         }
-        return new(propertySymbol.Name, propertySymbol.Type, sb, isBodied);
+        return sb;
     }
 }

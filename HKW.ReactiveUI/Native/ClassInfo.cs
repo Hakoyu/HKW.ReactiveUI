@@ -22,7 +22,7 @@ internal sealed class ClassInfo
     /// </summary>
     public Dictionary<
         string,
-        HashSet<PropertyGetMethodInfo>
+        HashSet<NotifyPropertyChangeFromInfo>
     > NotifyPropertyChangedFromInfos { get; } = [];
 
     /// <summary>
