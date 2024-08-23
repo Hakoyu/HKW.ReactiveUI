@@ -142,7 +142,7 @@ internal class ClassAnalyzer
                         "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
                             + Environment.NewLine
                             + "private "
-                            + propertyInfo.Type.Name
+                            + propertyInfo.Type.ToDisplayString()
                             + " "
                             + fieldName
                             + ";"

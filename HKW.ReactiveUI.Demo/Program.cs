@@ -58,6 +58,9 @@ partial class TestModel : ReactiveObjectX
     [NotifyPropertyChangedFrom(nameof(Name), nameof(ID))]
     public bool CanExecute => Name == ID;
 
+    [NotifyPropertyChangedFrom(nameof(Name), nameof(ID))]
+    public List<int> List => new List<int>();
+
     /// <summary>
     /// Test
     /// </summary>
