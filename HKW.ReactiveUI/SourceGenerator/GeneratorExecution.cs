@@ -52,7 +52,8 @@ internal partial class GeneratorExecution
             is false
         )
             return;
-
+        if (ClassGenerator.FirstClassFullName == string.Empty)
+            ClassGenerator.FirstClassFullName = classInfo.FullTypeName;
         ClassParser.Execute(ExecutionContext, semanticModel, declaredClass, classInfo);
 
         var generateInfo = ClassAnalyzer.Execute(classInfo);

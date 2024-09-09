@@ -31,17 +31,17 @@ internal static class NotifyPropertyChangedFromWeaver
     {
         ModuleWeaver.Logger.LogInfo(nameof(ReactivePropertyWeaver));
 
-        var notifyPropertyChangedFromAttribute =
+        var notifyPropertyChangeFromAttribute =
             module.FindType(
                 "HKW.HKWReactiveUI",
-                "NotifyPropertyChangedFromAttribute",
+                "NotifyPropertyChangeFromAttribute",
                 ModuleWeaver.HKWReactiveUI
-            ) ?? throw new Exception("NotifyPropertyChangedFromAttribute is null");
+            ) ?? throw new Exception("NotifyPropertyChangeFromAttribute is null");
         foreach (var targetType in ModuleWeaver.IReactiveObjectDerivedClasses)
         {
             foreach (
                 var property in targetType.Properties.Where(x =>
-                    x.IsDefined(notifyPropertyChangedFromAttribute)
+                    x.IsDefined(notifyPropertyChangeFromAttribute)
                 )
             )
             {

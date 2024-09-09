@@ -8,10 +8,11 @@ namespace HKW.HKWReactiveUI;
 
 internal sealed class ClassInfo
 {
-    public string ClassNamespace { get; set; } = string.Empty;
-    public string ClassName { get; set; } = string.Empty;
+    public string Namespace { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
-    public string ClassFullName => $"{ClassName}{DeclarationSyntax.TypeParameterList}";
+    public string FullName => $"{Namespace}.{Name}";
+    public string FullTypeName => $"{Namespace}.{Name}{DeclarationSyntax.TypeParameterList}";
     public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
     public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
     public bool IsReactiveObjectX { get; set; }
@@ -36,10 +37,12 @@ internal sealed class ClassInfo
 
 internal sealed class ClassGenerateInfo
 {
-    public string ClassNamespace { get; set; } = string.Empty;
-    public string ClassName { get; set; } = string.Empty;
+    public string Namespace { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string TypeName => $"{Name}{DeclarationSyntax.TypeParameterList}";
 
-    public string ClassFullName => $"{ClassName}{DeclarationSyntax.TypeParameterList}";
+    public string FullName => $"{Namespace}.{Name}";
+    public string FullTypeName => $"{Namespace}.{Name}{DeclarationSyntax.TypeParameterList}";
     public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
     public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
 

@@ -10,11 +10,13 @@ namespace HKW.HKWReactiveUI;
 /// <param name="propertyType">属性类型</param>
 /// <param name="builder">方法</param>
 /// <param name="notifyOnInitialValue">初始化值时发送通知</param>
+/// <param name="useSelf">使用自身</param>
 public class NotifyPropertyChangeFromInfo(
     string propertyName,
     ITypeSymbol propertyType,
     StringBuilder builder,
-    bool notifyOnInitialValue
+    bool notifyOnInitialValue,
+    bool useSelf
 ) : IEquatable<NotifyPropertyChangeFromInfo>
 {
     /// <summary>
@@ -32,10 +34,10 @@ public class NotifyPropertyChangeFromInfo(
     /// </summary>
     public bool NotifyOnInitialValue { get; set; } = notifyOnInitialValue;
 
-    ///// <summary>
-    ///// 是主体表达式
-    ///// </summary>
-    //public bool IsBodied { get; set; } = isBodied;
+    /// <summary>
+    /// 使用自身
+    /// </summary>
+    public bool StaticAction { get; set; } = useSelf;
 
     /// <summary>
     /// 数据

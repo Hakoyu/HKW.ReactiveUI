@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using System.Windows.Input;
 using DynamicData.Binding;
 using HKW.HKWReactiveUI;
-using ReactiveUI;
 
 namespace HKW.HKWReactiveUI.Demo;
 
@@ -55,11 +54,14 @@ partial class TestModel : ReactiveObjectX
     [ReactiveProperty]
     public string Name { get; set; } = string.Empty;
 
-    [NotifyPropertyChangeFrom(true, nameof(Name), nameof(ID))]
+    [NotifyPropertyChangeFrom(nameof(Name), nameof(ID))]
     public bool CanExecute => Name == ID;
 
     [NotifyPropertyChangeFrom(nameof(Name))]
     public List<int> List => new List<int>();
+
+    [NotifyPropertyChangeFrom(nameof(Name))]
+    public List<int> List1 => this.To(static x => new List<int>());
 
     /// <summary>
     /// Test
@@ -89,6 +91,11 @@ internal static class TestExtensions
             (Previous: default(T), Current: default(T)),
             (pair, current) => (pair.Current, current)
         );
+    }
+
+    public static TTarget To<TSource, TTarget>(this TSource source, Func<TSource, TTarget> func)
+    {
+        return func(source);
     }
 }
 

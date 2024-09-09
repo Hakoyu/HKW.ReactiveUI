@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using Splat;
 
 namespace HKW.HKWReactiveUI;
 
@@ -6,25 +7,20 @@ namespace HKW.HKWReactiveUI;
 public partial class ReactiveObjectX : ReactiveObject
 {
     /// <inheritdoc/>
-    public ReactiveObjectX()
+    protected ReactiveObjectX()
     {
-        InitializeBefore();
         InitializeReactiveObject();
-        InitializeAfter();
     }
 
-    /// <summary>
-    /// 初始化之前
-    /// </summary>
-    protected virtual void InitializeBefore() { }
+    /// <inheritdoc/>
+    protected ReactiveObjectX(bool initialize)
+    {
+        if (initialize)
+            InitializeReactiveObject();
+    }
 
     /// <summary>
     /// 初始化 (用于自动生成)
     /// </summary>
     protected virtual void InitializeReactiveObject() { }
-
-    /// <summary>
-    /// 初始化之后
-    /// </summary>
-    protected virtual void InitializeAfter() { }
 }

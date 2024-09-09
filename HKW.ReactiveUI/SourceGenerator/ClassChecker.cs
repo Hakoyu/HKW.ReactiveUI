@@ -32,8 +32,8 @@ internal class ClassChecker
         var usings = ((CompilationUnitSyntax)compilationSyntaxTree.GetRoot()).Usings;
         classInfo = new ClassInfo
         {
-            ClassName = typeName,
-            ClassNamespace = classNamespace,
+            Name = typeName,
+            Namespace = classNamespace,
             Usings = usings,
             DeclarationSyntax = declaredClass,
         };

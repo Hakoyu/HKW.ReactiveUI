@@ -145,9 +145,14 @@ internal static class NativeExtensions
     /// 获取Get方法
     /// </summary>
     /// <param name="propertySymbol">属性</param>
+    /// <param name="staticAction">使用自身静态方法</param>
     /// <returns>属性Get方法信息</returns>
-    public static StringBuilder? GetGetMethodInfo(this IPropertySymbol propertySymbol)
+    public static StringBuilder? GetGetMethodInfo(
+        this IPropertySymbol propertySymbol,
+        out bool staticAction
+    )
     {
+        staticAction = false;
         if (propertySymbol.GetMethod is null)
             return null;
         var getMethod = propertySymbol
@@ -158,14 +163,12 @@ internal static class NativeExtensions
         var isBodied = getMethod.Last() != '}';
         if (isBodied)
         {
+            staticAction = getMethod.IndexOf("this.To(static") > 0;
             sb.Remove(0, getMethod.IndexOf("=>") + 2);
-        }
-        else
-        {
-            var index = getMethod.LastIndexOf(';');
-            sb.Remove(index + 1, getMethod.Length - index - 1);
-            index = getMethod.IndexOf('{');
-            sb.Remove(0, index + 1);
+            if (staticAction)
+            {
+                sb.Replace("this.To", "_this.To");
+            }
         }
         return sb;
     }

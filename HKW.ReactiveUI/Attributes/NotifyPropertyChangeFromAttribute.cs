@@ -14,7 +14,7 @@
 ///     [ReactiveProperty]
 ///     public string Name { get; set; } = string.Empty;
 ///
-///     [NotifyPropertyChangedFrom(true, nameof(ID), nameof(Name))]
+///     [NotifyPropertyChangeFrom(true, nameof(ID), nameof(Name))]
 ///     public string IsSame => ID == Name;
 ///
 ///     protected void InitializeReactiveObject() { }
@@ -34,7 +34,7 @@
 ///
 ///     [global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]
 ///     private bool _isSame;
-///     [NotifyPropertyChangedFrom(true ,nameof(ID), nameof(Name))]
+///     [NotifyPropertyChangeFrom(true ,nameof(ID), nameof(Name))]
 ///     public string IsSame => !string.IsNullOrWhiteSpace(Name);
 ///
 ///     protected void InitializeReactiveObject()

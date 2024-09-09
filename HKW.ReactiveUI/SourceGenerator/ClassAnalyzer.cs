@@ -17,15 +17,15 @@ internal class ClassAnalyzer
     {
         var generateInfo = new ClassGenerateInfo()
         {
-            ClassName = classInfo.ClassName,
-            ClassNamespace = classInfo.ClassNamespace,
+            Name = classInfo.Name,
+            Namespace = classInfo.Namespace,
             DeclarationSyntax = classInfo.DeclarationSyntax,
             Usings = classInfo.Usings,
             IsReactiveObjectX = classInfo.IsReactiveObjectX,
         };
 
         AnalyzeReactiveCommand(classInfo, generateInfo);
-        AnalyzeNotifyPropertyChangedFrom(classInfo, generateInfo);
+        AnalyzeNotifyPropertyChangeFrom(classInfo, generateInfo);
         AnalyzeI18nObject(classInfo, generateInfo);
 
         return generateInfo;
@@ -102,7 +102,7 @@ internal class ClassAnalyzer
         }
     }
 
-    private void AnalyzeNotifyPropertyChangedFrom(
+    private void AnalyzeNotifyPropertyChangeFrom(
         ClassInfo classInfo,
         ClassGenerateInfo generateInfo
     )
@@ -115,16 +115,21 @@ internal class ClassAnalyzer
                 var sb = new StringBuilder();
                 var fieldName = $"_{propertyInfo.PropertyName.FirstLetterToLower()}";
 
-                sb.AppendLine(
+                if (propertyInfo.StaticAction)
+                {
+                    var actionName = $"{fieldName}NotifyPropertyChangeAction";
+                    if (fields.Contains(fieldName) is false)
+                    {
+                        generateInfo.Members.Add(
+                            $"private static Func<{classInfo.FullTypeName},{propertyInfo.Type.ToDisplayString()}> {actionName} = _this => {propertyInfo.Builder};"
+                        );
+                    }
+                    propertyInfo.Builder = new($"{actionName}(this)");
+                }
+
+                sb.Append(
                     $"ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {propertyInfo.Builder}, nameof({propertyInfo.PropertyName}));"
                 );
-                //if (propertyInfo.IsBodied) { }
-                //else
-                //{
-                //    throw new NotImplementedException("暂不支持使用代码块构造的get方法");
-                //    //propertyInfo.Builder.Replace("return ", $"{fieldName} = ");
-                //    //sb.AppendLine(propertyInfo.Builder.ToString());
-                //}
 
                 if (
                     generateInfo.PropertyChangedMembers.TryGetValue(pair.Key, out var members)
@@ -167,7 +172,7 @@ internal class ClassAnalyzer
                 sb.AppendLine($"i18nObject = {i18Info.Key}.I18nObjects.Last();");
             foreach (var (keyName, targetName, retentionValueOnKeyChange) in i18Info.Value)
                 sb.AppendLine(
-                    $"i18nObject.AddProperty(nameof({keyName}), x => (({classInfo.ClassName})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
+                    $"i18nObject.AddProperty(nameof({keyName}), x => (({classInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
                 );
             isFirst = false;
             generateInfo.InitializeMembers.Add(sb.ToString());

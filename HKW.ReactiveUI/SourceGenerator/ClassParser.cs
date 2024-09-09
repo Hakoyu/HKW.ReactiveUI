@@ -134,14 +134,15 @@ internal class ClassParser
             return;
 
         var methodSyntax = propertySymbol.GetMethod.DeclaringSyntaxReferences.First().GetSyntax();
-        var methodBuilder = propertySymbol.GetGetMethodInfo();
+        var methodBuilder = propertySymbol.GetGetMethodInfo(out var useSelf);
         if (methodBuilder is null)
             return;
         var info = new NotifyPropertyChangeFromInfo(
             propertySymbol.Name,
             propertySymbol.Type,
             methodBuilder,
-            true
+            true,
+            useSelf
         );
 
         if (
