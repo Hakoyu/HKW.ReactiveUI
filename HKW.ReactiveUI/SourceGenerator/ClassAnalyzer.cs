@@ -152,7 +152,7 @@ internal class ClassAnalyzer
                             + propertyInfo.Type.ToDisplayString()
                             + " "
                             + fieldName
-                            + ";"
+                            + " = default;"
                     );
                 }
             }
