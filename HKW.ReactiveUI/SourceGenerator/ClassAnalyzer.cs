@@ -46,7 +46,8 @@ internal class ClassAnalyzer
             );
             // 添加ReactiveCommand字段
             sb.AppendLine(
-                $"private ReactiveUI.ReactiveCommand<{inputType}, {outputType}> " + $"{fieldName};"
+                $"private ReactiveUI.ReactiveCommand<{inputType}, {outputType}> "
+                    + $"{fieldName} = default!;"
             );
             // 添加属性注释
             sb.AppendLine(
@@ -152,7 +153,7 @@ internal class ClassAnalyzer
                             + propertyInfo.Type.ToDisplayString()
                             + " "
                             + fieldName
-                            + " = default;"
+                            + " = default!;"
                     );
                 }
             }
