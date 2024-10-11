@@ -17,15 +17,14 @@ internal class Program
 
     static void Main(string[] args)
     {
-        var r = EqualityComparer<TestModel>.Default.Equals(null, null);
         var t = new TestModel();
         //var c = t.TestCommand as ICommand;
         t.PropertyChanged += TestModel_PropertyChanged;
         //TestModel_PropertyChanged(true, new(null));
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        //t.ID = "114";
+        t.ID = "114";
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        //t.Name = "514";
+        t.Name = "514";
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
         //t.ID = "514";
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
@@ -75,12 +74,12 @@ partial class TestModel : ReactiveObject
     [NotifyPropertyChangeFrom(nameof(Name))]
     public List<int> List1 => this.To(static x => new List<int>());
 
-    public void OnNameChanging(string value)
-    {
-        return;
-    }
+    //public void OnNameChanging(string value)
+    //{
+    //    return;
+    //}
 
-    public void OnNameChanging(string oldValue, string newValue)
+    private void OnNameChanging(string oldValue, string newValue)
     {
         return;
     }

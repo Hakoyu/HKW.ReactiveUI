@@ -163,7 +163,7 @@ internal class ClassParser
                     propertySymbol.Type
                 )
             ) // 当两个参数时第一个是oldValue,第二个是newValue
-                ClassInfo.OnPropertyChanging.Add(ClassInfo.Name, 2);
+                ClassInfo.OnPropertyChanging.Add(propertySymbol.Name, 2);
         }
         var changedMethod = MethodSymbols.Find(x => x.Name == $"On{propertySymbol.Name}Changed");
         if (changedMethod is not null)
@@ -188,7 +188,7 @@ internal class ClassParser
                     propertySymbol.Type
                 )
             ) // 当两个参数时第一个是oldValue,第二个是newValue
-                ClassInfo.OnPropertyChanged.Add(ClassInfo.Name, 2);
+                ClassInfo.OnPropertyChanged.Add(propertySymbol.Name, 2);
         }
     }
 
