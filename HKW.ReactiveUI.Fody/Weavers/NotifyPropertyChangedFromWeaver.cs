@@ -29,7 +29,7 @@ internal static class NotifyPropertyChangedFromWeaver
     /// </exception>
     public static void Execute(ModuleDefinition module)
     {
-        ModuleWeaver.Logger.LogInfo(nameof(ReactivePropertyWeaver));
+        ModuleWeaver.Logger.LogInfo(nameof(ReactiveObjectWeaver));
 
         var notifyPropertyChangeFromAttribute =
             module.FindType(

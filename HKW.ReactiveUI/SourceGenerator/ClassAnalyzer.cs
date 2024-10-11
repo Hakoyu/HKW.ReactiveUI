@@ -9,31 +9,88 @@ internal class ClassAnalyzer
 {
     public static ClassGenerateInfo Execute(ClassInfo classInfo)
     {
-        var t = new ClassAnalyzer();
-        return t.AnalyzeClassInfo(classInfo);
+        var t = new ClassAnalyzer() { ClassInfo = classInfo };
+        return t.AnalyzeClassInfo();
     }
 
-    private ClassGenerateInfo AnalyzeClassInfo(ClassInfo classInfo)
+    public ClassInfo ClassInfo { get; private set; } = null!;
+    public ClassGenerateInfo GenerateInfo { get; private set; } = null!;
+
+    private ClassGenerateInfo AnalyzeClassInfo()
     {
-        var generateInfo = new ClassGenerateInfo()
+        GenerateInfo = new ClassGenerateInfo()
         {
-            Name = classInfo.Name,
-            Namespace = classInfo.Namespace,
-            DeclarationSyntax = classInfo.DeclarationSyntax,
-            Usings = classInfo.Usings,
-            IsReactiveObjectX = classInfo.IsReactiveObjectX,
+            Name = ClassInfo.Name,
+            Namespace = ClassInfo.Namespace,
+            DeclarationSyntax = ClassInfo.DeclarationSyntax,
+            Usings = ClassInfo.Usings,
+            IsReactiveObjectX = ClassInfo.IsReactiveObjectX,
         };
 
-        AnalyzeReactiveCommand(classInfo, generateInfo);
-        AnalyzeNotifyPropertyChangeFrom(classInfo, generateInfo);
-        AnalyzeI18nObject(classInfo, generateInfo);
+        AnalyzeReactiveProperty();
+        AnalyzePropertyChange();
+        AnalyzeReactiveCommand();
+        AnalyzeNotifyPropertyChangeFrom();
+        AnalyzeI18nObject();
 
-        return generateInfo;
+        return GenerateInfo;
     }
 
-    private void AnalyzeReactiveCommand(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    private void AnalyzeReactiveProperty()
     {
-        foreach (var commandInfo in classInfo.ReactiveCommandInfos)
+        foreach (var property in ClassInfo.ReactiveProperties)
+        {
+            var typeName = property.Type.ToDisplayString();
+            GenerateInfo.ReactivePropertyActionByName.Add(
+                property.Name,
+                (
+                    typeName,
+                    $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
+                )
+            );
+        }
+    }
+
+    private void AnalyzePropertyChange()
+    {
+        foreach (var changing in ClassInfo.OnPropertyChanging)
+        {
+            if (
+                GenerateInfo.PropertyChangingMemberByName.TryGetValue(changing.Key, out var actions)
+                is false
+            )
+                actions = GenerateInfo.PropertyChangingMemberByName[changing.Key] = [];
+            if (changing.Value == 1)
+            {
+                actions.Add($"On{changing.Key}Changing(oldValue);");
+            }
+            else if (changing.Value == 2)
+            {
+                actions.Add($"On{changing.Key}Changing(oldValue,newValue);");
+            }
+        }
+
+        foreach (var changed in ClassInfo.OnPropertyChanged)
+        {
+            if (
+                GenerateInfo.PropertyChangingMemberByName.TryGetValue(changed.Key, out var actions)
+                is false
+            )
+                actions = GenerateInfo.PropertyChangedMemberByName[changed.Key] = [];
+            if (changed.Value == 1)
+            {
+                actions.Add($"On{changed.Key}Changed(newValue);");
+            }
+            else if (changed.Value == 2)
+            {
+                actions.Add($"On{changed.Key}Changed(oldValue,newValue);");
+            }
+        }
+    }
+
+    private void AnalyzeReactiveCommand()
+    {
+        foreach (var commandInfo in ClassInfo.ReactiveCommandInfos)
         {
             var sb = new StringBuilder();
             var outputType = commandInfo.GetOutputTypeText();
@@ -99,17 +156,14 @@ internal class ClassAnalyzer
             }
             sb.AppendLine("));");
 
-            generateInfo.Members.Add(sb.ToString());
+            GenerateInfo.Members.Add(sb.ToString());
         }
     }
 
-    private void AnalyzeNotifyPropertyChangeFrom(
-        ClassInfo classInfo,
-        ClassGenerateInfo generateInfo
-    )
+    private void AnalyzeNotifyPropertyChangeFrom()
     {
         var fields = new HashSet<string>();
-        foreach (var pair in classInfo.NotifyPropertyChangedFromInfos)
+        foreach (var pair in ClassInfo.NotifyPropertyChangedFromInfos)
         {
             foreach (var propertyInfo in pair.Value)
             {
@@ -121,8 +175,8 @@ internal class ClassAnalyzer
                     var actionName = $"{fieldName}NotifyPropertyChangeAction";
                     if (fields.Contains(fieldName) is false)
                     {
-                        generateInfo.Members.Add(
-                            $"private static Func<{classInfo.FullTypeName},{propertyInfo.Type.ToDisplayString()}> {actionName} = _this => {propertyInfo.Builder};"
+                        GenerateInfo.Members.Add(
+                            $"private static Func<{ClassInfo.FullTypeName},{propertyInfo.Type.ToDisplayString()}> {actionName} = _this => {propertyInfo.Builder};"
                         );
                     }
                     propertyInfo.Builder = new($"{actionName}(this)");
@@ -133,20 +187,20 @@ internal class ClassAnalyzer
                 );
 
                 if (
-                    generateInfo.PropertyChangedMembers.TryGetValue(pair.Key, out var members)
+                    GenerateInfo.PropertyChangedMemberByName.TryGetValue(pair.Key, out var members)
                     is false
                 )
                 {
-                    members = generateInfo.PropertyChangedMembers[pair.Key] = [];
+                    members = GenerateInfo.PropertyChangedMemberByName[pair.Key] = [];
                 }
                 members.Add(sb.ToString());
                 if (fields.Add(fieldName))
                 {
                     if (propertyInfo.NotifyOnInitialValue)
                     {
-                        generateInfo.InitializeMembers.Add(sb.ToString());
+                        GenerateInfo.InitializeMembers.Add(sb.ToString());
                     }
-                    generateInfo.Members.Add(
+                    GenerateInfo.Members.Add(
                         "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
                             + Environment.NewLine
                             + "private "
@@ -160,10 +214,10 @@ internal class ClassAnalyzer
         }
     }
 
-    private void AnalyzeI18nObject(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    private void AnalyzeI18nObject()
     {
         var isFirst = true;
-        foreach (var i18Info in classInfo.I18nResourceByName)
+        foreach (var i18Info in ClassInfo.I18nResourceByName)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"{i18Info.Key}.I18nObjects.Add(new(this));");
@@ -173,10 +227,10 @@ internal class ClassAnalyzer
                 sb.AppendLine($"i18nObject = {i18Info.Key}.I18nObjects.Last();");
             foreach (var (keyName, targetName, retentionValueOnKeyChange) in i18Info.Value)
                 sb.AppendLine(
-                    $"i18nObject.AddProperty(nameof({keyName}), x => (({classInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
+                    $"i18nObject.AddProperty(nameof({keyName}), x => (({ClassInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
                 );
             isFirst = false;
-            generateInfo.InitializeMembers.Add(sb.ToString());
+            GenerateInfo.InitializeMembers.Add(sb.ToString());
         }
     }
 }

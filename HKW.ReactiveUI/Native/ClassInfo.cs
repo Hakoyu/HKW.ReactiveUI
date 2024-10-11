@@ -33,30 +33,19 @@ internal sealed class ClassInfo
         string,
         List<(string KeyName, string TargetName, bool RetentionValueOnKeyChange)>
     > I18nResourceByName { get; } = [];
-}
-
-internal sealed class ClassGenerateInfo
-{
-    public string Namespace { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string TypeName => $"{Name}{DeclarationSyntax.TypeParameterList}";
-
-    public string FullName => $"{Namespace}.{Name}";
-    public string FullTypeName => $"{Namespace}.{Name}{DeclarationSyntax.TypeParameterList}";
-    public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
-    public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
-
-    public bool IsReactiveObjectX { get; set; }
 
     /// <summary>
-    ///
+    /// 响应式属性
     /// </summary>
-    public List<string> Members { get; set; } = [];
-
-    public List<string> InitializeMembers { get; set; } = [];
+    public List<IPropertySymbol> ReactiveProperties { get; } = [];
 
     /// <summary>
-    /// (Property, Actions)
+    /// (PropertyName, MethodParameterCount)
     /// </summary>
-    public Dictionary<string, List<string>> PropertyChangedMembers { get; set; } = [];
+    public Dictionary<string, int> OnPropertyChanging { get; set; } = [];
+
+    /// <summary>
+    /// (PropertyName, MethodParameterCount)
+    /// </summary>
+    public Dictionary<string, int> OnPropertyChanged { get; set; } = [];
 }

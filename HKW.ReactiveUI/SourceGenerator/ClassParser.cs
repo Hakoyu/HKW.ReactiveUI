@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,32 +16,51 @@ internal class ClassParser
         ClassInfo classInfo
     )
     {
-        var t = new ClassParser() { ExecutionContext = executionContext, };
+        var t = new ClassParser()
+        {
+            ExecutionContext = executionContext,
+            SemanticModel = semanticModel,
+            ClassInfo = classInfo,
+            DeclaredClass = declaredClass,
+        };
+        foreach (var member in declaredClass.Members)
+        {
+            if (member is MethodDeclarationSyntax methodSyntax)
+            {
+                var methodSymbol = (IMethodSymbol)
+                    ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax)!;
+                t.MethodSymbols.Add(methodSymbol);
+            }
+            else if (member is PropertyDeclarationSyntax propertySyntax)
+            {
+                var propertySymbol = (IPropertySymbol)
+                    ModelExtensions.GetDeclaredSymbol(semanticModel, propertySyntax)!;
+                t.PropertySymbols.Add(propertySymbol);
+            }
+        }
 
-        t.ParseMethod(semanticModel, declaredClass, classInfo);
-        t.ParseProperty(semanticModel, declaredClass, classInfo);
+        t.ParseMethod();
+        t.ParseProperty();
     }
 
     public GeneratorExecutionContext ExecutionContext { get; private set; }
+    public SemanticModel SemanticModel { get; private set; } = null!;
+    public ClassInfo ClassInfo { get; private set; } = null!;
+    public ClassDeclarationSyntax DeclaredClass { get; private set; } = null!;
+    public List<IMethodSymbol> MethodSymbols { get; private set; } = [];
+    public List<IPropertySymbol> PropertySymbols { get; private set; } = [];
 
     #region Method
-    private void ParseMethod(
-        SemanticModel semanticModel,
-        ClassDeclarationSyntax declaredClass,
-        ClassInfo classInfo
-    )
+    // 解析方法
+    private void ParseMethod()
     {
-        // 解析方法
-        var methodMembers = declaredClass.Members.OfType<MethodDeclarationSyntax>();
-        foreach (var methodSyntax in methodMembers)
+        foreach (var methodSymbol in MethodSymbols)
         {
-            var methodSymbol = (IMethodSymbol)
-                ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax)!;
-            ParseReactiveCommand(classInfo, methodSymbol);
+            ParseReactiveCommand(methodSymbol);
         }
     }
 
-    private void ParseReactiveCommand(ClassInfo classInfo, IMethodSymbol methodSymbol)
+    private void ParseReactiveCommand(IMethodSymbol methodSymbol)
     {
         // 参数太多,跳过
         if (methodSymbol.Parameters.Length > 1)
@@ -75,7 +95,7 @@ internal class ClassParser
         // 是否为空返回值
         var isReturnTypeVoid = ExecutionContext.Compilation.IsVoid(realReturnType);
 
-        classInfo.ReactiveCommandInfos.Add(
+        ClassInfo.ReactiveCommandInfos.Add(
             new()
             {
                 MethodName = methodSymbol.Name,
@@ -91,35 +111,103 @@ internal class ClassParser
     #endregion
 
     #region ParseProperty
-    private void ParseProperty(
-        SemanticModel semanticModel,
-        ClassDeclarationSyntax declaredClass,
-        ClassInfo classInfo
-    )
+
+    // 解析属性
+    private void ParseProperty()
     {
-        // 解析属性
-        var propertyMembers = declaredClass.Members.OfType<PropertyDeclarationSyntax>();
-        foreach (var propertySyntax in propertyMembers)
+        foreach (var propertySymbol in PropertySymbols)
         {
-            var propertySymbol = (IPropertySymbol)
-                ModelExtensions.GetDeclaredSymbol(semanticModel, propertySyntax)!;
-            ParseNotifyPropertyChangedFrom(classInfo, propertySymbol);
-            ParseI18nProperty(classInfo, propertySymbol);
+            var attributeDataByFullName = propertySymbol
+                .GetAttributes()
+                .ToDictionary(x => x.AttributeClass!.ToString(), x => x);
+            ParseOnPropertyChange(propertySymbol, attributeDataByFullName);
+            ParseNotifyPropertyChangedFrom(propertySymbol, attributeDataByFullName);
+            ParseI18nProperty(propertySymbol, attributeDataByFullName);
         }
     }
 
     #endregion
 
-    private void ParseNotifyPropertyChangedFrom(ClassInfo classInfo, IPropertySymbol propertySymbol)
+
+    private void ParseOnPropertyChange(
+        IPropertySymbol propertySymbol,
+        IDictionary<string, AttributeData> attributeDataByFullName
+    )
+    {
+        if (
+            attributeDataByFullName.ContainsKey(typeof(ReactivePropertyAttribute).FullName) is false
+        )
+            return;
+        ClassInfo.ReactiveProperties.Add(propertySymbol);
+        // 如果有多个同名方法,则只有第一个生效
+        var changingMethod = MethodSymbols.Find(x => x.Name == $"On{propertySymbol.Name}Changing");
+        if (changingMethod is not null)
+        {
+            // 判断参数数量和类型
+            if (
+                changingMethod.Parameters.Length == 1
+                && SymbolEqualityComparer.Default.Equals(
+                    changingMethod.Parameters[0].Type,
+                    propertySymbol.Type
+                )
+            ) // 当一个参数时为oldValue
+                ClassInfo.OnPropertyChanging.Add(propertySymbol.Name, 1);
+            else if (
+                changingMethod.Parameters.Length == 2
+                && SymbolEqualityComparer.Default.Equals(
+                    changingMethod.Parameters[0].Type,
+                    propertySymbol.Type
+                )
+                && SymbolEqualityComparer.Default.Equals(
+                    changingMethod.Parameters[1].Type,
+                    propertySymbol.Type
+                )
+            ) // 当两个参数时第一个是oldValue,第二个是newValue
+                ClassInfo.OnPropertyChanging.Add(ClassInfo.Name, 2);
+        }
+        var changedMethod = MethodSymbols.Find(x => x.Name == $"On{propertySymbol.Name}Changed");
+        if (changedMethod is not null)
+        {
+            // 判断参数数量和类型
+            if (
+                changedMethod.Parameters.Length == 1
+                && SymbolEqualityComparer.Default.Equals(
+                    changedMethod.Parameters[0].Type,
+                    propertySymbol.Type
+                )
+            ) // 当一个参数时为newValue
+                ClassInfo.OnPropertyChanged.Add(propertySymbol.Name, 1);
+            else if (
+                changedMethod.Parameters.Length == 2
+                && SymbolEqualityComparer.Default.Equals(
+                    changedMethod.Parameters[0].Type,
+                    propertySymbol.Type
+                )
+                && SymbolEqualityComparer.Default.Equals(
+                    changedMethod.Parameters[1].Type,
+                    propertySymbol.Type
+                )
+            ) // 当两个参数时第一个是oldValue,第二个是newValue
+                ClassInfo.OnPropertyChanged.Add(ClassInfo.Name, 2);
+        }
+    }
+
+    private void ParseNotifyPropertyChangedFrom(
+        IPropertySymbol propertySymbol,
+        IDictionary<string, AttributeData> attributeDataByFullName
+    )
     {
         if (propertySymbol.GetMethod is null)
             return;
         // 获取特性数据
-        var attributeData = propertySymbol
-            .GetAttributes()
-            .FirstOrDefault(a =>
-                a.AttributeClass!.ToString() == typeof(NotifyPropertyChangeFromAttribute).FullName
-            );
+        if (
+            attributeDataByFullName.TryGetValue(
+                typeof(NotifyPropertyChangeFromAttribute).FullName,
+                out var attributeData
+            )
+            is false
+        )
+            return;
         // 获取特性的参数
         if (attributeData?.TryGetAttributeAndValues(out var attributeArgs) is not true)
             return;
@@ -133,7 +221,6 @@ internal class ClassParser
         )
             return;
 
-        var methodSyntax = propertySymbol.GetMethod.DeclaringSyntaxReferences.First().GetSyntax();
         var methodBuilder = propertySymbol.GetGetMethodInfo(out var useSelf);
         if (methodBuilder is null)
             return;
@@ -163,24 +250,30 @@ internal class ClassParser
             if (propertyType.Value is not string propertyName1)
                 continue;
             if (
-                classInfo.NotifyPropertyChangedFromInfos.TryGetValue(propertyName1, out var infos)
+                ClassInfo.NotifyPropertyChangedFromInfos.TryGetValue(propertyName1, out var infos)
                 is false
             )
             {
-                infos = classInfo.NotifyPropertyChangedFromInfos[propertyName1] = [];
+                infos = ClassInfo.NotifyPropertyChangedFromInfos[propertyName1] = [];
             }
             infos.Add(info);
         }
     }
 
-    private void ParseI18nProperty(ClassInfo classInfo, IPropertySymbol propertySymbol)
+    private void ParseI18nProperty(
+        IPropertySymbol propertySymbol,
+        IDictionary<string, AttributeData> attributeDataByFullName
+    )
     {
         // 获取特性数据
-        var attributeData = propertySymbol
-            .GetAttributes()
-            .FirstOrDefault(a =>
-                a.AttributeClass!.ToString() == "HKW.HKWUtils.I18nPropertyAttribute"
-            );
+        if (
+            attributeDataByFullName.TryGetValue(
+                "HKW.HKWUtils.I18nPropertyAttribute",
+                out var attributeData
+            )
+            is false
+        )
+            return;
         if (attributeData?.TryGetAttributeAndValues(out var values) is true)
         {
             if (values.TryGetValue("ResourceName", out var resourceNameType) is false)
@@ -198,8 +291,8 @@ internal class ClassParser
             )
                 return;
             values.TryGetValue("RetentionValueOnKeyChange", out var retentionValueOnKeyChange);
-            if (classInfo.I18nResourceByName.TryGetValue(resourceName, out var list) is false)
-                list = classInfo.I18nResourceByName[resourceName] = [];
+            if (ClassInfo.I18nResourceByName.TryGetValue(resourceName, out var list) is false)
+                list = ClassInfo.I18nResourceByName[resourceName] = [];
             list.Add(
                 (keyName, propertySymbol.Name, retentionValueOnKeyChange?.Value?.Value is true)
             );

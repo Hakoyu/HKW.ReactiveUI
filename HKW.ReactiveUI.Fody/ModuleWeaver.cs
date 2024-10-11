@@ -27,12 +27,7 @@ public class ModuleWeaver : BaseModuleWeaver
         if (Check(ModuleDefinition) is false)
             return;
 
-        ReactivePropertyWeaver.Execute(ModuleDefinition);
-        NotifyPropertyChangedFromWeaver.Execute(ModuleDefinition);
-
-        ObservableAsPropertyWeaver.Execute(ModuleDefinition, FindTypeDefinition);
-
-        ReactiveDependencyPropertyWeaver.Execute(ModuleDefinition);
+        ReactiveObjectWeaver.Execute(ModuleDefinition);
     }
 
     /// <inheritdoc/>
@@ -53,10 +48,11 @@ public class ModuleWeaver : BaseModuleWeaver
     internal static AssemblyNameReference HKWReactiveUI { get; private set; } = null!;
 
     internal static TypeDefinition[] IReactiveObjectDerivedClasses { get; private set; } = null!;
-    internal static TypeReference IReactiveObject { get; private set; } = null!;
-    internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
+    internal static TypeDefinition IReactiveObject { get; private set; } = null!;
     internal static MethodReference RaiseAndSetMethod { get; private set; } = null!;
-    internal static TypeReference IReactiveObjectExtensions { get; private set; } = null!;
+    internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
+    internal static TypeDefinition ReactiveObjectX { get; private set; } = null!;
+    internal static TypeDefinition IReactiveObjectExtensions { get; private set; } = null!;
 
     private bool Check(ModuleDefinition moduleDefinition)
     {
@@ -102,7 +98,7 @@ public class ModuleWeaver : BaseModuleWeaver
             "IReactiveObject",
             moduleDefinition,
             ReactiveUI
-        );
+        ).Resolve();
 
         var reactiveObjectExtensions =
             new TypeReference(
@@ -112,23 +108,23 @@ public class ModuleWeaver : BaseModuleWeaver
                 ReactiveUI
             ).Resolve() ?? throw new Exception("reactiveObjectExtensions is null");
 
-        RaiseAndSetIfChangedMethod =
-            moduleDefinition.ImportReference(
-                reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
-            ) ?? throw new Exception("raiseAndSetIfChangedMethod is null");
-
-        var iReactiveObjectExtensions =
+        ReactiveObjectX =
             new TypeReference(
-                "HKW.HKWReactiveUI.Extensions",
-                "IReactiveObjectExtensions",
+                "HKW.HKWReactiveUI",
+                "ReactiveObjectX",
                 moduleDefinition,
                 HKWReactiveUI
-            ).Resolve() ?? throw new Exception("iReactiveObjectExtensions is null");
+            ).Resolve() ?? throw new Exception("ReactiveObjectX is null");
 
         RaiseAndSetMethod =
             moduleDefinition.ImportReference(
-                iReactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSet")
-            ) ?? throw new Exception("raiseAndSetMethod is null");
+                ReactiveObjectX.Resolve().Methods.Single(x => x.Name == "RaiseAndSet")
+            ) ?? throw new Exception("RaiseAndSet is null");
+
+        RaiseAndSetIfChangedMethod =
+            moduleDefinition.ImportReference(
+                reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
+            ) ?? throw new Exception("RaiseAndSetIfChangedMethod is null");
 
         IReactiveObjectDerivedClasses = moduleDefinition
             .GetAllTypes()

@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Windows.Input;
 using DynamicData.Binding;
 using HKW.HKWReactiveUI;
+using ReactiveUI;
 
 namespace HKW.HKWReactiveUI.Demo;
 
@@ -16,18 +17,19 @@ internal class Program
 
     static void Main(string[] args)
     {
+        var r = EqualityComparer<TestModel>.Default.Equals(null, null);
         var t = new TestModel();
-
         //var c = t.TestCommand as ICommand;
         t.PropertyChanged += TestModel_PropertyChanged;
+        //TestModel_PropertyChanged(true, new(null));
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        t.ID = "114";
+        //t.ID = "114";
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        t.Name = "514";
+        //t.Name = "514";
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        t.ID = "514";
+        //t.ID = "514";
         //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        t.Name = "114";
+        //t.Name = "114";
         return;
     }
 
@@ -41,14 +43,24 @@ internal class Program
     }
 }
 
-partial class TestModel : ReactiveObjectX
+partial class TestModel : ReactiveObject
 {
     public TestModel()
     {
+        var id = 1;
+        //OnPropertyChange(ref id, 2, nameof(ID), true);
+        //OnPropertyChange(ref id, 2, nameof(ID), false);
         //CanExecute1 = false;
     }
 
-    [ReactiveProperty]
+    //private string _tid = string.Empty;
+    //public string TID
+    //{
+    //    get => _tid;
+    //    set => RaiseAndSet(ref _tid, value, nameof(TID), false);
+    //}
+
+    [ReactiveProperty(false)]
     public string ID { get; set; } = string.Empty;
 
     [ReactiveProperty]
@@ -62,6 +74,16 @@ partial class TestModel : ReactiveObjectX
 
     [NotifyPropertyChangeFrom(nameof(Name))]
     public List<int> List1 => this.To(static x => new List<int>());
+
+    public void OnNameChanging(string value)
+    {
+        return;
+    }
+
+    public void OnNameChanging(string oldValue, string newValue)
+    {
+        return;
+    }
 
     /// <summary>
     /// Test
