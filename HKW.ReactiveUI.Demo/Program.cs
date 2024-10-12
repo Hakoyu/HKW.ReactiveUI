@@ -79,11 +79,6 @@ partial class TestModel : ReactiveObject
     //    return;
     //}
 
-    private void OnNameChanging(string oldValue, string newValue)
-    {
-        return;
-    }
-
     /// <summary>
     /// Test
     /// </summary>

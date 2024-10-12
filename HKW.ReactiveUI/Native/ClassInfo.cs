@@ -39,13 +39,13 @@ internal sealed class ClassInfo
     /// </summary>
     public List<IPropertySymbol> ReactiveProperties { get; } = [];
 
-    /// <summary>
-    /// (PropertyName, MethodParameterCount)
-    /// </summary>
-    public Dictionary<string, int> OnPropertyChanging { get; set; } = [];
+    ///// <summary>
+    ///// (PropertyName, MethodParameterCount)
+    ///// </summary>
+    //public Dictionary<string, int> OnPropertyChanging { get; set; } = [];
 
-    /// <summary>
-    /// (PropertyName, MethodParameterCount)
-    /// </summary>
-    public Dictionary<string, int> OnPropertyChanged { get; set; } = [];
+    ///// <summary>
+    ///// (PropertyName, MethodParameterCount)
+    ///// </summary>
+    //public Dictionary<string, int> OnPropertyChanged { get; set; } = [];
 }

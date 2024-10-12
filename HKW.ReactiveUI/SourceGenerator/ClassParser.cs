@@ -128,7 +128,6 @@ internal class ClassParser
 
     #endregion
 
-
     private void ParseOnPropertyChange(
         IPropertySymbol propertySymbol,
         IDictionary<string, AttributeData> attributeDataByFullName
@@ -139,57 +138,6 @@ internal class ClassParser
         )
             return;
         ClassInfo.ReactiveProperties.Add(propertySymbol);
-        // 如果有多个同名方法,则只有第一个生效
-        var changingMethod = MethodSymbols.Find(x => x.Name == $"On{propertySymbol.Name}Changing");
-        if (changingMethod is not null)
-        {
-            // 判断参数数量和类型
-            if (
-                changingMethod.Parameters.Length == 1
-                && SymbolEqualityComparer.Default.Equals(
-                    changingMethod.Parameters[0].Type,
-                    propertySymbol.Type
-                )
-            ) // 当一个参数时为oldValue
-                ClassInfo.OnPropertyChanging.Add(propertySymbol.Name, 1);
-            else if (
-                changingMethod.Parameters.Length == 2
-                && SymbolEqualityComparer.Default.Equals(
-                    changingMethod.Parameters[0].Type,
-                    propertySymbol.Type
-                )
-                && SymbolEqualityComparer.Default.Equals(
-                    changingMethod.Parameters[1].Type,
-                    propertySymbol.Type
-                )
-            ) // 当两个参数时第一个是oldValue,第二个是newValue
-                ClassInfo.OnPropertyChanging.Add(propertySymbol.Name, 2);
-        }
-        var changedMethod = MethodSymbols.Find(x => x.Name == $"On{propertySymbol.Name}Changed");
-        if (changedMethod is not null)
-        {
-            // 判断参数数量和类型
-            if (
-                changedMethod.Parameters.Length == 1
-                && SymbolEqualityComparer.Default.Equals(
-                    changedMethod.Parameters[0].Type,
-                    propertySymbol.Type
-                )
-            ) // 当一个参数时为newValue
-                ClassInfo.OnPropertyChanged.Add(propertySymbol.Name, 1);
-            else if (
-                changedMethod.Parameters.Length == 2
-                && SymbolEqualityComparer.Default.Equals(
-                    changedMethod.Parameters[0].Type,
-                    propertySymbol.Type
-                )
-                && SymbolEqualityComparer.Default.Equals(
-                    changedMethod.Parameters[1].Type,
-                    propertySymbol.Type
-                )
-            ) // 当两个参数时第一个是oldValue,第二个是newValue
-                ClassInfo.OnPropertyChanged.Add(propertySymbol.Name, 2);
-        }
     }
 
     private void ParseNotifyPropertyChangedFrom(

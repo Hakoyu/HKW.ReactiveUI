@@ -94,7 +94,7 @@ internal class ClassGenerator
             );
 
             Writer.WriteLine($"this.RaisePropertyChanging(nameof({propertyInfo.Key}));");
-
+            Writer.WriteLine($"On{propertyInfo.Key}Changing(oldValue,newValue);");
             if (
                 GeneratorInfo.PropertyChangingMemberByName.TryGetValue(
                     propertyInfo.Key,
@@ -114,6 +114,7 @@ internal class ClassGenerator
             Writer.WriteLine();
 
             Writer.WriteLine($"this.RaisePropertyChanged(nameof({propertyInfo.Key}));");
+            Writer.WriteLine($"On{propertyInfo.Key}Changed(oldValue,newValue);");
 
             if (
                 GeneratorInfo.PropertyChangedMemberByName.TryGetValue(
@@ -131,6 +132,13 @@ internal class ClassGenerator
 
             Writer.Indent--;
             Writer.WriteLine("}");
+
+            Writer.WriteLine(
+                $"partial void On{propertyInfo.Key}Changing({propertyInfo.Value.TypeName} oldValue,{propertyInfo.Value.TypeName} newValue);"
+            );
+            Writer.WriteLine(
+                $"partial void On{propertyInfo.Key}Changed({propertyInfo.Value.TypeName} oldValue,{propertyInfo.Value.TypeName} newValue);"
+            );
         }
     }
 
@@ -160,16 +168,6 @@ internal class ClassGenerator
 
         Writer.Indent--;
         Writer.WriteLine("}");
-        //if (GeneratorInfo.PropertyChangedMemberByName.Count > 0)
-        //{
-        //    Writer.WriteLine($"PropertyChanged += ReactiveObjectPropertyChanged;");
-        //}
-
-        //Writer.WriteLine();
-        //if (GeneratorInfo.PropertyChangedMemberByName.Count > 0)
-        //{
-        //    GeneratePropertyChanged();
-        //}
     }
 
     private void GeneratePropertyChanged()

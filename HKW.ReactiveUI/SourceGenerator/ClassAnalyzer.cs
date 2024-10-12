@@ -28,7 +28,6 @@ internal class ClassAnalyzer
         };
 
         AnalyzeReactiveProperty();
-        AnalyzePropertyChange();
         AnalyzeReactiveCommand();
         AnalyzeNotifyPropertyChangeFrom();
         AnalyzeI18nObject();
@@ -48,43 +47,6 @@ internal class ClassAnalyzer
                     $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
                 )
             );
-        }
-    }
-
-    private void AnalyzePropertyChange()
-    {
-        foreach (var changing in ClassInfo.OnPropertyChanging)
-        {
-            if (
-                GenerateInfo.PropertyChangingMemberByName.TryGetValue(changing.Key, out var actions)
-                is false
-            )
-                actions = GenerateInfo.PropertyChangingMemberByName[changing.Key] = [];
-            if (changing.Value == 1)
-            {
-                actions.Add($"On{changing.Key}Changing(oldValue);");
-            }
-            else if (changing.Value == 2)
-            {
-                actions.Add($"On{changing.Key}Changing(oldValue,newValue);");
-            }
-        }
-
-        foreach (var changed in ClassInfo.OnPropertyChanged)
-        {
-            if (
-                GenerateInfo.PropertyChangingMemberByName.TryGetValue(changed.Key, out var actions)
-                is false
-            )
-                actions = GenerateInfo.PropertyChangedMemberByName[changed.Key] = [];
-            if (changed.Value == 1)
-            {
-                actions.Add($"On{changed.Key}Changed(newValue);");
-            }
-            else if (changed.Value == 2)
-            {
-                actions.Add($"On{changed.Key}Changed(oldValue,newValue);");
-            }
         }
     }
 
