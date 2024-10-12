@@ -103,15 +103,15 @@ internal class ReactiveObjectWeaver
             );
             return;
         }
-        var raiseAndSetMethod =
-            ModuleDefinition.ImportReference(
-                classType
-                    .Resolve()
-                    .Methods.SingleOrDefault(x => x.Name == $"RaiseAndSet{property.Name}")
-            )
+        var raiseAndSetMethodDefinition =
+            classType
+                .Resolve()
+                .Methods.SingleOrDefault(x => x.Name == $"RaiseAndSet{property.Name}")
             ?? throw new Exception(
-                $"RaiseAndSet{property.Name} is null, please check if you have added the partial keyword to class"
+                $"{classType.FullName} not exists method RaiseAndSet{property.Name}, please check if you have added the partial keyword to class"
             );
+        var raiseAndSetMethod = ModuleDefinition.ImportReference(raiseAndSetMethodDefinition);
+
         var check =
             property
                 .CustomAttributes.First(x =>
