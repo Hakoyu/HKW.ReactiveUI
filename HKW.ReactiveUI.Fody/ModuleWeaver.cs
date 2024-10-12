@@ -49,7 +49,6 @@ public class ModuleWeaver : BaseModuleWeaver
 
     internal static TypeDefinition[] IReactiveObjectDerivedClasses { get; private set; } = null!;
     internal static TypeDefinition IReactiveObject { get; private set; } = null!;
-    internal static MethodReference RaiseAndSetMethod { get; private set; } = null!;
     internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
     internal static TypeDefinition ReactiveObjectX { get; private set; } = null!;
     internal static TypeDefinition IReactiveObjectExtensions { get; private set; } = null!;
@@ -115,11 +114,6 @@ public class ModuleWeaver : BaseModuleWeaver
                 moduleDefinition,
                 HKWReactiveUI
             ).Resolve() ?? throw new Exception("ReactiveObjectX is null");
-
-        RaiseAndSetMethod =
-            moduleDefinition.ImportReference(
-                ReactiveObjectX.Resolve().Methods.Single(x => x.Name == "RaiseAndSet")
-            ) ?? throw new Exception("RaiseAndSet is null");
 
         RaiseAndSetIfChangedMethod =
             moduleDefinition.ImportReference(
