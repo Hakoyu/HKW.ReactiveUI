@@ -105,8 +105,13 @@ internal class ReactiveObjectWeaver
         }
         var raiseAndSetMethod =
             ModuleDefinition.ImportReference(
-                classType.Resolve().Methods.Single(x => x.Name == $"RaiseAndSet{property.Name}")
-            ) ?? throw new Exception($"RaiseAndSet{property.Name} is null");
+                classType
+                    .Resolve()
+                    .Methods.SingleOrDefault(x => x.Name == $"RaiseAndSet{property.Name}")
+            )
+            ?? throw new Exception(
+                $"RaiseAndSet{property.Name} is null, please check if you have added the partial keyword to class"
+            );
         var check =
             property
                 .CustomAttributes.First(x =>
