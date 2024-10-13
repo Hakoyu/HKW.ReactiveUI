@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Reactive.Linq;
 using System.Windows.Input;
@@ -73,6 +74,41 @@ partial class TestModel : ReactiveObject
 
     [NotifyPropertyChangeFrom(nameof(Name))]
     public List<int> List1 => this.To(static x => new List<int>());
+
+    /// <summary>
+    /// 文化名称
+    /// </summary>
+
+    [ReactiveProperty]
+    public string CultureName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 文化全名
+    /// </summary>
+    [NotifyPropertyChangeFrom(nameof(CultureName))]
+    public string CultureFullName =>
+        this.To(static x =>
+        {
+            if (string.IsNullOrWhiteSpace(x.CultureName))
+            {
+                return UnknownCulture;
+            }
+            CultureInfo info = null!;
+            try
+            {
+                info = CultureInfo.GetCultureInfo(x.CultureName);
+            }
+            catch
+            {
+                return UnknownCulture;
+            }
+            if (info is not null)
+            {
+                return $"{info.DisplayName} [{info.Name}]";
+            }
+            return UnknownCulture;
+        });
+    public static string UnknownCulture => "未知文化";
 
     //public void OnNameChanging(string value)
     //{
@@ -179,3 +215,75 @@ public partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<Observable
         return $"X = {X}, Y = {Y}";
     }
 }
+
+/// <summary>
+/// 枚举命令
+/// </summary>
+/// <typeparam name="TEnum">枚举类型</typeparam>
+public partial class ObservableEnum<TEnum> : ReactiveObjectX
+    where TEnum : struct, Enum
+{
+    /// <inheritdoc/>
+    public ObservableEnum() { }
+
+    /// <inheritdoc/>
+    /// <param name="value">枚举值</param>
+    public ObservableEnum(TEnum value)
+    {
+        //Value = value;
+    }
+
+    /// <summary>
+    /// 枚举值
+    /// </summary>
+    [ReactiveProperty]
+    public TEnum Value { get; set; }
+
+    private TEnum _value1 = default!;
+    public TEnum Value1
+    {
+        get => _value1;
+        set => RaiseAndSetValue1(ref _value1, value);
+    }
+
+    private void RaiseAndSetValue1(ref TEnum backingField, TEnum newValue, bool check = true)
+    {
+        if (check && EqualityComparer<TEnum>.Default.Equals(backingField, newValue))
+            return;
+
+        var oldValue = backingField;
+        this.RaisePropertyChanging(nameof(Value1));
+        backingField = newValue;
+        this.RaisePropertyChanged(nameof(Value1));
+    }
+
+    #region IsFlagable
+    private static Lazy<bool> _isFlagable =
+        new(() => Attribute.IsDefined(typeof(TEnum), typeof(FlagsAttribute)));
+
+    /// <summary>
+    /// 是可标记的
+    /// </summary>
+    public static bool IsFlagable => _isFlagable.Value;
+    #endregion
+}
+
+/// <summary>
+/// 添加标志
+/// </summary>
+/// <typeparam name="TEnum">枚举类型</typeparam>
+/// <param name="value">值</param>
+/// <param name="flag">标志</param>
+/// <returns>添加标志的值</returns>
+public delegate TEnum AddFlag<TEnum>(TEnum value, TEnum flag)
+    where TEnum : struct, Enum;
+
+/// <summary>
+/// 删除标志
+/// </summary>
+/// <typeparam name="TEnum">枚举类型</typeparam>
+/// <param name="value">值</param>
+/// <param name="flag">标志</param>
+/// <returns>添加标志的值</returns>
+public delegate TEnum RemoveFlag<TEnum>(TEnum value, TEnum flag)
+    where TEnum : struct, Enum;

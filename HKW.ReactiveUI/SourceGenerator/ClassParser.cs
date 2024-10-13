@@ -120,7 +120,7 @@ internal class ClassParser
             var attributeDataByFullName = propertySymbol
                 .GetAttributes()
                 .ToDictionary(x => x.AttributeClass!.ToString(), x => x);
-            ParseOnPropertyChange(propertySymbol, attributeDataByFullName);
+            ParseReactiveProperty(propertySymbol, attributeDataByFullName);
             ParseNotifyPropertyChangedFrom(propertySymbol, attributeDataByFullName);
             ParseI18nProperty(propertySymbol, attributeDataByFullName);
         }
@@ -128,7 +128,7 @@ internal class ClassParser
 
     #endregion
 
-    private void ParseOnPropertyChange(
+    private void ParseReactiveProperty(
         IPropertySymbol propertySymbol,
         IDictionary<string, AttributeData> attributeDataByFullName
     )

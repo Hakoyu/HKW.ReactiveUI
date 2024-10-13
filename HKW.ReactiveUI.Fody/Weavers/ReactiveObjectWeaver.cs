@@ -198,14 +198,14 @@ internal class ReactiveObjectWeaver
         {
             il.Emit(OpCodes.Ldarg_0); // this
             il.Emit(OpCodes.Ldarg_0); // this
-            il.Emit(OpCodes.Ldflda, field.BindDefinition(property.PropertyType)); // pop -> this.$PropertyName
+            il.Emit(OpCodes.Ldflda, field.BindDefinition(classType)); // pop -> this.$PropertyName
             il.Emit(OpCodes.Ldarg_1); // value
             //il.Emit(OpCodes.Ldstr, property.Name); // "PropertyName"
             if (check) // Check
                 il.Emit(OpCodes.Ldc_I4_1);
             else
                 il.Emit(OpCodes.Ldc_I4_0);
-            il.Emit(OpCodes.Callvirt, raiseAndSetMethod); // pop * 4 -> this.RaiseAndSet(this.$PropertyName, value, "PropertyName")
+            il.Emit(OpCodes.Call, raiseAndSetMethod); // pop * 4 -> this.RaiseAndSet(this.$PropertyName, value, "PropertyName")
             il.Emit(OpCodes.Nop); // Nop
             il.Emit(OpCodes.Ret); // Return out of the function
         });
