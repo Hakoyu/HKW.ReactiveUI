@@ -103,6 +103,7 @@ internal class ReactiveObjectWeaver
             );
             return;
         }
+
         var raiseAndSetMethodDefinition =
             classType
                 .Resolve()
@@ -110,7 +111,19 @@ internal class ReactiveObjectWeaver
             ?? throw new Exception(
                 $"{classType.FullName} not exists method RaiseAndSet{property.Name}, please check if you have added the partial keyword to class"
             );
-        var raiseAndSetMethod = ModuleDefinition.ImportReference(raiseAndSetMethodDefinition);
+        MethodReference raiseAndSetMethod = null!;
+        TypeReference genericClassType = classType;
+
+        if (classType.GenericParameters.Count > 0)
+        {
+            genericClassType = classType.MakeGenericInstanceType([.. classType.GenericParameters]);
+            raiseAndSetMethod = raiseAndSetMethodDefinition.Bind(
+                (GenericInstanceType)genericClassType
+            );
+            //raiseAndSetMethod = ModuleDefinition.ImportReference(m);
+        }
+        else
+            raiseAndSetMethod = ModuleDefinition.ImportReference(raiseAndSetMethodDefinition);
 
         var check =
             property
@@ -140,18 +153,18 @@ internal class ReactiveObjectWeaver
         foreach (var constructor in constructors)
         {
             var fieldAssignment = constructor.Body.Instructions.SingleOrDefault(x =>
-                Equals(x.Operand, oldFieldDefinition) || Equals(x.Operand, oldField)
+                Equals(x.Operand, oldFieldDefinition)
+                || Equals(x.Operand?.ToString(), oldField.ToString())
             );
             if (fieldAssignment is not null)
             {
-                // 用属性集代替字段赋值
-                var setterCall = constructor
+                //使用新字段初始化器替换自动生成的初始化器
+                constructor
                     .Body.GetILProcessor()
-                    .Create(
-                        property.SetMethod.IsVirtual ? OpCodes.Callvirt : OpCodes.Call,
-                        property.SetMethod
+                    .Replace(
+                        fieldAssignment,
+                        Instruction.Create(OpCodes.Ldflda, field.BindDefinition(classType))
                     );
-                constructor.Body.GetILProcessor().Replace(fieldAssignment, setterCall);
             }
         }
 
