@@ -48,6 +48,7 @@ partial class TestModel : ReactiveObject
     public TestModel()
     {
         var id = 1;
+        _id = string.Empty;
         //OnPropertyChange(ref id, 2, nameof(ID), true);
         //OnPropertyChange(ref id, 2, nameof(ID), false);
         //CanExecute1 = false;
@@ -59,6 +60,7 @@ partial class TestModel : ReactiveObject
     //    get => _tid;
     //    set => RaiseAndSet(ref _tid, value, nameof(TID), false);
     //}
+    private string _id;
 
     [ReactiveProperty(false)]
     public string ID { get; set; } = string.Empty;
@@ -156,7 +158,7 @@ internal static class TestExtensions
 /// </summary>
 /// <typeparam name="T">数据类型</typeparam>
 [DebuggerDisplay("({X}, {Y})")]
-public partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<ObservablePoint<T>>
+internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<ObservablePoint<T>>
     where T : struct, INumber<T>
 {
     /// <inheritdoc/>
@@ -215,75 +217,3 @@ public partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<Observable
         return $"X = {X}, Y = {Y}";
     }
 }
-
-/// <summary>
-/// 枚举命令
-/// </summary>
-/// <typeparam name="TEnum">枚举类型</typeparam>
-public partial class ObservableEnum<TEnum> : ReactiveObjectX
-    where TEnum : struct, Enum
-{
-    /// <inheritdoc/>
-    public ObservableEnum() { }
-
-    /// <inheritdoc/>
-    /// <param name="value">枚举值</param>
-    public ObservableEnum(TEnum value)
-    {
-        //Value = value;
-    }
-
-    /// <summary>
-    /// 枚举值
-    /// </summary>
-    [ReactiveProperty]
-    public TEnum Value { get; set; }
-
-    private TEnum _value1 = default!;
-    public TEnum Value1
-    {
-        get => _value1;
-        set => RaiseAndSetValue1(ref _value1, value);
-    }
-
-    private void RaiseAndSetValue1(ref TEnum backingField, TEnum newValue, bool check = true)
-    {
-        if (check && EqualityComparer<TEnum>.Default.Equals(backingField, newValue))
-            return;
-
-        var oldValue = backingField;
-        this.RaisePropertyChanging(nameof(Value1));
-        backingField = newValue;
-        this.RaisePropertyChanged(nameof(Value1));
-    }
-
-    #region IsFlagable
-    private static Lazy<bool> _isFlagable =
-        new(() => Attribute.IsDefined(typeof(TEnum), typeof(FlagsAttribute)));
-
-    /// <summary>
-    /// 是可标记的
-    /// </summary>
-    public static bool IsFlagable => _isFlagable.Value;
-    #endregion
-}
-
-/// <summary>
-/// 添加标志
-/// </summary>
-/// <typeparam name="TEnum">枚举类型</typeparam>
-/// <param name="value">值</param>
-/// <param name="flag">标志</param>
-/// <returns>添加标志的值</returns>
-public delegate TEnum AddFlag<TEnum>(TEnum value, TEnum flag)
-    where TEnum : struct, Enum;
-
-/// <summary>
-/// 删除标志
-/// </summary>
-/// <typeparam name="TEnum">枚举类型</typeparam>
-/// <param name="value">值</param>
-/// <param name="flag">标志</param>
-/// <returns>添加标志的值</returns>
-public delegate TEnum RemoveFlag<TEnum>(TEnum value, TEnum flag)
-    where TEnum : struct, Enum;

@@ -113,8 +113,9 @@ internal class ReactiveObjectWeaver
             );
         MethodReference raiseAndSetMethod = null!;
         TypeReference genericClassType = classType;
+        var isGenericClass = classType.GenericParameters.Count > 0;
 
-        if (classType.GenericParameters.Count > 0)
+        if (isGenericClass)
         {
             genericClassType = classType.MakeGenericInstanceType([.. classType.GenericParameters]);
             raiseAndSetMethod = raiseAndSetMethodDefinition.Bind(
@@ -159,12 +160,21 @@ internal class ReactiveObjectWeaver
             if (fieldAssignment is not null)
             {
                 //使用新字段初始化器替换自动生成的初始化器
-                constructor
-                    .Body.GetILProcessor()
-                    .Replace(
-                        fieldAssignment,
-                        Instruction.Create(OpCodes.Ldflda, field.BindDefinition(classType))
-                    );
+                if (isGenericClass)
+                {
+                    constructor
+                        .Body.GetILProcessor()
+                        .Replace(
+                            fieldAssignment,
+                            Instruction.Create(OpCodes.Ldflda, field.BindDefinition(classType))
+                        );
+                }
+                else
+                {
+                    constructor
+                        .Body.GetILProcessor()
+                        .Replace(fieldAssignment, Instruction.Create(OpCodes.Stfld, field));
+                }
             }
         }
 
