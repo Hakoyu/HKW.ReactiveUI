@@ -122,7 +122,7 @@ internal class ClassParser
                 .ToDictionary(x => x.AttributeClass!.ToString(), x => x);
             ParseReactiveProperty(propertySymbol, attributeDataByFullName);
             ParseNotifyPropertyChangedFrom(propertySymbol, attributeDataByFullName);
-            ParseI18nProperty(propertySymbol, attributeDataByFullName);
+            ParseReactiveI18nProperty(propertySymbol, attributeDataByFullName);
         }
     }
 
@@ -208,7 +208,7 @@ internal class ClassParser
         }
     }
 
-    private void ParseI18nProperty(
+    private void ParseReactiveI18nProperty(
         IPropertySymbol propertySymbol,
         IDictionary<string, AttributeData> attributeDataByFullName
     )
@@ -216,7 +216,7 @@ internal class ClassParser
         // 获取特性数据
         if (
             attributeDataByFullName.TryGetValue(
-                "HKW.HKWUtils.I18nPropertyAttribute",
+                "HKW.HKWUtils.ReactiveI18nPropertyAttribute",
                 out var attributeData
             )
             is false
@@ -238,11 +238,17 @@ internal class ClassParser
                 || string.IsNullOrWhiteSpace(keyName)
             )
                 return;
+            values.TryGetValue("ObjectName", out var objectNameType);
             values.TryGetValue("RetentionValueOnKeyChange", out var retentionValueOnKeyChange);
-            if (ClassInfo.I18nResourceByName.TryGetValue(resourceName, out var list) is false)
-                list = ClassInfo.I18nResourceByName[resourceName] = [];
+            if (ClassInfo.I18nResourceInfoByName.TryGetValue(resourceName, out var list) is false)
+                list = ClassInfo.I18nResourceInfoByName[resourceName] = [];
             list.Add(
-                (keyName, propertySymbol.Name, retentionValueOnKeyChange?.Value?.Value is true)
+                (
+                    keyName,
+                    propertySymbol.Name,
+                    objectNameType?.Value?.Value?.ToString() ?? string.Empty,
+                    retentionValueOnKeyChange?.Value?.Value is true
+                )
             );
         }
     }

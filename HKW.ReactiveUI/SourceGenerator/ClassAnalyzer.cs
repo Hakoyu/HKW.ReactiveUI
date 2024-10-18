@@ -179,7 +179,7 @@ internal class ClassAnalyzer
     private void AnalyzeI18nObject()
     {
         var isFirst = true;
-        foreach (var i18Info in ClassInfo.I18nResourceByName)
+        foreach (var i18Info in ClassInfo.I18nResourceInfoByName)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"{i18Info.Key}.I18nObjects.Add(new(this));");
@@ -187,9 +187,11 @@ internal class ClassAnalyzer
                 sb.AppendLine($"var i18nObject = {i18Info.Key}.I18nObjects.Last();");
             else
                 sb.AppendLine($"i18nObject = {i18Info.Key}.I18nObjects.Last();");
-            foreach (var (keyName, targetName, retentionValueOnKeyChange) in i18Info.Value)
+            foreach (
+                var (keyName, targetName, objectName, retentionValueOnKeyChange) in i18Info.Value
+            )
                 sb.AppendLine(
-                    $"i18nObject.AddProperty(nameof({keyName}), x => (({ClassInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
+                    $"{(string.IsNullOrWhiteSpace(objectName) ? "i18nObject" : objectName)}.AddProperty(nameof({keyName}), x => (({ClassInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
                 );
             isFirst = false;
             GenerateInfo.InitializeMembers.Add(sb.ToString());

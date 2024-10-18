@@ -72,7 +72,7 @@ internal class ClassGenerator
         Writer.WriteLine("}");
 
         ExecutionContext.AddSource(
-            $"{GeneratorInfo.Name}.ReactiveUI.g.cs",
+            $"{GeneratorInfo.FullTypeName.Replace('<', '{').Replace('>', '}')}.ReactiveUI.g.cs",
             stringStream.ToString()
         );
 

@@ -27,12 +27,12 @@ internal sealed class ClassInfo
     > NotifyPropertyChangedFromInfos { get; } = [];
 
     /// <summary>
-    /// (ResourceName, I18nObjectInfo)
+    /// (ResourceName, (KeyName, TargetName, ObjectName, RetentionValueOnKeyChange))
     /// </summary>
     public Dictionary<
         string,
-        List<(string KeyName, string TargetName, bool RetentionValueOnKeyChange)>
-    > I18nResourceByName { get; } = [];
+        List<(string KeyName, string TargetName, string ObjectName, bool RetentionValueOnKeyChange)>
+    > I18nResourceInfoByName { get; } = [];
 
     /// <summary>
     /// 响应式属性
