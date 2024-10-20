@@ -77,6 +77,9 @@ partial class TestModel : ReactiveObject
     [NotifyPropertyChangeFrom(nameof(Name))]
     public List<int> List1 => this.To(static x => new List<int>());
 
+    [ReactiveProperty]
+    public bool[,] Bools { get; set; }
+
     /// <summary>
     /// 文化名称
     /// </summary>

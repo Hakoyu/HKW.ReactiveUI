@@ -2,6 +2,7 @@
 
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
@@ -39,7 +40,7 @@ internal class ClassAnalyzer
     {
         foreach (var property in ClassInfo.ReactiveProperties)
         {
-            var typeName = property.Type.ToDisplayString();
+            var typeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             GenerateInfo.ReactivePropertyActionByName.Add(
                 property.Name,
                 (
@@ -138,7 +139,9 @@ internal class ClassAnalyzer
                     if (fields.Contains(fieldName) is false)
                     {
                         GenerateInfo.Members.Add(
-                            $"private static Func<{ClassInfo.FullTypeName},{propertyInfo.Type.ToDisplayString()}> {actionName} = _this => {propertyInfo.Builder};"
+                            $"private static Func<{ClassInfo.FullTypeName},{propertyInfo.Type.ToDisplayString(
+                SymbolDisplayFormat.FullyQualifiedFormat
+            )}> {actionName} = _this => {propertyInfo.Builder};"
                         );
                     }
                     propertyInfo.Builder = new($"{actionName}(this)");
@@ -166,7 +169,9 @@ internal class ClassAnalyzer
                         "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
                             + Environment.NewLine
                             + "private "
-                            + propertyInfo.Type.ToDisplayString()
+                            + propertyInfo.Type.ToDisplayString(
+                                SymbolDisplayFormat.FullyQualifiedFormat
+                            )
                             + " "
                             + fieldName
                             + " = default!;"
@@ -182,11 +187,11 @@ internal class ClassAnalyzer
         foreach (var i18Info in ClassInfo.I18nResourceInfoByName)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"{i18Info.Key}.I18nObjects.Add(new(this));");
+            sb.AppendLine($"{i18Info.Key}?.I18nObjects.Add(new(this));");
             if (isFirst)
-                sb.AppendLine($"var i18nObject = {i18Info.Key}.I18nObjects.Last();");
+                sb.AppendLine($"var i18nObject = {i18Info.Key}?.I18nObjects.Last();");
             else
-                sb.AppendLine($"i18nObject = {i18Info.Key}.I18nObjects.Last();");
+                sb.AppendLine($"i18nObject = {i18Info.Key}?.I18nObjects.Last();");
             foreach (
                 var (keyName, targetName, objectName, retentionValueOnKeyChange) in i18Info.Value
             )
