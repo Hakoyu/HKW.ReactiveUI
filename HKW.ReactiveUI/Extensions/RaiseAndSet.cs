@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using ReactiveUI;
 
-namespace HKW.HKWReactiveUI.Extensions;
+namespace HKW.HKWReactiveUI;
 
 /// <summary>
 ///

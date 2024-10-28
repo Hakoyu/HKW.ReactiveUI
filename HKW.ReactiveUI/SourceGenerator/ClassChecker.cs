@@ -16,9 +16,6 @@ internal class ClassChecker
     )
     {
         classInfo = null!;
-        // 如果不是分布类型,则跳过
-        if (declaredClass.Modifiers.Any(SyntaxKind.PartialKeyword) is false)
-            return false;
 
         var classSymbol = (INamedTypeSymbol)
             ModelExtensions.GetDeclaredSymbol(semanticModel, declaredClass)!;
@@ -27,6 +24,17 @@ internal class ClassChecker
             is false
         )
             return false; // 如果没有实现IReactiveObject接口,则跳过
+
+        // 如果不是分布类型,则触发异常
+        if (declaredClass.Modifiers.Any(SyntaxKind.PartialKeyword) is false)
+        {
+            var errorDiagnostic = Diagnostic.Create(
+                Descriptors.NotPartialClass,
+                classSymbol.Locations[0]
+            );
+            Generator.ExecutionContext.ReportDiagnostic(errorDiagnostic);
+            return false;
+        }
         var classNamespace = classSymbol.ContainingNamespace.ToString();
         var typeName = declaredClass.Identifier.ValueText;
         var usings = ((CompilationUnitSyntax)compilationSyntaxTree.GetRoot()).Usings;

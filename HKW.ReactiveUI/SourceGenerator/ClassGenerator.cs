@@ -170,32 +170,6 @@ internal class ClassGenerator
         Writer.WriteLine("}");
     }
 
-    private void GeneratePropertyChanged()
-    {
-        Writer.WriteLine(
-            "private void ReactiveObjectPropertyChanged(object? sender, global::System.ComponentModel.PropertyChangedEventArgs e)"
-        );
-        Writer.WriteLine("{");
-        Writer.Indent++;
-        foreach (var pair in GeneratorInfo.PropertyChangedMemberByName)
-        {
-            Writer.WriteLine($"if (e.PropertyName == nameof({pair.Key}))");
-            Writer.WriteLine("{");
-            Writer.Indent++;
-
-            foreach (var member in pair.Value)
-            {
-                Writer.WriteLine(member);
-            }
-
-            Writer.Indent--;
-            Writer.WriteLine("}");
-        }
-
-        Writer.Indent--;
-        Writer.WriteLine("}");
-    }
-
     private void GenerateInitializeMember()
     {
         foreach (var member in GeneratorInfo.InitializeMembers)
