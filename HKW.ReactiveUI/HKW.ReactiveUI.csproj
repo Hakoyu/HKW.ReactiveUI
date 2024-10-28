@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>0.2.5</Version>
+		<Version>0.2.8</Version>
 		<Company>HKW</Company>
 		<Authors>HKW</Authors>
 		<PackageDescription>Noop</PackageDescription>
@@ -23,6 +23,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageId>HKW.ReactiveUI</PackageId>
 		<WeaverDirPath>..\HKW.ReactiveUI.Fody\bin\$(Configuration)\</WeaverDirPath>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -48,7 +49,7 @@
 	<ItemGroup>
 		<None Include="..\README.md">
 			<Pack>True</Pack>
-			<PackagePath></PackagePath>
+			<PackagePath>\</PackagePath>
 		</None>
 	</ItemGroup>
 </Project>

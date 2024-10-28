@@ -117,9 +117,15 @@ internal class ClassParser
     {
         foreach (var propertySymbol in PropertySymbols)
         {
-            var attributeDataByFullName = propertySymbol
-                .GetAttributes()
-                .ToDictionary(x => x.AttributeClass!.ToString(), x => x);
+            var attributeDataByFullName = new Dictionary<string, AttributeData>();
+            foreach (var attribute in propertySymbol.GetAttributes())
+            {
+                if (
+                    attributeDataByFullName.ContainsKey(attribute.AttributeClass!.ToString())
+                    is false
+                )
+                    attributeDataByFullName.Add(attribute.AttributeClass!.ToString(), attribute);
+            }
             ParseReactiveProperty(propertySymbol, attributeDataByFullName);
             ParseNotifyPropertyChangedFrom(propertySymbol, attributeDataByFullName);
             ParseReactiveI18nProperty(propertySymbol, attributeDataByFullName);
