@@ -246,9 +246,9 @@ internal class ClassParser
                 return;
             values.TryGetValue("ObjectName", out var objectNameType);
             values.TryGetValue("RetentionValueOnKeyChange", out var retentionValueOnKeyChange);
-            if (ClassInfo.I18nResourceInfoByName.TryGetValue(resourceName, out var list) is false)
-                list = ClassInfo.I18nResourceInfoByName[resourceName] = [];
-            list.Add(
+            if (ClassInfo.I18nResourceInfoByName.TryGetValue(resourceName, out var infos) is false)
+                infos = ClassInfo.I18nResourceInfoByName[resourceName] = [];
+            infos.Add(
                 (
                     keyName,
                     propertySymbol.Name,

@@ -132,7 +132,7 @@ internal class ClassAnalyzer
             {
                 var sb = new StringBuilder();
                 var fieldName = $"_{propertyInfo.PropertyName.FirstLetterToLower()}";
-
+                var raiseMethodName = $"Raise{propertyInfo.PropertyName}Change";
                 if (propertyInfo.StaticAction)
                 {
                     var actionName = $"{fieldName}NotifyPropertyChangeAction";
@@ -147,9 +147,7 @@ internal class ClassAnalyzer
                     propertyInfo.Builder = new($"{actionName}(this)");
                 }
 
-                sb.Append(
-                    $"ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {propertyInfo.Builder}, nameof({propertyInfo.PropertyName}));"
-                );
+                sb.Append($"{raiseMethodName}();");
 
                 if (
                     GenerateInfo.PropertyChangedMemberByName.TryGetValue(pair.Key, out var members)
@@ -176,29 +174,39 @@ internal class ClassAnalyzer
                             + fieldName
                             + " = default!;"
                     );
+                    GenerateInfo.Members.Add(
+                        @$"protected void {raiseMethodName}()
+{{
+ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {propertyInfo.Builder}, nameof({propertyInfo.PropertyName}));
+}}"
+                    );
                 }
             }
         }
     }
 
+    private const string DefaultI18nObjectName = "I18nObject";
+
     private void AnalyzeI18nObject()
     {
-        var isFirst = true;
+        var objectNames = new HashSet<string>();
         foreach (var i18Info in ClassInfo.I18nResourceInfoByName)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"{i18Info.Key}?.I18nObjects.Add(new(this));");
-            if (isFirst)
-                sb.AppendLine($"var i18nObject = {i18Info.Key}?.I18nObjects.Last();");
-            else
-                sb.AppendLine($"i18nObject = {i18Info.Key}?.I18nObjects.Last();");
             foreach (
                 var (keyName, targetName, objectName, retentionValueOnKeyChange) in i18Info.Value
             )
+            {
+                if (objectNames.Add(objectName))
+                {
+                    sb.AppendLine(
+                        $"{i18Info.Key}?.I18nObjects.Add({(string.IsNullOrWhiteSpace(objectName) ? DefaultI18nObjectName : objectName)});"
+                    );
+                }
                 sb.AppendLine(
-                    $"{(string.IsNullOrWhiteSpace(objectName) ? "i18nObject" : objectName)}.AddProperty(nameof({keyName}), x => (({ClassInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
+                    $"{(string.IsNullOrWhiteSpace(objectName) ? DefaultI18nObjectName : objectName)}.AddProperty(nameof({keyName}), x => (({ClassInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
                 );
-            isFirst = false;
+            }
             GenerateInfo.InitializeMembers.Add(sb.ToString());
         }
     }
