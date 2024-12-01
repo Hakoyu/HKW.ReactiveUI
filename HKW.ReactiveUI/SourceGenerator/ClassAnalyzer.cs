@@ -45,7 +45,7 @@ internal class ClassAnalyzer
                 property.Name,
                 (
                     typeName,
-                    $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                    $"[global::System.CodeDom.Compiler.GeneratedCode(\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Name}\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
                         + $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
                 )
             );
@@ -63,7 +63,7 @@ internal class ClassAnalyzer
             var propretyName = $"{commandInfo.MethodName}Command";
             // 添加DebuggerBrowsable,防止调试器显示
             sb.AppendLine(
-                $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                $"[global::System.CodeDom.Compiler.GeneratedCode(\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Name}\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
                     + "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
             );
             // 添加ReactiveCommand字段
@@ -182,7 +182,7 @@ internal class ClassAnalyzer
                         GenerateInfo.InitializeMembers.Add($"{fieldName} = {info.Builder};");
                     }
                     GenerateInfo.Members.Add(
-                        $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                        $"[global::System.CodeDom.Compiler.GeneratedCode(\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Name}\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
                             + "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
                             + Environment.NewLine
                             + "private "
@@ -192,7 +192,7 @@ internal class ClassAnalyzer
                             + " = default!;"
                     );
                     GenerateInfo.Members.Add(
-                        $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                        $"[global::System.CodeDom.Compiler.GeneratedCode(\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Name}\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
                             + @$"protected void {raiseMethodName}()
 {{
 ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {info.Builder}, nameof({info.PropertyName}));
