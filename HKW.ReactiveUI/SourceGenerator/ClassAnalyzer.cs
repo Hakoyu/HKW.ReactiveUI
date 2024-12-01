@@ -45,7 +45,8 @@ internal class ClassAnalyzer
                 property.Name,
                 (
                     typeName,
-                    $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
+                    $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                        + $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
                 )
             );
         }
@@ -62,7 +63,8 @@ internal class ClassAnalyzer
             var propretyName = $"{commandInfo.MethodName}Command";
             // 添加DebuggerBrowsable,防止调试器显示
             sb.AppendLine(
-                "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
+                $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                    + "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
             );
             // 添加ReactiveCommand字段
             sb.AppendLine(
@@ -128,56 +130,72 @@ internal class ClassAnalyzer
         var fields = new HashSet<string>();
         foreach (var pair in ClassInfo.NotifyPropertyChangedFromInfos)
         {
-            foreach (var propertyInfo in pair.Value)
+            foreach (var info in pair.Value)
             {
-                var sb = new StringBuilder();
-                var fieldName = $"_{propertyInfo.PropertyName.FirstLetterToLower()}";
-                var raiseMethodName = $"Raise{propertyInfo.PropertyName}Change";
-                if (propertyInfo.StaticAction)
+                if (
+                    GenerateInfo.PropertyChangedMemberByName.TryGetValue(pair.Key, out var members)
+                    is false
+                )
+                    members = GenerateInfo.PropertyChangedMemberByName[pair.Key] = [];
+                // 如果不启用缓存
+                if (info.EnableCache is false)
+                {
+                    if (
+                        GenerateInfo.PropertyChangingMemberByName.TryGetValue(
+                            pair.Key,
+                            out var changingMembers
+                        )
+                        is false
+                    )
+                        changingMembers = GenerateInfo.PropertyChangingMemberByName[pair.Key] = [];
+
+                    changingMembers.Add($"this.RaisePropertyChanging(\"{info.PropertyName}\");");
+                    members.Add($"this.RaisePropertyChanged(\"{info.PropertyName}\");");
+                    continue;
+                }
+
+                var propertyActionSB = new StringBuilder();
+                var fieldName = $"_{info.PropertyName.FirstLetterToLower()}";
+                var raiseMethodName = $"Raise{info.PropertyName}Change";
+                // 检测为To静态方法
+                if (info.StaticAction)
                 {
                     var actionName = $"{fieldName}NotifyPropertyChangeAction";
                     if (fields.Contains(fieldName) is false)
                     {
                         GenerateInfo.Members.Add(
-                            $"private static Func<{ClassInfo.FullTypeName},{propertyInfo.Type.ToDisplayString(
+                            $"private static Func<{ClassInfo.FullTypeName},{info.Type.ToDisplayString(
                 SymbolDisplayFormat.FullyQualifiedFormat
-            )}> {actionName} = _this => {propertyInfo.Builder};"
+            )}> {actionName} = _this => {info.Builder};"
                         );
                     }
-                    propertyInfo.Builder = new($"{actionName}(this)");
+                    info.Builder = new($"{actionName}(this)");
                 }
 
-                sb.Append($"{raiseMethodName}();");
-
-                if (
-                    GenerateInfo.PropertyChangedMemberByName.TryGetValue(pair.Key, out var members)
-                    is false
-                )
-                {
-                    members = GenerateInfo.PropertyChangedMemberByName[pair.Key] = [];
-                }
-                members.Add(sb.ToString());
+                propertyActionSB.Append($"{raiseMethodName}();");
+                members.Add(propertyActionSB.ToString());
+                // 添加字段
                 if (fields.Add(fieldName))
                 {
-                    if (propertyInfo.NotifyOnInitialValue)
+                    if (info.InitializeInInitializeObject)
                     {
-                        GenerateInfo.InitializeMembers.Add(sb.ToString());
+                        GenerateInfo.InitializeMembers.Add($"{fieldName} = {info.Builder};");
                     }
                     GenerateInfo.Members.Add(
-                        "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
+                        $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                            + "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
                             + Environment.NewLine
                             + "private "
-                            + propertyInfo.Type.ToDisplayString(
-                                SymbolDisplayFormat.FullyQualifiedFormat
-                            )
+                            + info.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
                             + " "
                             + fieldName
                             + " = default!;"
                     );
                     GenerateInfo.Members.Add(
-                        @$"protected void {raiseMethodName}()
+                        $"[global::System.CodeDom.Compiler.GeneratedCode(\"HKW.ReactiveUI\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                            + @$"protected void {raiseMethodName}()
 {{
-ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {propertyInfo.Builder}, nameof({propertyInfo.PropertyName}));
+ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName}, {info.Builder}, nameof({info.PropertyName}));
 }}"
                     );
                 }

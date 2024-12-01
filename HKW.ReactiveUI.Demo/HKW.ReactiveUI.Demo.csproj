@@ -19,7 +19,7 @@
 		<WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Fody" Version="6.8.2" PrivateAssets="all" />
+		<PackageReference Include="Fody" Version="6.9.0" PrivateAssets="all" />
 		<PackageReference Include="ReactiveUI" Version="20.1.63" />
 	</ItemGroup>
 </Project>

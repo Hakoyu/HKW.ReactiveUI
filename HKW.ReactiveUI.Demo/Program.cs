@@ -71,8 +71,8 @@ partial class TestModel : ReactiveObject
     [NotifyPropertyChangeFrom(nameof(Name), nameof(ID))]
     public bool CanExecute => Name == ID;
 
-    [NotifyPropertyChangeFrom(nameof(Name))]
-    public List<int> List => new List<int>();
+    [NotifyPropertyChangeFrom(nameof(Name), EnableCache = false)]
+    public List<int> List => new();
 
     [NotifyPropertyChangeFrom(nameof(Name))]
     public List<int> List1 => this.To(static x => new List<int>());

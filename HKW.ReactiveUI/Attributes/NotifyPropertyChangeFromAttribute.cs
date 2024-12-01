@@ -8,13 +8,7 @@
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
-///     [ReactiveProperty]
-///     public string ID { get; set; } = string.Empty;
-///
-///     [ReactiveProperty]
-///     public string Name { get; set; } = string.Empty;
-///
-///     [NotifyPropertyChangeFrom(true, nameof(ID), nameof(Name))]
+///     [NotifyPropertyChangeFrom(true, nameof(ID), nameof(Name), EnableCache = true)]
 ///     public string IsSame => ID == Name;
 ///
 ///     protected void InitializeReactiveObject() { }
@@ -25,45 +19,34 @@
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
-///     [ReactiveProperty]
-///     public string Name
-///     {
-///         get => $Name;
-///         set => this.RaiseAndSetIfChanged(ref $Name, value);
-///     }
-///
-///     [global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]
 ///     private bool _isSame;
-///     [NotifyPropertyChangeFrom(true ,nameof(ID), nameof(Name))]
-///     public string IsSame => !string.IsNullOrWhiteSpace(Name);
+///     [NotifyPropertyChangeFrom(true ,nameof(ID), nameof(Name), EnableCache = true)]
+///     public string IsSame => Name == ID;
 ///
 ///     protected void InitializeReactiveObject()
 ///     {
-///         PropertyChanged += ReactiveObjectPropertyChanged
-///
-///         // NotifyOnInitialValue = true
-///         this.RaiseAndSetIfChanged(ref _isSame, Name == ID, nameof(IsSame));
+///         // InitializeInInitializeObject = true
+///        _isSame = Name == ID;
 ///     }
 ///
-///     private void ReactiveObjectPropertyChanged(object? sender, PropertyChangedEventArgs e)
+/// 	protected void RaiseIsSameChange()
+///	    {
+///        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
+///     }
+///     private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
 ///     {
-///         if (e.PropertyName == nameof(ID))
-///         {
-///             this.RaiseAndSetIfChanged(ref _isSame, Name == ID, nameof(IsSame));
-///         }
-///         if (e.PropertyName == nameof(Name))
-///         {
-///             this.RaiseAndSetIfChanged(ref _isSame, Name == ID, nameof(IsSame));
-///         }
+///         ...
+///         RaiseIsSameChange();
 ///     }
-///
+///     private void RaiseAndSetID(ref string backingField, string newValue, bool check = true)
+///     {
+///         ...
+///         RaiseIsSameChange();
+///     }
 /// }
 /// ]]></code></summary>
 /// <remarks>
-/// 如果继承了 <see cref="ReactiveObjectX"/> 则会重写 <see cref="ReactiveObjectX.InitializeReactiveObject"/> 方法,不需要手动运行
-/// <para>
-/// 否则需要手动运行生成的 <see langword="InitializeReactiveObject"/> 方法
-/// </para>
+/// 如果未继承 <see cref="ReactiveObjectX"/> 则 <see cref="InitializeInInitializeObject"/> 将不起作用
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class NotifyPropertyChangeFromAttribute : Attribute
@@ -76,24 +59,29 @@ public sealed class NotifyPropertyChangeFromAttribute : Attribute
     }
 
     /// <inheritdoc/>
-    /// <param name="NotifyOnInitialValue">初始化值时发送通知</param>
+    /// <param name="InitializeInInitializeObject">在初始化对象时初始化</param>
     /// <param name="PropertyNames">属性名称</param>
     public NotifyPropertyChangeFromAttribute(
-        bool NotifyOnInitialValue = true,
+        bool InitializeInInitializeObject = true,
         params string[] PropertyNames
     )
     {
-        this.NotifyOnInitialValue = NotifyOnInitialValue;
+        this.InitializeInInitializeObject = InitializeInInitializeObject;
         this.PropertyNames = PropertyNames;
     }
 
     /// <summary>
     /// 初始化值时发送通知
     /// </summary>
-    public bool NotifyOnInitialValue { get; } = true;
+    public bool InitializeInInitializeObject { get; } = true;
 
     /// <summary>
     /// 属性名称
     /// </summary>
     public string[] PropertyNames { get; }
+
+    /// <summary>
+    /// 启用缓存, 会生成一个字段来缓存上次目标属性改变后的结果
+    /// </summary>
+    public bool EnableCache { get; set; } = true;
 }

@@ -1,62 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
-using ReactiveUI;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Runtime.CompilerServices;
+//using System.Text;
+//using ReactiveUI;
 
-namespace HKW.HKWReactiveUI;
+//namespace HKW.HKWReactiveUI;
 
-/// <summary>
-///
-/// </summary>
-public static class IReactiveObjectExtensions
-{
-    /// <summary>
-    /// 引发并设置
-    /// </summary>
-    /// <typeparam name="TObj">对象类型</typeparam>
-    /// <typeparam name="TRet">结果类型</typeparam>
-    /// <param name="reactiveObject">对象</param>
-    /// <param name="backingField">字段</param>
-    /// <param name="newValue">新值</param>
-    /// <param name="propertyName">属性名</param>
-    /// <returns>值</returns>
-    /// <exception cref="ArgumentNullException">如果 <paramref name="propertyName"/> 为 <see langword="null"/></exception>
-    public static TRet RaiseAndSet<TObj, TRet>(
-        this TObj reactiveObject,
-        ref TRet backingField,
-        TRet newValue,
-        [CallerMemberName] string? propertyName = null
-    )
-        where TObj : IReactiveObject
-    {
-        if (propertyName is null)
-            throw new ArgumentNullException(nameof(propertyName));
+///// <summary>
+/////
+///// </summary>
+//public static class IReactiveObjectExtensions
+//{
+//    /// <summary>
+//    /// 引发并设置
+//    /// </summary>
+//    /// <typeparam name="TObj">对象类型</typeparam>
+//    /// <typeparam name="TRet">结果类型</typeparam>
+//    /// <param name="reactiveObject">对象</param>
+//    /// <param name="backingField">字段</param>
+//    /// <param name="newValue">新值</param>
+//    /// <param name="propertyName">属性名</param>
+//    /// <returns>值</returns>
+//    /// <exception cref="ArgumentNullException">如果 <paramref name="propertyName"/> 为 <see langword="null"/></exception>
+//    public static TRet RaiseAndSet<TObj, TRet>(
+//        this TObj reactiveObject,
+//        ref TRet backingField,
+//        TRet newValue,
+//        [CallerMemberName] string? propertyName = null
+//    )
+//        where TObj : IReactiveObject
+//    {
+//        if (propertyName is null)
+//            throw new ArgumentNullException(nameof(propertyName));
 
-        reactiveObject.RaisePropertyChanging(new(propertyName));
-        backingField = newValue;
-        reactiveObject.RaisePropertyChanged(new(propertyName));
-        return newValue;
-    }
+//        reactiveObject.RaisePropertyChanging(new(propertyName));
+//        backingField = newValue;
+//        reactiveObject.RaisePropertyChanged(new(propertyName));
+//        return newValue;
+//    }
 
-    /// <summary>
-    /// 引发属性更改事件
-    /// </summary>
-    /// <typeparam name="TObj">对象类型</typeparam>
-    /// <param name="reactiveObject">对象</param>
-    /// <param name="propertyName">属性名</param>
-    /// <returns>值</returns>
-    /// <exception cref="ArgumentNullException">如果 <paramref name="propertyName"/> 为 <see langword="null"/></exception>
-    public static void RaisePropertyChange<TObj>(
-        this TObj reactiveObject,
-        [CallerMemberName] string? propertyName = null
-    )
-        where TObj : IReactiveObject
-    {
-        if (propertyName is null)
-            throw new ArgumentNullException(nameof(propertyName));
+//    /// <summary>
+//    /// 引发属性更改事件
+//    /// </summary>
+//    /// <typeparam name="TObj">对象类型</typeparam>
+//    /// <param name="reactiveObject">对象</param>
+//    /// <param name="propertyName">属性名</param>
+//    /// <returns>值</returns>
+//    /// <exception cref="ArgumentNullException">如果 <paramref name="propertyName"/> 为 <see langword="null"/></exception>
+//    public static void RaisePropertyChange<TObj>(
+//        this TObj reactiveObject,
+//        [CallerMemberName] string? propertyName = null
+//    )
+//        where TObj : IReactiveObject
+//    {
+//        if (propertyName is null)
+//            throw new ArgumentNullException(nameof(propertyName));
 
-        reactiveObject.RaisePropertyChanging(new(propertyName));
-        reactiveObject.RaisePropertyChanged(new(propertyName));
-    }
-}
+//        reactiveObject.RaisePropertyChanging(new(propertyName));
+//        reactiveObject.RaisePropertyChanged(new(propertyName));
+//    }
+//}

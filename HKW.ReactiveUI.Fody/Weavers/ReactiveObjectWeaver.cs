@@ -78,6 +78,17 @@ internal class ReactiveObjectWeaver
     {
         if (property.IsDefined(NotifyPropertyChangeFromAttribute) is false)
             return;
+
+        var attribute = property.CustomAttributes.First(x =>
+            x.AttributeType.FullName == NotifyPropertyChangeFromAttribute.FullName
+        );
+        var enableCacheProperty = attribute.Properties.FirstOrDefault(x => x.Name == "EnableCache");
+
+        var enableCache =
+            enableCacheProperty.Name is null || enableCacheProperty.Argument.Value is true;
+
+        if (enableCache is false)
+            return;
         var fieldName = "_" + property.Name.FirstLetterToLower();
         var field =
             classType.Fields.FirstOrDefault(x => x.Name == fieldName)

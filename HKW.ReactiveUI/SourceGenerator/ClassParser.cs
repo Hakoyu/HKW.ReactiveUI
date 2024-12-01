@@ -175,7 +175,7 @@ internal class ClassParser
         )
             return;
 
-        var methodBuilder = propertySymbol.GetGetMethodInfo(out var useSelf);
+        var methodBuilder = propertySymbol.GetGetMethodInfo(out var staticAction);
         if (methodBuilder is null)
             return;
         var info = new NotifyPropertyChangeFromInfo(
@@ -183,17 +183,27 @@ internal class ClassParser
             propertySymbol.Type,
             methodBuilder,
             true,
-            useSelf
+            staticAction
         );
 
         if (
             attributeArgs.TryGetValue(
-                nameof(NotifyPropertyChangeFromAttribute.NotifyOnInitialValue),
+                nameof(NotifyPropertyChangeFromAttribute.InitializeInInitializeObject),
                 out var notifyOnInitialValue
             )
         )
         {
-            info.NotifyOnInitialValue = notifyOnInitialValue.Value?.Value is true;
+            info.InitializeInInitializeObject = notifyOnInitialValue.Value?.Value is true;
+        }
+
+        if (
+            attributeArgs.TryGetValue(
+                nameof(NotifyPropertyChangeFromAttribute.EnableCache),
+                out var enableCacheValue
+            )
+        )
+        {
+            info.EnableCache = enableCacheValue.Value?.Value is true;
         }
 
         if (value.Values is null)

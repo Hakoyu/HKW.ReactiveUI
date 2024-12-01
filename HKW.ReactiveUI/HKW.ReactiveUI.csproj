@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>0.2.8</Version>
+		<Version>0.3.0</Version>
 		<Company>HKW</Company>
 		<Authors>HKW</Authors>
-		<PackageDescription>Noop</PackageDescription>
+		<PackageDescription>An MVVM library, based on ReactiveUI, using SourceGenerator and Fody for mixed source code generation.</PackageDescription>
 		<PackageTags>MVVM;ReactiveUI;Observable;Fody;SourceGenerator</PackageTags>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<Nullable>enable</Nullable>
@@ -38,12 +38,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fody" Version="6.8.2">
+		<PackageReference Include="Fody" Version="6.9.0">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
-		<PackageReference Include="FodyPackaging" Version="6.8.2" PrivateAssets="all" />
+		<PackageReference Include="FodyPackaging" Version="6.9.0" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
