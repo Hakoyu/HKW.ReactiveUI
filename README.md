@@ -34,8 +34,10 @@ partial class MyViewModel : ReactiveObject
 	    {
 		    string oldValue = backingField;
             this.RaisePropertyChanging("Name");
+            OnNameChanging(oldValue, newValue);
             backingField = newValue;
 		    this.RaisePropertyChanged("Name");
+            OnNameChanged(oldValue, newValue);
         }
 	}
 }
@@ -142,7 +144,7 @@ Generated code
 partial class MyViewModel : ReactiveObject
 {
     private bool _isSame;
-    [NotifyPropertyChangeFrom(true ,nameof(ID), nameof(Name), EnableCache = false)]
+    [NotifyPropertyChangeFrom(nameof(ID), nameof(Name), EnableCache = false)]
     public string IsSame => Name == ID;
 
     protected void InitializeReactiveObject()
