@@ -29,17 +29,17 @@ partial class MyViewModel : ReactiveObject
     }
 
     private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
-	{
-	    if (!check || !EqualityComparer<string>.Default.Equals(backingField, newValue))
-	    {
-		    string oldValue = backingField;
+    {
+        if (!check || !EqualityComparer<string>.Default.Equals(backingField, newValue))
+        {
+            string oldValue = backingField;
             this.RaisePropertyChanging("Name");
             OnNameChanging(oldValue, newValue);
             backingField = newValue;
-		    this.RaisePropertyChanged("Name");
+            this.RaisePropertyChanged("Name");
             OnNameChanged(oldValue, newValue);
         }
-	}
+    }
 }
 ```
 
@@ -83,7 +83,6 @@ partial class MyViewModel : ReactiveObject
 Notify property when target property changed
 A field is generated to cache the value when `EnableCache` is true
 
-
 ```csharp
 partial class MyViewModel : ReactiveObject
 {
@@ -107,7 +106,7 @@ partial class MyViewModel : ReactiveObject
         // InitializeInInitializeObject = true
        _isSame = Name == ID;
     }
-	protected void RaiseIsSameChange()
+    protected void RaiseIsSameChange()
     {
        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
     }
@@ -127,6 +126,7 @@ partial class MyViewModel : ReactiveObject
 ```
 
 ---
+
 When `EnableCache` is false
 
 ```csharp
@@ -152,7 +152,7 @@ partial class MyViewModel : ReactiveObject
         // InitializeInInitializeObject = true
        _isSame = Name == ID;
     }
-	protected void RaiseIsSameChange()
+    protected void RaiseIsSameChange()
     {
        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
     }
@@ -177,3 +177,4 @@ partial class MyViewModel : ReactiveObject
         ...
     }
 }
+```

@@ -1,25 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
-		<LangVersion>latest</LangVersion>
-		<ImplicitUsings>Enable</ImplicitUsings>
-		<Nullable>Enable</Nullable>
-		<IncludeSymbols>false</IncludeSymbols>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<RootNamespace>HKW.HKWReactiveUI.Demo</RootNamespace>
-		<PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
-		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-	</PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>Enable</ImplicitUsings>
+        <Nullable>Enable</Nullable>
+        <IncludeSymbols>false</IncludeSymbols>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RootNamespace>HKW.HKWReactiveUI.Demo</RootNamespace>
+        <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+    <ItemGroup>
+        <ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
 
-		<WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Fody" Version="6.9.0" PrivateAssets="all" />
-		<PackageReference Include="ReactiveUI" Version="20.1.63" />
-	</ItemGroup>
+        <WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Fody" Version="6.9.0" PrivateAssets="all" />
+        <PackageReference Include="ReactiveUI" Version="20.1.63" />
+    </ItemGroup>
 </Project>

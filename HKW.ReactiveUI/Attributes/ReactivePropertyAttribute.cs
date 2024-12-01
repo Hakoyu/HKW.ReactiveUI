@@ -34,15 +34,15 @@ namespace HKW.HKWReactiveUI;
 ///     }
 ///
 ///     private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
-///	    {
-///		    if (!check || !EqualityComparer<string>.Default.Equals(backingField, newValue))
-///		    {
-///			    string oldValue = backingField;
+///        {
+///            if (!check || !EqualityComparer<string>.Default.Equals(backingField, newValue))
+///            {
+///                string oldValue = backingField;
 ///             this.RaisePropertyChanging("Name");
 ///             backingField = newValue;
-///			    this.RaisePropertyChanged("Name");
+///                this.RaisePropertyChanged("Name");
 ///         }
-///	    }
+///        }
 /// }
 /// ]]></code></summary>
 /// <param name="Check">检查</param>

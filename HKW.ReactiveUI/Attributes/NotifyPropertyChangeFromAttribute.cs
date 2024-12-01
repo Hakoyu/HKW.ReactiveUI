@@ -29,8 +29,8 @@
 ///        _isSame = Name == ID;
 ///     }
 ///
-/// 	protected void RaiseIsSameChange()
-///	    {
+///     protected void RaiseIsSameChange()
+///        {
 ///        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
 ///     }
 ///     private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
