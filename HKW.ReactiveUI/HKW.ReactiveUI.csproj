@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>0.3.0</Version>
+        <Version>0.3.1</Version>
         <Company>HKW</Company>
         <Authors>HKW</Authors>
         <PackageDescription>An MVVM library, based on ReactiveUI, using SourceGenerator and Fody for mixed source code generation.</PackageDescription>
@@ -38,12 +38,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fody" Version="6.9.0">
+        <PackageReference Include="Fody" Version="6.9.1">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
-        <PackageReference Include="FodyPackaging" Version="6.9.0" PrivateAssets="all" />
+        <PackageReference Include="FodyPackaging" Version="6.9.1" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

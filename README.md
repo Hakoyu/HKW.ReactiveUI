@@ -80,14 +80,14 @@ partial class MyViewModel : ReactiveObject
 
 ## NotifyPropertyChangeFromAttribute
 
-Notify property when target property changed
+Notify property when target property changed  
 A field is generated to cache the value when `EnableCache` is true
 
 ```csharp
 partial class MyViewModel : ReactiveObject
 {
-    [NotifyPropertyChangeFrom(true, nameof(ID), nameof(Name))]
-    public string IsSame => ID == Name;
+    [NotifyPropertyChangeFrom(nameof(ID), nameof(Name))]
+    public bool IsSame => ID == Name;
     protected void InitializeReactiveObject() { }
 }
 ```
@@ -99,7 +99,7 @@ partial class MyViewModel : ReactiveObject
 {
     private bool _isSame;
     [NotifyPropertyChangeFrom(nameof(ID), nameof(Name))]
-    public string IsSame => Name == ID;
+    public bool IsSame => _isSame;
 
     protected void InitializeReactiveObject()
     {
@@ -133,7 +133,7 @@ When `EnableCache` is false
 partial class MyViewModel : ReactiveObject
 {
     [NotifyPropertyChangeFrom(nameof(ID), nameof(Name), EnableCache = false)]
-    public string IsSame => ID == Name;
+    public bool IsSame => ID == Name;
     protected void InitializeReactiveObject() { }
 }
 ```
@@ -145,7 +145,7 @@ partial class MyViewModel : ReactiveObject
 {
     private bool _isSame;
     [NotifyPropertyChangeFrom(nameof(ID), nameof(Name), EnableCache = false)]
-    public string IsSame => Name == ID;
+    public bool IsSame => Name == ID;
 
     protected void InitializeReactiveObject()
     {
