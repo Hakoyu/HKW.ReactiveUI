@@ -73,7 +73,7 @@ internal class ClassAnalyzer
             );
             // 添加属性注释
             sb.AppendLine(
-                $"/// <inheritdoc cref=\"{commandInfo.MethodName}({(commandInfo.ArgumentType is null ? string.Empty : inputType)})\"/>"
+                $"/// <inheritdoc cref=\"{commandInfo.MethodName}({(commandInfo.ArgumentType is null ? string.Empty : inputType.Replace('<', '{').Replace('>', '}'))})\"/>"
             );
             // 添加ReactiveCommand属性
             sb.AppendLine(

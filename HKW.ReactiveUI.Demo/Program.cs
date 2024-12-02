@@ -19,6 +19,7 @@ internal class Program
     static void Main(string[] args)
     {
         var t = new TestModel();
+
         //var c = t.TestCommand as ICommand;
         t.PropertyChanged += TestModel_PropertyChanged;
         //TestModel_PropertyChanged(true, new(null));
@@ -123,7 +124,8 @@ partial class TestModel : ReactiveObject
     /// <summary>
     /// Test
     /// </summary>
-    public void Test()
+    [ReactiveCommand]
+    public void Test(List<int> list)
     {
         Console.WriteLine(nameof(Test));
     }
