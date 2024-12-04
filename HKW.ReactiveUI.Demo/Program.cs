@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
@@ -18,42 +19,25 @@ internal class Program
 
     static void Main(string[] args)
     {
-        var t = new TestModel();
-
-        //var c = t.TestCommand as ICommand;
-        t.PropertyChanged += TestModel_PropertyChanged;
-        //TestModel_PropertyChanged(true, new(null));
-        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        t.ID = "114";
-        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        t.Name = "514";
-        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        //t.ID = "514";
-        //Debug.WriteLine($"{t.CanExecute1} | {c.CanExecute(null)}");
-        //t.Name = "114";
         return;
     }
 
-    private static void TestModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (sender is not TestModel model)
-            return;
-        Console.WriteLine(
-            $"{e.PropertyName} = {typeof(TestModel).GetProperty(e.PropertyName!)!.GetValue(sender)}"
-        );
-    }
+    //private static void TestModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    //{
+    //    if (sender is not TestModel model)
+    //        return;
+    //    Console.WriteLine(
+    //        $"{e.PropertyName} = {typeof(TestModel).GetProperty(e.PropertyName!)!.GetValue(sender)}"
+    //    );
+    //}
 }
 
 partial class TestModel : ReactiveObject
 {
-    public TestModel()
-    {
-        var id = 1;
-        _id = string.Empty;
-        //OnPropertyChange(ref id, 2, nameof(ID), true);
-        //OnPropertyChange(ref id, 2, nameof(ID), false);
-        //CanExecute1 = false;
-    }
+    //public TestModel(List<int> list)
+    //{
+    //    List = list;
+    //}
 
     //private string _tid = string.Empty;
     //public string TID
@@ -61,60 +45,63 @@ partial class TestModel : ReactiveObject
     //    get => _tid;
     //    set => RaiseAndSet(ref _tid, value, nameof(TID), false);
     //}
-    private string _id;
+    //[ReactiveProperty]
+    //public int Number { get; set; } = -1;
 
-    [ReactiveProperty(false)]
-    public string ID { get; set; } = string.Empty;
+    //private string _id;
 
-    [ReactiveProperty]
-    public string Name { get; set; } = string.Empty;
+    //[ReactiveProperty(false)]
+    //public string ID { get; set; } = string.Empty;
 
-    [NotifyPropertyChangeFrom(nameof(Name), nameof(ID))]
-    public bool CanExecute => Name == ID;
+    //[ReactiveProperty]
+    //public string Name { get; set; } = string.Empty;
 
-    [NotifyPropertyChangeFrom(nameof(Name), EnableCache = false)]
-    public List<int> List => new();
+    //[NotifyPropertyChangeFrom(nameof(Name), nameof(ID))]
+    //public bool CanExecute => Name == ID;
 
-    [NotifyPropertyChangeFrom(nameof(Name))]
-    public List<int> List1 => this.To(static x => new List<int>());
+    //[ReactiveProperty]
+    //public List<int> List { get; set; } = new();
 
-    [ReactiveProperty]
-    public bool[,] Bools { get; set; }
+    //[NotifyPropertyChangeFrom(nameof(Name))]
+    //public List<int> List1 => this.To(static x => new List<int>());
 
-    /// <summary>
-    /// 文化名称
-    /// </summary>
+    //[ReactiveProperty]
+    //public bool[,] Bools { get; set; }
 
-    [ReactiveProperty]
-    public string CultureName { get; set; } = string.Empty;
+    ///// <summary>
+    ///// 文化名称
+    ///// </summary>
 
-    /// <summary>
-    /// 文化全名
-    /// </summary>
-    [NotifyPropertyChangeFrom(nameof(CultureName))]
-    public string CultureFullName =>
-        this.To(static x =>
-        {
-            if (string.IsNullOrWhiteSpace(x.CultureName))
-            {
-                return UnknownCulture;
-            }
-            CultureInfo info = null!;
-            try
-            {
-                info = CultureInfo.GetCultureInfo(x.CultureName);
-            }
-            catch
-            {
-                return UnknownCulture;
-            }
-            if (info is not null)
-            {
-                return $"{info.DisplayName} [{info.Name}]";
-            }
-            return UnknownCulture;
-        });
-    public static string UnknownCulture => "未知文化";
+    //[ReactiveProperty]
+    //public string CultureName { get; set; } = string.Empty;
+
+    ///// <summary>
+    ///// 文化全名
+    ///// </summary>
+    //[NotifyPropertyChangeFrom(nameof(CultureName))]
+    //public string CultureFullName =>
+    //    this.To(static x =>
+    //    {
+    //        if (string.IsNullOrWhiteSpace(x.CultureName))
+    //        {
+    //            return UnknownCulture;
+    //        }
+    //        CultureInfo info = null!;
+    //        try
+    //        {
+    //            info = CultureInfo.GetCultureInfo(x.CultureName);
+    //        }
+    //        catch
+    //        {
+    //            return UnknownCulture;
+    //        }
+    //        if (info is not null)
+    //        {
+    //            return $"{info.DisplayName} [{info.Name}]";
+    //        }
+    //        return UnknownCulture;
+    //    });
+    //public static string UnknownCulture => "未知文化";
 
     //public void OnNameChanging(string value)
     //{
@@ -174,23 +161,36 @@ internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<Observab
     /// <param name="y">坐标Y</param>
     public ObservablePoint(T x, T y)
     {
-        X = x;
-        Y = y;
+        A1 = x;
+        A2 = y;
     }
 
     /// <inheritdoc/>
     [ReactiveProperty]
-    public T X { get; set; } = default!;
+    public T A1 { get; set; } = T.Zero;
 
     /// <inheritdoc/>
     [ReactiveProperty]
-    public T Y { get; set; } = default!;
+    public T A2 { get; set; } = default!;
+
+    [ReactiveProperty]
+    public int B1 { get; set; } = int.MaxValue;
+
+    [ReactiveProperty]
+    public int B2 { get; set; } = default;
+
+    public T C1 { get; set; } = T.Zero;
+
+    public T C2 { get; set; } = default!;
+
+    public int D1 { get; set; } = int.MaxValue;
+    public int D2 { get; set; } = default;
 
     #region Clone
     /// <inheritdoc/>
     public ObservablePoint<T> Clone()
     {
-        return new(X, Y);
+        return new(A1, A2);
     }
     #endregion
 
@@ -199,7 +199,7 @@ internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<Observab
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        return HashCode.Combine(X, Y);
+        return HashCode.Combine(A1, A2);
     }
 
     /// <inheritdoc/>
@@ -213,12 +213,12 @@ internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<Observab
     {
         if (other is null)
             return false;
-        return X == other.X && Y == other.Y;
+        return A1 == other.A1 && A2 == other.A2;
     }
     #endregion
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"X = {X}, Y = {Y}";
+        return $"X = {A1}, Y = {A2}";
     }
 }

@@ -173,12 +173,34 @@ internal class ReactiveObjectWeaver
                 //使用新字段初始化器替换自动生成的初始化器
                 if (isGenericClass)
                 {
-                    constructor
-                        .Body.GetILProcessor()
-                        .Replace(
-                            fieldAssignment,
-                            Instruction.Create(OpCodes.Ldflda, field.BindDefinition(classType))
-                        );
+                    var i = constructor.Body.Instructions.IndexOf(fieldAssignment);
+                    if (constructor.Body.Instructions[i - 1].OpCode == OpCodes.Call)
+                    {
+                        constructor
+                            .Body.GetILProcessor()
+                            .Replace(
+                                fieldAssignment,
+                                Instruction.Create(OpCodes.Stfld, field.BindDefinition(classType))
+                            );
+                    }
+                    else if (field.FieldType is GenericParameter g)
+                    {
+                        constructor
+                            .Body.GetILProcessor()
+                            .Replace(
+                                fieldAssignment,
+                                Instruction.Create(OpCodes.Ldflda, field.BindDefinition(classType))
+                            );
+                    }
+                    else
+                    {
+                        constructor
+                            .Body.GetILProcessor()
+                            .Replace(
+                                fieldAssignment,
+                                Instruction.Create(OpCodes.Stfld, field.BindDefinition(classType))
+                            );
+                    }
                 }
                 else
                 {
