@@ -1,26 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <Version>0.1.0</Version>
-        <Company>HKW</Company>
-        <Authors>HKW</Authors>
-        <PackageDescription>Noop</PackageDescription>
-        <PackageTags>mvvm;reactiveui;observable;fody</PackageTags>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <RootNamespace>HKW.HKWReactiveUI.Fody</RootNamespace>
-        <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
-        <IsPackable>False</IsPackable>
-        <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-        <PackageLicenseExpression>TIM</PackageLicenseExpression>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Company>HKW</Company>
+    <Authors>HKW</Authors>
+    <PackageDescription>Noop</PackageDescription>
+    <PackageTags>mvvm;reactiveui;observable;fody</PackageTags>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>HKW.HKWReactiveUI.Fody</RootNamespace>
+    <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
+    <IsPackable>False</IsPackable>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <PackageLicenseExpression>TIM</PackageLicenseExpression>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="FodyHelpers" Version="6.9.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FodyHelpers" Version="6.9.1" />
+  </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="copy $(OutDir)\$(AssemblyName).dll $(OutDir)\HKW.ReactiveUI.dll" />
-    </Target>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy $(OutDir)\$(AssemblyName).dll $(OutDir)\HKW.ReactiveUI.dll" />
+  </Target>
 </Project>

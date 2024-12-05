@@ -74,15 +74,7 @@ internal class ClassParser
         if (attributeData is null)
             return;
         // 获取特性的参数
-        if (attributeData.TryGetAttributeAndValues(out var values))
-        {
-            // 删除空的CanExecute
-            if (
-                values.TryGetValue(nameof(ReactiveCommandAttribute.CanExecute), out var name)
-                && string.IsNullOrWhiteSpace(name.Value.ToString())
-            )
-                values.Remove(nameof(ReactiveCommandAttribute.CanExecute));
-        }
+        var attributeParameters = attributeData.GetAttributeParameters();
 
         // 是否为异步方法
         bool isTask = methodSymbol.ReturnType.InheritedFrom(
@@ -102,7 +94,7 @@ internal class ClassParser
                 MethodReturnType = isReturnTypeVoid ? null : realReturnType,
                 IsTask = isTask,
                 ArgumentType = methodSymbol.Parameters.SingleOrDefault()?.Type,
-                ReactiveCommandDatas = values,
+                ReactiveCommandAttributeParameters = attributeParameters,
                 Comment = methodSymbol.GetDocumentationCommentXml() ?? string.Empty
             }
         );
@@ -163,11 +155,9 @@ internal class ClassParser
         )
             return;
         // 获取特性的参数
-        if (attributeData?.TryGetAttributeAndValues(out var attributeArgs) is not true)
-            return;
-
+        var attributeParameters = attributeData.GetAttributeParameters();
         if (
-            attributeArgs.TryGetValue(
+            attributeParameters.TryGetValue(
                 nameof(NotifyPropertyChangeFromAttribute.PropertyNames),
                 out var value
             )
@@ -187,23 +177,23 @@ internal class ClassParser
         );
 
         if (
-            attributeArgs.TryGetValue(
+            attributeParameters.TryGetValue(
                 nameof(NotifyPropertyChangeFromAttribute.InitializeInInitializeObject),
                 out var notifyOnInitialValue
             )
         )
         {
-            info.InitializeInInitializeObject = notifyOnInitialValue.Value?.Value is true;
+            info.InitializeInInitializeObject = notifyOnInitialValue?.Value is true;
         }
 
         if (
-            attributeArgs.TryGetValue(
+            attributeParameters.TryGetValue(
                 nameof(NotifyPropertyChangeFromAttribute.EnableCache),
                 out var enableCacheValue
             )
         )
         {
-            info.EnableCache = enableCacheValue.Value?.Value is true;
+            info.EnableCache = enableCacheValue?.Value is true;
         }
 
         if (value.Values is null)
@@ -211,7 +201,7 @@ internal class ClassParser
 
         foreach (var propertyType in value.Values)
         {
-            if (propertyType.Value is not string propertyName1)
+            if (propertyType is not string propertyName1)
                 continue;
             if (
                 ClassInfo.NotifyPropertyChangedFromInfos.TryGetValue(propertyName1, out var infos)
@@ -238,34 +228,34 @@ internal class ClassParser
             is false
         )
             return;
-        if (attributeData?.TryGetAttributeAndValues(out var values) is true)
-        {
-            if (values.TryGetValue("ResourceName", out var resourceNameType) is false)
-                return;
-            if (
-                resourceNameType.Value?.Value is not string resourceName
-                || string.IsNullOrWhiteSpace(resourceName)
+        var attributeParameters = attributeData.GetAttributeParameters();
+        if (attributeParameters.Count == 0)
+            return;
+        if (attributeParameters.TryGetValue("ResourceName", out var resourceNameType) is false)
+            return;
+        if (
+            resourceNameType?.Value is not string resourceName
+            || string.IsNullOrWhiteSpace(resourceName)
+        )
+            return;
+        if (attributeParameters.TryGetValue("KeyPropertyName", out var keyNameType) is false)
+            return;
+        if (keyNameType?.Value is not string keyName || string.IsNullOrWhiteSpace(keyName))
+            return;
+        attributeParameters.TryGetValue("ObjectName", out var objectNameType);
+        attributeParameters.TryGetValue(
+            "RetentionValueOnKeyChange",
+            out var retentionValueOnKeyChange
+        );
+        if (ClassInfo.I18nResourceInfoByName.TryGetValue(resourceName, out var infos) is false)
+            infos = ClassInfo.I18nResourceInfoByName[resourceName] = [];
+        infos.Add(
+            (
+                keyName,
+                propertySymbol.Name,
+                objectNameType?.Value?.ToString() ?? string.Empty,
+                retentionValueOnKeyChange?.Value is true
             )
-                return;
-            if (values.TryGetValue("KeyPropertyName", out var keyNameType) is false)
-                return;
-            if (
-                keyNameType.Value?.Value is not string keyName
-                || string.IsNullOrWhiteSpace(keyName)
-            )
-                return;
-            values.TryGetValue("ObjectName", out var objectNameType);
-            values.TryGetValue("RetentionValueOnKeyChange", out var retentionValueOnKeyChange);
-            if (ClassInfo.I18nResourceInfoByName.TryGetValue(resourceName, out var infos) is false)
-                infos = ClassInfo.I18nResourceInfoByName[resourceName] = [];
-            infos.Add(
-                (
-                    keyName,
-                    propertySymbol.Name,
-                    objectNameType?.Value?.Value?.ToString() ?? string.Empty,
-                    retentionValueOnKeyChange?.Value?.Value is true
-                )
-            );
-        }
+        );
     }
 }

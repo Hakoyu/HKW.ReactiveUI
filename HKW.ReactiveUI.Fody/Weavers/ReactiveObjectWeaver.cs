@@ -16,17 +16,9 @@ namespace HKW.HKWReactiveUI.Fody;
 internal class ReactiveObjectWeaver
 {
     /// <summary>
-    /// Executes this property weaver.
+    /// 执行
     /// </summary>
-    /// <exception cref="Exception">
-    /// reactiveObjectExtensions is null
-    /// or
-    /// raiseAndSetIfChangedMethod is null
-    /// or
-    /// reactiveAttribute is null
-    /// or
-    /// [ReactiveProperty] is decorating " + property.DeclaringType.FullName + "." + property.Name + ", but the property has no setter so there would be nothing to react to.  Consider removing the attribute.
-    /// </exception>
+    /// <param name="moduleDefinition"></param>
     public static void Execute(ModuleDefinition moduleDefinition)
     {
         ModuleWeaver.Logger.LogInfo(nameof(ReactiveObjectWeaver));
@@ -79,16 +71,17 @@ internal class ReactiveObjectWeaver
         if (property.IsDefined(NotifyPropertyChangeFromAttribute) is false)
             return;
 
-        var attribute = property.CustomAttributes.First(x =>
-            x.AttributeType.FullName == NotifyPropertyChangeFromAttribute.FullName
-        );
-        var enableCacheProperty = attribute.Properties.FirstOrDefault(x => x.Name == "EnableCache");
-
-        var enableCache =
-            enableCacheProperty.Name is null || enableCacheProperty.Argument.Value is true;
+        var attributeParameters = property
+            .CustomAttributes.First(x =>
+                x.AttributeType.FullName == NotifyPropertyChangeFromAttribute.FullName
+            )
+            .GetAttributeParameters();
+        attributeParameters.TryGetValue("EnableCache", out var enableCacheParameter);
+        var enableCache = enableCacheParameter?.Value is not false;
 
         if (enableCache is false)
             return;
+        // 如果启用了缓存,则会生成一个新字段来缓存值
         var fieldName = "_" + property.Name.FirstLetterToLower();
         var field =
             classType.Fields.FirstOrDefault(x => x.Name == fieldName)
@@ -97,9 +90,12 @@ internal class ReactiveObjectWeaver
         property.GetMethod.Body = new MethodBody(property.GetMethod);
         property.GetMethod.Body.Emit(il =>
         {
-            il.Emit(OpCodes.Ldarg_0); // this
-            il.Emit(OpCodes.Ldfld, field.BindDefinition(classType)); // pop -> this.$PropertyName
-            il.Emit(OpCodes.Ret); // Return the field value that is lying on the stack
+            // this
+            il.Emit(OpCodes.Ldarg_0);
+            // this.$PropertyName
+            il.Emit(OpCodes.Ldfld, field.BindDefinition(classType));
+            // Return
+            il.Emit(OpCodes.Ret);
         });
     }
 
@@ -107,6 +103,8 @@ internal class ReactiveObjectWeaver
     {
         if (property.IsDefined(ReactivePropertyAttribute) is false)
             return;
+
+        // 如果没有SetMethod
         if (property.SetMethod is null)
         {
             ModuleWeaver.Logger.LogError(
@@ -122,31 +120,31 @@ internal class ReactiveObjectWeaver
             ?? throw new Exception(
                 $"{classType.FullName} not exists method RaiseAndSet{property.Name}, please check if you have added the partial keyword to class"
             );
-        MethodReference raiseAndSetMethod = null!;
-        TypeReference genericClassType = classType;
-        var isGenericClass = classType.GenericParameters.Count > 0;
 
+        MethodReference raiseAndSetMethod = null!;
+        var isGenericClass = classType.GenericParameters.Count > 0;
         if (isGenericClass)
         {
-            genericClassType = classType.MakeGenericInstanceType([.. classType.GenericParameters]);
-            raiseAndSetMethod = raiseAndSetMethodDefinition.Bind(
-                (GenericInstanceType)genericClassType
+            // 如果是泛型类型,需要拼接一个完整的泛型类型
+            var genericClassType = classType.MakeGenericInstanceType(
+                [.. classType.GenericParameters]
             );
-            //raiseAndSetMethod = ModuleDefinition.ImportReference(m);
+            // 这样会生成Class`1<T>::Method 而不是 Class`1::Method, 后者在IL引用中会出错
+            raiseAndSetMethod = raiseAndSetMethodDefinition.Bind(genericClassType);
         }
         else
             raiseAndSetMethod = ModuleDefinition.ImportReference(raiseAndSetMethodDefinition);
 
-        var check =
-            property
-                .CustomAttributes.First(x =>
-                    x.AttributeType.FullName == ReactivePropertyAttribute.FullName
-                )
-                ?.ConstructorArguments[0]
-                .Value
-                is true;
+        var attributeParameters = property
+            .CustomAttributes.First(x =>
+                x.AttributeType.FullName == ReactivePropertyAttribute.FullName
+            )
+            .GetAttributeParameters();
+        attributeParameters.TryGetValue("Check", out var checkParameter);
+        // 获取检查属性
+        var check = checkParameter?.Value is not false;
 
-        // 生成一个新字段, 命名为$PropertyName
+        // 生成一个新字段, 命名为 $PropertyName
         var field = new FieldDefinition(
             "$" + property.Name,
             FieldAttributes.Private,
@@ -168,46 +166,24 @@ internal class ReactiveObjectWeaver
                 Equals(x.Operand, oldFieldDefinition)
                 || Equals(x.Operand?.ToString(), oldField.ToString())
             );
-            if (fieldAssignment is not null)
+            if (fieldAssignment is null)
+                continue;
+
+            //使用新字段初始化器替换自动生成的初始化器
+            if (isGenericClass)
             {
-                //使用新字段初始化器替换自动生成的初始化器
-                if (isGenericClass)
-                {
-                    var i = constructor.Body.Instructions.IndexOf(fieldAssignment);
-                    if (constructor.Body.Instructions[i - 1].OpCode == OpCodes.Call)
-                    {
-                        constructor
-                            .Body.GetILProcessor()
-                            .Replace(
-                                fieldAssignment,
-                                Instruction.Create(OpCodes.Stfld, field.BindDefinition(classType))
-                            );
-                    }
-                    else if (field.FieldType is GenericParameter g)
-                    {
-                        constructor
-                            .Body.GetILProcessor()
-                            .Replace(
-                                fieldAssignment,
-                                Instruction.Create(OpCodes.Ldflda, field.BindDefinition(classType))
-                            );
-                    }
-                    else
-                    {
-                        constructor
-                            .Body.GetILProcessor()
-                            .Replace(
-                                fieldAssignment,
-                                Instruction.Create(OpCodes.Stfld, field.BindDefinition(classType))
-                            );
-                    }
-                }
-                else
-                {
-                    constructor
-                        .Body.GetILProcessor()
-                        .Replace(fieldAssignment, Instruction.Create(OpCodes.Stfld, field));
-                }
+                constructor
+                    .Body.GetILProcessor()
+                    .Replace(
+                        fieldAssignment,
+                        Instruction.Create(fieldAssignment.OpCode, field.BindDefinition(classType))
+                    );
+            }
+            else
+            {
+                constructor
+                    .Body.GetILProcessor()
+                    .Replace(fieldAssignment, Instruction.Create(OpCodes.Stfld, field));
             }
         }
 
@@ -215,75 +191,36 @@ internal class ReactiveObjectWeaver
         property.GetMethod.Body = new MethodBody(property.GetMethod);
         property.GetMethod.Body.Emit(il =>
         {
-            il.Emit(OpCodes.Ldarg_0); // this
-            il.Emit(OpCodes.Ldfld, field.BindDefinition(classType)); // pop -> this.$PropertyName
-            il.Emit(OpCodes.Ret); // Return the field value that is lying on the stack
+            // this
+            il.Emit(OpCodes.Ldarg_0);
+            // this.$PropertyName
+            il.Emit(OpCodes.Ldfld, field.BindDefinition(classType));
+            // Return the field value that is lying on the stack
+            il.Emit(OpCodes.Ret);
         });
-
-        TypeReference genericTargetType = classType;
-        if (classType.HasGenericParameters)
-        {
-            var genericDeclaration = new GenericInstanceType(classType);
-            foreach (var parameter in classType.GenericParameters)
-            {
-                genericDeclaration.GenericArguments.Add(parameter);
-            }
-
-            genericTargetType = genericDeclaration;
-        }
-
-        // Build out the setter which fires the RaiseAndSet method
-        if (property.SetMethod is null)
-        {
-            throw new Exception(
-                "[ReactiveProperty] is decorating "
-                    + property.DeclaringType.FullName
-                    + "."
-                    + property.Name
-                    + ", but the property has no setter so there would be nothing to react to.  Consider removing the attribute."
-            );
-        }
 
         // 创建新的setter
         property.SetMethod.Body = new MethodBody(property.SetMethod);
-        //if (ModuleWeaver.ReactiveObjectX.IsAssignableFrom(classType))
-        //{
-        //var methodReference = raiseAndSetMethod.MakeGenericMethod(property.PropertyType);
-        // 如果继承自 ReactiveObjectX 则使用 RaiseAndSet
         property.SetMethod.Body.Emit(il =>
         {
-            il.Emit(OpCodes.Ldarg_0); // this
-            il.Emit(OpCodes.Ldarg_0); // this
-            il.Emit(OpCodes.Ldflda, field.BindDefinition(classType)); // pop -> this.$PropertyName
-            il.Emit(OpCodes.Ldarg_1); // value
-            //il.Emit(OpCodes.Ldstr, property.Name); // "PropertyName"
+            // this
+            il.Emit(OpCodes.Ldarg_0);
+            // this
+            il.Emit(OpCodes.Ldarg_0);
+            // ref field
+            il.Emit(OpCodes.Ldflda, field.BindDefinition(classType));
+            // newValue
+            il.Emit(OpCodes.Ldarg_1);
             if (check) // Check
                 il.Emit(OpCodes.Ldc_I4_1);
             else
                 il.Emit(OpCodes.Ldc_I4_0);
-            il.Emit(OpCodes.Call, raiseAndSetMethod); // pop * 4 -> this.RaiseAndSet(this.$PropertyName, value, "PropertyName")
-            il.Emit(OpCodes.Nop); // Nop
-            il.Emit(OpCodes.Ret); // Return out of the function
+            // this.RaiseAndSetProperty(ref field, newValue, check)
+            il.Emit(OpCodes.Call, raiseAndSetMethod);
+            // Nop
+            il.Emit(OpCodes.Nop);
+            // Return out of the function
+            il.Emit(OpCodes.Ret);
         });
-        //}
-        //else
-        //{
-        //    var methodReference = ModuleWeaver.RaiseAndSetIfChangedMethod.MakeGenericMethod(
-        //        classType,
-        //        property.PropertyType
-        //    );
-        //    // 否则使用传统方式 RaiseAndSetIfChanged
-        //    property.SetMethod.Body.Emit(il =>
-        //    {
-        //        il.Emit(OpCodes.Ldarg_0); // this
-        //        il.Emit(OpCodes.Ldarg_0); // this
-        //        il.Emit(OpCodes.Ldflda, field.BindDefinition(classType)); // pop -> this.$PropertyName
-        //        il.Emit(OpCodes.Ldarg_1); // value
-        //        il.Emit(OpCodes.Ldstr, property.Name); // "PropertyName"
-        //        il.Emit(OpCodes.Call, methodReference); // pop * 4 -> this.RaiseAndSetIfChanged(this.$PropertyName, value, "PropertyName")
-        //        il.Emit(OpCodes.Pop); // We don't care about the result of RaiseAndSetIfChanged, so pop it off the stack (stack is now empty)
-        //        il.Emit(OpCodes.Ret); // Return out of the function
-        //    });
-        //}
     }
 }

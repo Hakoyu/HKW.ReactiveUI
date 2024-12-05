@@ -45,12 +45,22 @@ namespace HKW.HKWReactiveUI;
 ///        }
 /// }
 /// ]]></code></summary>
-/// <param name="Check">检查</param>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class ReactivePropertyAttribute(bool Check = true) : Attribute
+public sealed class ReactivePropertyAttribute : Attribute
 {
+    /// <summary>
+    ///
+    /// </summary>
+    public ReactivePropertyAttribute() { }
+
+    /// <param name="Check">检查</param>
+    public ReactivePropertyAttribute(bool Check)
+    {
+        this.Check = Check;
+    }
+
     /// <summary>
     /// 检查
     /// </summary>
-    public bool Check { get; } = Check;
+    public bool Check { get; } = true;
 }

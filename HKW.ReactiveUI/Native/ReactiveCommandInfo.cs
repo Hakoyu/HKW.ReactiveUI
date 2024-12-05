@@ -16,7 +16,10 @@ internal class ReactiveCommandInfo
     /// <summary>
     /// (ParamName, TypeAndValue)
     /// </summary>
-    public Dictionary<string, TypeAndValue> ReactiveCommandDatas { get; set; } = [];
+    public Dictionary<
+        string,
+        AttributeParameterValue
+    > ReactiveCommandAttributeParameters { get; set; } = [];
 
     public string GetOutputTypeText()
     {

@@ -46,6 +46,7 @@ internal class ClassAnalyzer
                 (
                     typeName,
                     $"[global::System.CodeDom.Compiler.GeneratedCode(\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Name}\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                        + Environment.NewLine
                         + $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
                 )
             );
@@ -64,6 +65,7 @@ internal class ClassAnalyzer
             // 添加DebuggerBrowsable,防止调试器显示
             sb.AppendLine(
                 $"[global::System.CodeDom.Compiler.GeneratedCode(\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Name}\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                    + Environment.NewLine
                     + "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
             );
             // 添加ReactiveCommand字段
@@ -109,14 +111,14 @@ internal class ClassAnalyzer
             }
             // 如果有CanExecute则添加canExecute参数
             if (
-                commandInfo.ReactiveCommandDatas.TryGetValue(
+                commandInfo.ReactiveCommandAttributeParameters.TryGetValue(
                     nameof(ReactiveCommandAttribute.CanExecute),
                     out var reactiveCommandData
                 )
             )
             {
                 sb.Append(
-                    $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{reactiveCommandData.Value?.Value}, true)"
+                    $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{reactiveCommandData.Value}, true)"
                 );
             }
             sb.AppendLine("));");
@@ -183,6 +185,7 @@ internal class ClassAnalyzer
                     }
                     GenerateInfo.Members.Add(
                         $"[global::System.CodeDom.Compiler.GeneratedCode(\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Name}\",\"{System.Reflection.Assembly.GetCallingAssembly().GetName().Version}\")]"
+                            + Environment.NewLine
                             + "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]"
                             + Environment.NewLine
                             + "private "

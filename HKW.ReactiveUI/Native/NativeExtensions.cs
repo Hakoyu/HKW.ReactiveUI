@@ -9,22 +9,20 @@ namespace HKW.HKWReactiveUI;
 internal static class NativeExtensions
 {
     /// <summary>
-    /// 尝试获取属性的值
+    /// 获取特性参数值
     /// </summary>
-    /// <param name="attributeData">属性数据</param>
-    /// <param name="attributeValues">属性值</param>
-    /// <returns>成功为 <see langword="true"/> 失败为 <see langword="false"/></returns>
-    public static bool TryGetAttributeAndValues(
-        this AttributeData attributeData,
-        out Dictionary<string, TypeAndValue> attributeValues
+    /// <param name="attributeData"></param>
+    /// <returns>特性参数和值 (ParameterName, ParameterValue)</returns>
+    public static Dictionary<string, AttributeParameterValue> GetAttributeParameters(
+        this AttributeData attributeData
     )
     {
-        attributeValues = [];
+        var parameters = new Dictionary<string, AttributeParameterValue>();
         if (
-            attributeData.AttributeConstructor?.Parameters
+            attributeData?.AttributeConstructor?.Parameters
             is not ImmutableArray<IParameterSymbol> constructorParams
         )
-            return false;
+            return parameters;
 
         var allArguments = attributeData
             .ConstructorArguments
@@ -39,16 +37,14 @@ internal static class NativeExtensions
             // 如果是多值 (params) 则添加多值
             if (info.Kind is TypedConstantKind.Array)
             {
-                attributeValues.Add(name, new TypeAndValue(info.Values));
+                parameters.Add(name, new(info.Values));
             }
             else
             {
-                attributeValues.Add(name, new TypeAndValue(info));
+                parameters.Add(name, new(info));
             }
         }
-        if (attributeValues.Count == 0)
-            return false;
-        return true;
+        return parameters;
     }
 
     /// <summary>

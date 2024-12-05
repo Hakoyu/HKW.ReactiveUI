@@ -19,6 +19,17 @@ internal class Program
 
     static void Main(string[] args)
     {
+        var p = new ObservablePoint<int>()
+        {
+            A1 = 1,
+            A2 = 1,
+            B1 = 1,
+            B2 = 1,
+            C1 = 1,
+            C2 = 1,
+            D1 = 1,
+            D2 = 1
+        };
         return;
     }
 
@@ -34,46 +45,48 @@ internal class Program
 
 partial class TestModel : ReactiveObject
 {
-    //public TestModel(List<int> list)
-    //{
-    //    List = list;
-    //}
+    [ReactiveProperty(false)]
+    public int B1 { get; set; } = int.MaxValue;
 
-    //private string _tid = string.Empty;
-    //public string TID
-    //{
-    //    get => _tid;
-    //    set => RaiseAndSet(ref _tid, value, nameof(TID), false);
-    //}
-    //[ReactiveProperty]
-    //public int Number { get; set; } = -1;
+    [ReactiveProperty]
+    public int B2 { get; set; } = default!;
+    public int D1 { get; set; } = int.MaxValue;
+    public int D2 { get; set; } = default;
 
-    //private string _id;
+    public TestModel(List<int> list)
+    {
+        List = list;
+    }
 
-    //[ReactiveProperty(false)]
-    //public string ID { get; set; } = string.Empty;
+    [ReactiveProperty]
+    public int Number { get; set; } = -1;
 
-    //[ReactiveProperty]
-    //public string Name { get; set; } = string.Empty;
+    private string _id;
 
-    //[NotifyPropertyChangeFrom(nameof(Name), nameof(ID))]
-    //public bool CanExecute => Name == ID;
+    [ReactiveProperty(false)]
+    public string ID { get; set; } = string.Empty;
 
-    //[ReactiveProperty]
-    //public List<int> List { get; set; } = new();
+    [ReactiveProperty]
+    public string Name { get; set; } = string.Empty;
 
-    //[NotifyPropertyChangeFrom(nameof(Name))]
-    //public List<int> List1 => this.To(static x => new List<int>());
+    [NotifyPropertyChangeFrom(nameof(Name), nameof(ID))]
+    public bool CanExecute => Name == ID;
 
-    //[ReactiveProperty]
-    //public bool[,] Bools { get; set; }
+    [ReactiveProperty]
+    public List<int> List { get; set; } = new();
 
-    ///// <summary>
-    ///// 文化名称
-    ///// </summary>
+    [NotifyPropertyChangeFrom(nameof(Name))]
+    public List<int> List1 => this.To(static x => new List<int>());
 
-    //[ReactiveProperty]
-    //public string CultureName { get; set; } = string.Empty;
+    [ReactiveProperty]
+    public bool[,] Bools { get; set; }
+
+    /// <summary>
+    /// 文化名称
+    /// </summary>
+
+    [ReactiveProperty]
+    public string CultureName { get; set; } = string.Empty;
 
     ///// <summary>
     ///// 文化全名
@@ -111,7 +124,7 @@ partial class TestModel : ReactiveObject
     /// <summary>
     /// Test
     /// </summary>
-    [ReactiveCommand]
+    [ReactiveCommand(CanExecute = nameof(CanExecute))]
     public void Test(List<int> list)
     {
         Console.WriteLine(nameof(Test));

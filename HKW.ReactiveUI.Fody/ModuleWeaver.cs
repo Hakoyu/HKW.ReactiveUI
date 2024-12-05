@@ -62,7 +62,7 @@ public class ModuleWeaver : BaseModuleWeaver
         if (ReactiveUI is null)
         {
             Logger.LogError(
-                "Could not find assembly: ReactiveUI ("
+                "Could not find assembly: ReactiveUI in ("
                     + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
                     + ")"
             );
