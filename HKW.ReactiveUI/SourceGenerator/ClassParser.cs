@@ -1,6 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
+using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -78,7 +79,7 @@ internal class ClassParser
 
         // 是否为异步方法
         bool isTask = methodSymbol.ReturnType.InheritedFrom(
-            NativeData.TaskTypeFullName,
+            CommonData.TaskTypeFullName,
             SymbolDisplayFormat.FullyQualifiedFormat
         );
         var realReturnType = isTask

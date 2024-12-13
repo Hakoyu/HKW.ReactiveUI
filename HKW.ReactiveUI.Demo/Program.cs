@@ -8,6 +8,7 @@ using System.Windows.Input;
 using DynamicData.Binding;
 using HKW.HKWReactiveUI;
 using ReactiveUI;
+using Splat;
 
 namespace HKW.HKWReactiveUI.Demo;
 
@@ -19,18 +20,20 @@ internal class Program
 
     static void Main(string[] args)
     {
-        var p = new ObservablePoint<int>()
-        {
-            A1 = 1,
-            A2 = 1,
-            B1 = 1,
-            B2 = 1,
-            C1 = 1,
-            C2 = 1,
-            D1 = 1,
-            D2 = 1
-        };
-        return;
+        var vm = new TestModel();
+        //LogHostX.AssignLoggerService(typeof(TestModel), LogHost.Default);
+        //var p = new ObservablePoint<int>()
+        //{
+        //    A1 = 1,
+        //    A2 = 1,
+        //    B1 = 1,
+        //    B2 = 1,
+        //    C1 = 1,
+        //    C2 = 1,
+        //    D1 = 1,
+        //    D2 = 1
+        //};
+        //return;
     }
 
     //private static void TestModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -43,8 +46,13 @@ internal class Program
     //}
 }
 
-partial class TestModel : ReactiveObject
+partial class TestModel : ReactiveObject, IEnableLogger<ReactiveObjectX>
 {
+    public TestModel()
+    {
+        this.LogX().Debug("");
+    }
+
     [ReactiveProperty(false)]
     public int B1 { get; set; } = int.MaxValue;
 

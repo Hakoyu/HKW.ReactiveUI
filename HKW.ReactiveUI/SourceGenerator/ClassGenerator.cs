@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Text;
+using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -154,6 +155,7 @@ internal class ClassGenerator
     private void GenerateInitializeReactiveObject()
     {
         Writer.WriteLine("/// <inheritdoc/>");
+        Writer.WriteLine(CommonData.GeneratedCodeAttribute);
         if (GeneratorInfo.IsReactiveObjectX)
         {
             Writer.WriteLine("protected override void InitializeReactiveObject()");

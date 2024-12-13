@@ -1,7 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Runtime.CompilerServices;
 using ReactiveUI;
-using Splat;
 
 namespace HKW.HKWReactiveUI;
 

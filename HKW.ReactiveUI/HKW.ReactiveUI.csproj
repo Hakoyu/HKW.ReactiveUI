@@ -1,55 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <Version>0.3.3</Version>
-        <Company>HKW</Company>
-        <Authors>HKW</Authors>
-        <PackageDescription>An MVVM library, based on ReactiveUI, using SourceGenerator and Fody for mixed source code generation.</PackageDescription>
-        <PackageTags>MVVM;ReactiveUI;Observable;Fody;SourceGenerator</PackageTags>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <RootNamespace>HKW.HKWReactiveUI</RootNamespace>
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
-        <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
-        <IsRoslynComponent>true</IsRoslynComponent>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageId>HKW.ReactiveUI</PackageId>
-        <WeaverDirPath>..\HKW.ReactiveUI.Fody\bin\$(Configuration)\</WeaverDirPath>
+  <PropertyGroup>
+    <Version>0.3.4</Version>
+    <Company>HKW</Company>
+    <Authors>HKW</Authors>
+    <PackageDescription>An MVVM library, based on ReactiveUI, using SourceGenerator and Fody for mixed source code generation.</PackageDescription>
+    <PackageTags>MVVM;ReactiveUI;Observable;Fody;SourceGenerator</PackageTags>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>HKW.HKWReactiveUI</RootNamespace>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageId>HKW.ReactiveUI</PackageId>
+    <WeaverDirPath>..\HKW.ReactiveUI.Fody\bin\$(Configuration)\</WeaverDirPath>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    </PropertyGroup>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="ReactiveUI" Version="20.1.63" GeneratePathProperty="true" />
-        <None Include="$(PkgReactiveUI)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ReactiveUI" Version="20.1.63" GeneratePathProperty="true" />
+    <None Include="$(PkgReactiveUI)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Fody" Version="6.9.1">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
-        <PackageReference Include="FodyPackaging" Version="6.9.1" PrivateAssets="all" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Fody" Version="6.9.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
+    <PackageReference Include="FodyPackaging" Version="6.9.1" PrivateAssets="all" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <None Include="..\README.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-    </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>
