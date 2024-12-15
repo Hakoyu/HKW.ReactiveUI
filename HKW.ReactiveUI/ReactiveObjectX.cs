@@ -1,11 +1,12 @@
 ﻿using System.CodeDom.Compiler;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using ReactiveUI;
 
 namespace HKW.HKWReactiveUI;
 
 /// <inheritdoc cref="ReactiveObject"/>
-public partial class ReactiveObjectX : ReactiveObject
+public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposables
 {
     /// <inheritdoc/>
     protected ReactiveObjectX()
@@ -25,4 +26,54 @@ public partial class ReactiveObjectX : ReactiveObject
     /// 初始化 (用于自动生成)
     /// </summary>
     protected virtual void InitializeReactiveObject() { }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private List<IDisposable>? _disposables;
+
+    /// <inheritdoc/>
+    public List<IDisposable> Disposables => _disposables ??= [];
+
+    #region IDisposable
+    /// <summary>
+    /// 已处理
+    /// </summary>
+    protected bool _disposed;
+
+    /// <inheritdoc/>
+    ~ReactiveObjectX()
+    {
+        Dispose(false);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <inheritdoc/>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            if (_disposables is not null)
+            {
+                for (var i = 0; i < Disposables.Count; i++)
+                    Disposables[i].Dispose();
+                Disposables.Clear();
+            }
+        }
+        _disposed = true;
+    }
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    public void Close()
+    {
+        Dispose();
+    }
+    #endregion
 }
