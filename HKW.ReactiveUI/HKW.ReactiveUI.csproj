@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.3.5</Version>
+    <Version>0.3.6</Version>
     <Company>HKW</Company>
     <Authors>HKW</Authors>
     <PackageDescription>An MVVM library, based on ReactiveUI, using SourceGenerator and Fody for mixed source code generation.</PackageDescription>

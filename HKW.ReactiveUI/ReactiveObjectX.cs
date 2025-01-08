@@ -6,7 +6,7 @@ using ReactiveUI;
 namespace HKW.HKWReactiveUI;
 
 /// <inheritdoc cref="ReactiveObject"/>
-public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposables
+public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposableTracker
 {
     /// <inheritdoc/>
     protected ReactiveObjectX()
@@ -28,10 +28,10 @@ public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposables
     protected virtual void InitializeReactiveObject() { }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private List<IDisposable>? _disposables;
+    private List<IDisposable>? _disposableList;
 
     /// <inheritdoc/>
-    public List<IDisposable> Disposables => _disposables ??= [];
+    public List<IDisposable> DisposableList => _disposableList ??= [];
 
     #region IDisposable
     /// <summary>
@@ -60,11 +60,11 @@ public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposables
 
         if (disposing)
         {
-            if (_disposables is not null)
+            if (_disposableList is not null)
             {
-                for (var i = 0; i < Disposables.Count; i++)
-                    Disposables[i].Dispose();
-                Disposables.Clear();
+                for (var i = 0; i < DisposableList.Count; i++)
+                    DisposableList[i].Dispose();
+                DisposableList.Clear();
             }
         }
         _disposed = true;
