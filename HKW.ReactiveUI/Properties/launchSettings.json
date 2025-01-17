@@ -3,7 +3,7 @@
     "HKW.ReactiveUI": {
       "commandName": "Project"
     },
-    "HKW.ReactiveUI.SourceGenerator": {
+    "SourceGenerator": {
       "commandName": "DebugRoslynComponent",
       "targetProject": "..\\HKW.ReactiveUI.Demo\\HKW.ReactiveUI.Demo.csproj"
     }

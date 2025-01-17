@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
@@ -33,6 +34,7 @@ internal class ClassAnalyzer
         AnalyzeReactiveCommand();
         AnalyzeNotifyPropertyChangeFrom();
         AnalyzeI18nObject();
+        AnalyzeObservableAsProperty();
 
         return GenerateInfo;
     }
@@ -41,7 +43,7 @@ internal class ClassAnalyzer
     {
         foreach (var property in ClassInfo.ReactiveProperties)
         {
-            var typeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var typeName = property.Type.GetFullNameAndGeneric();
             GenerateInfo.ReactivePropertyActionByName.Add(
                 property.Name,
                 (
@@ -51,6 +53,33 @@ internal class ClassAnalyzer
                         + $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
                 )
             );
+        }
+    }
+
+    private void AnalyzeObservableAsProperty()
+    {
+        foreach (var property in ClassInfo.ObservableAsProperties)
+        {
+            var feildName = $"_{property.Name.FirstLetterToLower()}";
+            GenerateInfo.Members.Add(
+                CommonData.GeneratedCodeAttribute
+                    + Environment.NewLine
+                    //+ CommonData.DebuggerBrowsableNever
+                    + Environment.NewLine
+                    + $"private ObservableAsPropertyHelper<{property.Type.GetFullNameAndGeneric()}>  {feildName};"
+            );
+            if (property.GetMethod is null)
+                continue;
+            var getMethod =
+                property.GetMethod.DeclaringSyntaxReferences.First().GetSyntax()
+                as ArrowExpressionClauseSyntax;
+            var e1 = getMethod?.Expression as InvocationExpressionSyntax;
+            var e2 = e1?.Expression as MemberAccessExpressionSyntax;
+            if (e2?.Name.Identifier.ValueText != "ToDefault")
+                continue;
+            if (e2.Expression is not InvocationExpressionSyntax e3)
+                continue;
+            GenerateInfo.InitializeMembers.Add($"{feildName} = {e3};");
         }
     }
 
@@ -68,6 +97,7 @@ internal class ClassAnalyzer
                 CommonData.GeneratedCodeAttribute
                     + Environment.NewLine
                     + CommonData.DebuggerBrowsableNever
+                    + Environment.NewLine
             );
             // 添加ReactiveCommand字段
             sb.AppendLine(
@@ -167,9 +197,7 @@ internal class ClassAnalyzer
                     if (fields.Contains(fieldName) is false)
                     {
                         GenerateInfo.Members.Add(
-                            $"private static Func<{ClassInfo.FullTypeName},{info.Type.ToDisplayString(
-                SymbolDisplayFormat.FullyQualifiedFormat
-            )}> {actionName} = _this => {info.Builder};"
+                            $"private static Func<{ClassInfo.FullTypeName},{info.Type.GetFullNameAndGeneric()}> {actionName} = _this => {info.Builder};"
                         );
                     }
                     info.Builder = new($"{actionName}(this)");
@@ -180,7 +208,7 @@ internal class ClassAnalyzer
                 // 添加字段
                 if (fields.Add(fieldName))
                 {
-                    if (info.InitializeInInitializeObject)
+                    if (info.CacheAtInitialize)
                     {
                         GenerateInfo.InitializeMembers.Add($"{fieldName} = {info.Builder};");
                     }

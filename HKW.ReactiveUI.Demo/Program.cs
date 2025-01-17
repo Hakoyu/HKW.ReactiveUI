@@ -21,6 +21,9 @@ internal class Program
     static void Main(string[] args)
     {
         var vm = new TestModel();
+        vm.FirstName = "F";
+        vm.LastName = "L";
+        var f = vm.FullName;
         //LogHostX.AssignLoggerService(typeof(TestModel), LogHost.Default);
         //var p = new ObservablePoint<int>()
         //{
@@ -46,18 +49,27 @@ internal class Program
     //}
 }
 
-partial class TestModel : ReactiveObject, IEnableLogger<ReactiveObjectX>
+partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
 {
     public TestModel()
     {
-        this.LogX().Debug("");
+        var a = this.WhenAnyValue(x => x.B1, x => x.B2)
+            .Select(x => x)
+            .ToProperty(this, nameof(Ass));
+        //_ass = ;
     }
+
+    //ObservableAsPropertyHelper<int> _ass;
+    [ObservableAsProperty]
+    public int Ass =>
+        this.WhenAnyValue(x => x.B1).Select(x => x).ToProperty(this, nameof(Ass)).ToDefault<int>();
 
     [ReactiveProperty(false)]
     public int B1 { get; set; } = int.MaxValue;
 
     [ReactiveProperty]
     public int B2 { get; set; } = default!;
+
     public int D1 { get; set; } = int.MaxValue;
     public int D2 { get; set; } = default;
 
@@ -65,6 +77,19 @@ partial class TestModel : ReactiveObject, IEnableLogger<ReactiveObjectX>
     {
         List = list;
     }
+
+    [ReactiveProperty]
+    public string FirstName { get; set; } = string.Empty;
+
+    [ReactiveProperty]
+    public string LastName { get; set; } = string.Empty;
+
+    [ObservableAsProperty]
+    public string FullName =>
+        this.WhenAnyValue(x => x.FirstName, x => x.LastName)
+            .Select((f, l) => $"{f} {l}")
+            .ToProperty(this, nameof(FullName))
+            .ToDefault<string>();
 
     [ReactiveProperty]
     public int Number { get; set; } = -1;
@@ -158,6 +183,11 @@ internal static class TestExtensions
             (Previous: default(T), Current: default(T)),
             (pair, current) => (pair.Current, current)
         );
+    }
+
+    public static T ToDefault<T>(this object obj)
+    {
+        return default!;
     }
 
     public static TTarget To<TSource, TTarget>(this TSource source, Func<TSource, TTarget> func)

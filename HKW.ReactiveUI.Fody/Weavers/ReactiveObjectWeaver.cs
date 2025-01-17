@@ -32,6 +32,10 @@ internal class ReactiveObjectWeaver
 
     public TypeReference NotifyPropertyChangeFromAttribute { get; private set; } = null!;
 
+    public TypeReference ObservableAsPropertyAttribute { get; private set; } = null!;
+
+    public TypeReference ObservableAsPropertyHelper { get; private set; } = null!;
+
     public void Execute()
     {
         ReactivePropertyAttribute =
@@ -48,22 +52,68 @@ internal class ReactiveObjectWeaver
                 ModuleWeaver.HKWReactiveUI
             ) ?? throw new Exception("NotifyPropertyChangeFromAttribute is null");
 
+        ObservableAsPropertyAttribute =
+            ModuleDefinition.FindType(
+                "HKW.HKWReactiveUI",
+                "ObservableAsPropertyAttribute",
+                ModuleWeaver.HKWReactiveUI
+            ) ?? throw new Exception("ObservableAsPropertyAttribute is null");
+
+        ObservableAsPropertyHelper = ModuleDefinition.FindType(
+            "ReactiveUI",
+            "ObservableAsPropertyHelper`1",
+            ModuleWeaver.ReactiveUI,
+            "T"
+        );
+
         foreach (var classType in ModuleWeaver.IReactiveObjectDerivedClasses)
         {
-            ExecuteClass(classType);
+            ClassWeaver(classType);
         }
     }
 
-    public void ExecuteClass(TypeDefinition classType)
+    public void ClassWeaver(TypeDefinition classType)
     {
         foreach (var property in classType.Properties)
         {
-            ExecuteReactiveProperty(classType, property);
-            ExecuteNotifyPropertyChangeFrom(classType, property);
+            ReactivePropertyWeaver(classType, property);
+            NotifyPropertyChangeFromWeaver(classType, property);
+            ObservableAsPropertyWeaver(classType, property);
         }
     }
 
-    public void ExecuteNotifyPropertyChangeFrom(
+    public void ObservableAsPropertyWeaver(TypeDefinition classType, PropertyDefinition property)
+    {
+        if (property.IsDefined(ObservableAsPropertyAttribute) is false)
+            return;
+
+        // 如果启用了缓存,则会生成一个新字段来缓存值
+        var fieldName = "_" + property.Name.FirstLetterToLower();
+        var field =
+            classType.Fields.FirstOrDefault(x => x.Name == fieldName)
+            ?? throw new Exception($"Field {fieldName} not exist");
+        var genericHelper = ObservableAsPropertyHelper.MakeGenericInstanceType(
+            property.PropertyType
+        );
+        var helperGetValue = ModuleDefinition.ImportReference(
+            ObservableAsPropertyHelper.Resolve().Properties.Single(x => x.Name == "Value").GetMethod
+        );
+        var genericHelperGetValue = helperGetValue.Bind(genericHelper);
+        property.GetMethod.Body = new MethodBody(property.GetMethod);
+        property.GetMethod.Body.Emit(il =>
+        {
+            // this
+            il.Emit(OpCodes.Ldarg_0);
+            // this.$PropertyName
+            il.Emit(OpCodes.Ldfld, field.BindDefinition(classType));
+            // field.Value
+            il.Emit(OpCodes.Callvirt, genericHelperGetValue);
+            // Return
+            il.Emit(OpCodes.Ret);
+        });
+    }
+
+    public void NotifyPropertyChangeFromWeaver(
         TypeDefinition classType,
         PropertyDefinition property
     )
@@ -99,7 +149,7 @@ internal class ReactiveObjectWeaver
         });
     }
 
-    public void ExecuteReactiveProperty(TypeDefinition classType, PropertyDefinition property)
+    public void ReactivePropertyWeaver(TypeDefinition classType, PropertyDefinition property)
     {
         if (property.IsDefined(ReactivePropertyAttribute) is false)
             return;

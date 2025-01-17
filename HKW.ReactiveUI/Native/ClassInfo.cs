@@ -39,6 +39,11 @@ internal sealed class ClassInfo
     /// </summary>
     public List<IPropertySymbol> ReactiveProperties { get; } = [];
 
+    /// <summary>
+    /// 可观察属性
+    /// </summary>
+    public List<IPropertySymbol> ObservableAsProperties { get; } = [];
+
     ///// <summary>
     ///// (PropertyName, MethodParameterCount)
     ///// </summary>

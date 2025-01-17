@@ -6,3 +6,4 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 R0001 | HKWReactiveUI | Error | Descriptors
+R0002 | HKWReactiveUI | Error | Descriptors

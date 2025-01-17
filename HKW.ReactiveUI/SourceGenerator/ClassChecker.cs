@@ -28,11 +28,11 @@ internal class ClassChecker
         // 如果不是分布类型,则触发异常
         if (declaredClass.Modifiers.Any(SyntaxKind.PartialKeyword) is false)
         {
-            var errorDiagnostic = Diagnostic.Create(
+            var diagnostic = Diagnostic.Create(
                 Descriptors.NotPartialClass,
                 classSymbol.Locations[0]
             );
-            Generator.ExecutionContext.ReportDiagnostic(errorDiagnostic);
+            Generator.ExecutionContext.ReportDiagnostic(diagnostic);
             return false;
         }
         var classNamespace = classSymbol.ContainingNamespace.ToString();

@@ -122,6 +122,7 @@ internal class ClassParser
             ParseReactiveProperty(propertySymbol, attributeDataByFullName);
             ParseNotifyPropertyChangedFrom(propertySymbol, attributeDataByFullName);
             ParseReactiveI18nProperty(propertySymbol, attributeDataByFullName);
+            ParseObservableAsProperty(propertySymbol, attributeDataByFullName);
         }
     }
 
@@ -139,13 +140,39 @@ internal class ClassParser
         ClassInfo.ReactiveProperties.Add(propertySymbol);
     }
 
+    private void ParseObservableAsProperty(
+        IPropertySymbol propertySymbol,
+        IDictionary<string, AttributeData> attributeDataByFullName
+    )
+    {
+        if (
+            attributeDataByFullName.TryGetValue(
+                typeof(ObservableAsPropertyAttribute).FullName,
+                out var attributeData
+            )
+            is false
+        )
+            return;
+        if (propertySymbol.SetMethod is not null)
+        {
+            var diagnostic = Diagnostic.Create(
+                Descriptors.PropertyHasSetMethod,
+                attributeData.ApplicationSyntaxReference?.SyntaxTree.GetLocation(
+                    attributeData.ApplicationSyntaxReference.Span
+                )
+            );
+            Generator.ExecutionContext.ReportDiagnostic(diagnostic);
+            return;
+        }
+
+        ClassInfo.ObservableAsProperties.Add(propertySymbol);
+    }
+
     private void ParseNotifyPropertyChangedFrom(
         IPropertySymbol propertySymbol,
         IDictionary<string, AttributeData> attributeDataByFullName
     )
     {
-        if (propertySymbol.GetMethod is null)
-            return;
         // 获取特性数据
         if (
             attributeDataByFullName.TryGetValue(
@@ -155,6 +182,17 @@ internal class ClassParser
             is false
         )
             return;
+        if (propertySymbol.SetMethod is not null)
+        {
+            var diagnostic = Diagnostic.Create(
+                Descriptors.PropertyHasSetMethod,
+                attributeData.ApplicationSyntaxReference?.SyntaxTree.GetLocation(
+                    attributeData.ApplicationSyntaxReference.Span
+                )
+            );
+            Generator.ExecutionContext.ReportDiagnostic(diagnostic);
+            return;
+        }
         // 获取特性的参数
         var attributeParameters = attributeData.GetAttributeParameters();
         if (
@@ -179,12 +217,12 @@ internal class ClassParser
 
         if (
             attributeParameters.TryGetValue(
-                nameof(NotifyPropertyChangeFromAttribute.InitializeInInitializeObject),
+                nameof(NotifyPropertyChangeFromAttribute.CacheAtInitialize),
                 out var notifyOnInitialValue
             )
         )
         {
-            info.InitializeInInitializeObject = notifyOnInitialValue?.Value is true;
+            info.CacheAtInitialize = notifyOnInitialValue?.Value is true;
         }
 
         if (

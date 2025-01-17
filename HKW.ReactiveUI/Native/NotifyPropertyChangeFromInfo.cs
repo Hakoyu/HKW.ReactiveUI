@@ -9,13 +9,13 @@ namespace HKW.HKWReactiveUI;
 /// <param name="propertyName">属性名</param>
 /// <param name="propertyType">属性类型</param>
 /// <param name="builder">方法</param>
-/// <param name="notifyOnInitialValue">初始化值时发送通知</param>
+/// <param name="cacheAtInitialize">初始化值时发送通知</param>
 /// <param name="staticAction">静态行动</param>
 public class NotifyPropertyChangeFromInfo(
     string propertyName,
     ITypeSymbol propertyType,
     StringBuilder builder,
-    bool notifyOnInitialValue,
+    bool cacheAtInitialize,
     bool staticAction
 ) : IEquatable<NotifyPropertyChangeFromInfo>
 {
@@ -30,9 +30,9 @@ public class NotifyPropertyChangeFromInfo(
     public ITypeSymbol Type { get; set; } = propertyType;
 
     /// <summary>
-    /// 初始化值时发送通知
+    /// 初始化时缓存
     /// </summary>
-    public bool InitializeInInitializeObject { get; set; } = notifyOnInitialValue;
+    public bool CacheAtInitialize { get; set; } = cacheAtInitialize;
 
     /// <summary>
     /// 启用缓存

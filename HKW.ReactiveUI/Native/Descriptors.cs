@@ -16,15 +16,15 @@ internal static class Descriptors
             DiagnosticSeverity.Error,
             isEnabledByDefault: true
         );
-    //public static readonly DiagnosticDescriptor SameTargetNameDescriptor =
-    //    new(
-    //        id: "R0002",
-    //        title: "Same target property name exists",
-    //        messageFormat: "Same target property name exists \"{0}\", place check attribute and set different property name",
-    //        category: "HKWReactiveUI",
-    //        DiagnosticSeverity.Error,
-    //        isEnabledByDefault: true
-    //    );
+    public static readonly DiagnosticDescriptor PropertyHasSetMethod =
+        new(
+            id: "R0002",
+            title: "Property has SetMethod",
+            messageFormat: "Feature {0} is not valid for property with SetMethod",
+            category: "HKWReactiveUI",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true
+        );
 
     //public static readonly DiagnosticDescriptor ConverterDescriptor =
     //    new(

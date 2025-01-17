@@ -8,13 +8,48 @@ namespace HKW.SourceGeneratorUtils;
 internal static class SourceGeneratorExtensions
 {
     /// <summary>
-    /// 从当前类以及父类中获取成员
+    /// 获取任务返回值
+    /// </summary>
+    /// <param name="symbol"></param>
+    /// <returns>如果类型是 <see cref="Task{T}"/> 则返回结果, 否则返回 <see langword="null"/></returns>
+    public static INamedTypeSymbol? GetTaskResult(this ITypeSymbol symbol)
+    {
+        const string TeskResultFullName = "System.Threading.Tasks.Task<TResult>";
+        var currentType = symbol;
+        while (currentType != null)
+        {
+            if (currentType.OriginalDefinition?.ToString() == TeskResultFullName)
+                return ((INamedTypeSymbol)currentType).TypeArguments[0] as INamedTypeSymbol;
+            currentType = currentType.BaseType;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 从当前类中查找成员
     /// </summary>
     /// <typeparam name="TMemberType">成员类型</typeparam>
     /// <param name="symbol">当前类</param>
     /// <param name="memberName">成员名称</param>
     /// <returns>成员</returns>
-    public static TMemberType? GetMember<TMemberType>(
+    public static TMemberType? FindMember<TMemberType>(
+        this INamedTypeSymbol symbol,
+        string memberName
+    )
+        where TMemberType : ISymbol
+    {
+        var temp = symbol;
+        return temp.GetMembers(memberName).OfType<TMemberType>().FirstOrDefault();
+    }
+
+    /// <summary>
+    /// 从当前类以及父类中查找成员
+    /// </summary>
+    /// <typeparam name="TMemberType">成员类型</typeparam>
+    /// <param name="symbol">当前类</param>
+    /// <param name="memberName">成员名称</param>
+    /// <returns>成员</returns>
+    public static TMemberType? FindMemberIncludingBaseTypes<TMemberType>(
         this INamedTypeSymbol symbol,
         string memberName
     )
@@ -31,13 +66,13 @@ internal static class SourceGeneratorExtensions
     }
 
     /// <summary>
-    /// 获取全名
+    /// 获取点替换为下划线的全名
     /// </summary>
     /// <param name="typeSymbol"></param>
     /// <returns></returns>
-    public static string GetFullName(this ITypeSymbol typeSymbol)
+    public static string GetUnderlineFullName(this ITypeSymbol typeSymbol)
     {
-        return $"{typeSymbol.ContainingNamespace}.{typeSymbol.Name}";
+        return $"{typeSymbol.ContainingNamespace.ToString().Replace('.', '_')}_{typeSymbol.Name}";
     }
 
     /// <summary>
@@ -54,11 +89,14 @@ internal static class SourceGeneratorExtensions
                 return $"{namedTypeSymbol.Name}{(namedTypeSymbol.TypeParameters.Length > 0 ? $"{{{string.Join(", ", namedTypeSymbol.TypeParameters)}}}" : string.Empty)}";
             return $"{namedTypeSymbol.Name}{(namedTypeSymbol.TypeParameters.Length > 0 ? $"<{string.Join(", ", namedTypeSymbol.TypeParameters)}>" : string.Empty)}";
         }
-        return typeSymbol.GetFullName();
+        else
+        {
+            return typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+        }
     }
 
     /// <summary>
-    /// 获取全面和泛型
+    /// 获取全名和泛型
     /// </summary>
     /// <param name="typeSymbol"></param>
     /// <param name="xmlFormat">将泛型符号 <c>&lt;&gt;</c> 替换为 <c>{}</c></param>
@@ -68,10 +106,13 @@ internal static class SourceGeneratorExtensions
         if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
         {
             if (xmlFormat)
-                return $"{namedTypeSymbol}{(namedTypeSymbol.TypeParameters.Length > 0 ? $"{{{string.Join(", ", namedTypeSymbol.TypeParameters)}}}" : string.Empty)}";
-            return $"{namedTypeSymbol}{(namedTypeSymbol.TypeParameters.Length > 0 ? $"<{string.Join(", ", namedTypeSymbol.TypeParameters)}>" : string.Empty)}";
+                return namedTypeSymbol.ToString().ToXMLFormat();
+            return namedTypeSymbol.ToString();
         }
-        return typeSymbol.GetFullName();
+        else
+        {
+            return typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+        }
     }
 
     /// <summary>
@@ -139,7 +180,7 @@ internal static class SourceGeneratorExtensions
     /// </summary>
     /// <param name="attributeData"></param>
     /// <returns>特性参数和值 (ParameterName, ParameterValue)</returns>
-    public static Dictionary<string, AttributeParameterValue> GetAttributeParameters(
+    public static Dictionary<string, AttributeParameterValue> GetAttributeParameterInfos(
         this AttributeData attributeData
     )
     {
@@ -160,7 +201,43 @@ internal static class SourceGeneratorExtensions
 
         foreach (var (name, info) in allArguments)
         {
+            if (parameters.ContainsKey(name))
+                continue;
             parameters.Add(name, new(info));
+        }
+        return parameters;
+    }
+
+    /// <summary>
+    /// 获取特性参数值
+    /// </summary>
+    /// <param name="attributeData"></param>
+    /// <returns>特性参数和值 (ParameterName, ParameterValue)</returns>
+    public static AttributeParameterByName GetAttributeParameters(this AttributeData attributeData)
+    {
+        var parameters = new AttributeParameterByName();
+        if (
+            attributeData?.AttributeConstructor?.Parameters
+            is not ImmutableArray<IParameterSymbol> constructorParams
+        )
+            return parameters;
+
+        var allArguments = attributeData
+            .ConstructorArguments
+            // 如果参数未命名,则从参数顺序获取名称
+            .Select((info, index) => (constructorParams[index].Name, info))
+            // 然后合并参数和值
+            .Union(attributeData.NamedArguments.Select(x => (x.Key, x.Value)))
+            .Distinct();
+
+        foreach (var (name, info) in allArguments)
+        {
+            if (parameters.ContainsKey(name))
+                continue;
+            if (info.Kind is TypedConstantKind.Array)
+                parameters.Add(name, info.Values);
+            else
+                parameters.Add(name, info.Value);
         }
         return parameters;
     }
@@ -189,7 +266,13 @@ internal static class SourceGeneratorExtensions
                 ) == baseTypeFullName
             )
                 return true;
-            currentType = currentType.BaseType;
+            if (
+                currentType is INamedTypeSymbol namedTypeSymbol
+                && namedTypeSymbol.TypeParameters.Length > 0
+            )
+                currentType = currentType.OriginalDefinition;
+            else
+                currentType = currentType.BaseType;
         }
         return false;
     }
@@ -290,5 +373,28 @@ internal static class SourceGeneratorExtensions
             }
         }
         return sb;
+    }
+
+    /// <summary>
+    /// 尝试添加
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="dictionary"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static bool TryAdd<TKey, TValue>(
+        this IDictionary<TKey, TValue> dictionary,
+        TKey key,
+        TValue value
+    )
+        where TKey : notnull
+    {
+        if (dictionary.TryGetValue(key, out _))
+            return false;
+
+        dictionary.Add(key, value);
+        return true;
     }
 }
