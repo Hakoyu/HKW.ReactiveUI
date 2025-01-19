@@ -53,16 +53,16 @@ partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
 {
     public TestModel()
     {
-        var a = this.WhenAnyValue(x => x.B1, x => x.B2)
-            .Select(x => x)
-            .ToProperty(this, nameof(Ass));
+        //var a = this.WhenAnyValue(x => x.B1, x => x.B2)
+        //    .Select(x => x)
+        //    .ToProperty(this, nameof(Ass));
         //_ass = ;
     }
 
     //ObservableAsPropertyHelper<int> _ass;
-    [ObservableAsProperty]
-    public int Ass =>
-        this.WhenAnyValue(x => x.B1).Select(x => x).ToProperty(this, nameof(Ass)).ToDefault<int>();
+    //[ObservableAsProperty]
+    //public int Ass =>
+    //    this.WhenAnyValue(x => x.B1).Select(x => x).ToProperty(this, nameof(Ass)).ToDefault<int>();
 
     [ReactiveProperty(false)]
     public int B1 { get; set; } = int.MaxValue;
@@ -87,7 +87,7 @@ partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
     [ObservableAsProperty]
     public string FullName =>
         this.WhenAnyValue(x => x.FirstName, x => x.LastName)
-            .Select((f, l) => $"{f} {l}")
+            .Select((x, _) => $"{x.Item1} {x.Item2}")
             .ToProperty(this, nameof(FullName))
             .ToDefault<string>();
 

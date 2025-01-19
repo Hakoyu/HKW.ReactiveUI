@@ -57,18 +57,6 @@ public sealed class NotifyPropertyChangeFromAttribute : Attribute
         this.PropertyNames = PropertyNames;
     }
 
-    /// <inheritdoc/>
-    /// <param name="CacheAtInitialize">在初始化对象时初始化</param>
-    /// <param name="PropertyNames">属性名称</param>
-    public NotifyPropertyChangeFromAttribute(
-        bool CacheAtInitialize = true,
-        params string[] PropertyNames
-    )
-    {
-        this.CacheAtInitialize = CacheAtInitialize;
-        this.PropertyNames = PropertyNames;
-    }
-
     /// <summary>
     /// 在所在对象初始化时缓存
     /// <para>如果未启用 <see cref="EnableCache"/> 此项不生效</para>

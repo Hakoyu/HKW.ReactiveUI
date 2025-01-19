@@ -17,7 +17,7 @@
 ///     [ObservableAsProperty]
 ///     public string FullName =>
 ///         this.WhenAnyValue(x => x.FirstName, x => x.LastName)
-///             .Select((f, l) => $"{f} {l}")
+///             .Select((x, _) => $"{x.Item1} {x.Item2}")
 ///             .ToProperty(this, nameof(FullName))
 ///             .ToDefault<string>();
 ///
@@ -43,7 +43,7 @@
 ///     protected void InitializeReactiveObject()
 ///     {
 ///        _fullName = this.WhenAnyValue(x => x.FirstName, x => x.LastName)
-///             .Select((f, l) => $"{f} {l}")
+///             .Select((x, _) => $"{x.Item1} {x.Item2}")
 ///             .ToProperty(this, nameof(FullName));
 ///     }
 /// }
