@@ -211,28 +211,17 @@ internal class ClassParser
             propertySymbol.Name,
             propertySymbol.Type,
             methodBuilder,
-            true,
             staticAction
         );
 
         if (
             attributeParameters.TryGetValue(
-                nameof(NotifyPropertyChangeFromAttribute.CacheAtInitialize),
-                out var notifyOnInitialValue
+                nameof(NotifyPropertyChangeFromAttribute.CacheMode),
+                out var cacheMode
             )
         )
         {
-            info.CacheAtInitialize = notifyOnInitialValue?.Value is true;
-        }
-
-        if (
-            attributeParameters.TryGetValue(
-                nameof(NotifyPropertyChangeFromAttribute.EnableCache),
-                out var enableCacheValue
-            )
-        )
-        {
-            info.EnableCache = enableCacheValue?.Value is true;
+            info.CacheMode = (NotifyPropertyChangeFromAttribute.CacheModeEnum)cacheMode?.Value!;
         }
 
         if (value.Values is null)

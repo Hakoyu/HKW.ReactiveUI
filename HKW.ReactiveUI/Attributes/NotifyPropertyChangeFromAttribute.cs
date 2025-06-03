@@ -45,7 +45,7 @@
 /// }
 /// ]]></code></summary>
 /// <remarks>
-/// 启用 <see cref="EnableCache"/> 时会生成一个字段来提高性能
+/// 启用 <see cref="CacheMode"/> 非禁用时会生成一个字段来提高性能
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class NotifyPropertyChangeFromAttribute : Attribute
@@ -57,11 +57,14 @@ public sealed class NotifyPropertyChangeFromAttribute : Attribute
         this.PropertyNames = PropertyNames;
     }
 
-    /// <summary>
-    /// 在所在对象初始化时缓存
-    /// <para>如果未启用 <see cref="EnableCache"/> 此项不生效</para>
-    /// </summary>
-    public bool CacheAtInitialize { get; } = true;
+    ///<inheritdoc/>
+    /// <param name="PropertyNames">属性名称</param>
+    /// <param name="CacheMode">缓存模式, 非禁用时会生成一个字段来缓存上次目标属性改变后的结果</param>
+    public NotifyPropertyChangeFromAttribute(CacheModeEnum CacheMode, params string[] PropertyNames)
+    {
+        this.PropertyNames = PropertyNames;
+        this.CacheMode = CacheMode;
+    }
 
     /// <summary>
     /// 属性名称
@@ -69,7 +72,28 @@ public sealed class NotifyPropertyChangeFromAttribute : Attribute
     public string[] PropertyNames { get; }
 
     /// <summary>
-    /// 启用缓存, 会生成一个字段来缓存上次目标属性改变后的结果
+    /// 缓存模式, 非禁用时会生成一个字段来缓存上次目标属性改变后的结果
     /// </summary>
-    public bool EnableCache { get; set; } = true;
+    public CacheModeEnum CacheMode { get; set; } = CacheModeEnum.Enable;
+
+    /// <summary>
+    /// 缓存模式
+    /// </summary>
+    public enum CacheModeEnum
+    {
+        /// <summary>
+        /// 禁用
+        /// </summary>
+        Disable,
+
+        /// <summary>
+        /// 启用, 在对象初始化时缓存
+        /// </summary>
+        Enable,
+
+        /// <summary>
+        /// 在初始化后启用, 在目标属性被调用后才缓存
+        /// </summary>
+        EnableAfterInitialize,
+    }
 }
