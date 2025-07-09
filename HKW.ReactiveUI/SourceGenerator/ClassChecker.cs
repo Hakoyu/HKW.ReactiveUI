@@ -9,8 +9,8 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 internal class ClassChecker
 {
     public static bool Execute(
-        SyntaxTree compilationSyntaxTree,
-        SemanticModel semanticModel,
+        AssemblyInfo assemblyInfo,
+        SyntaxTreeInfo syntaxTreeInfo,
         ClassDeclarationSyntax declaredClass,
         out ClassInfo classInfo
     )
@@ -18,7 +18,7 @@ internal class ClassChecker
         classInfo = null!;
 
         var classSymbol = (INamedTypeSymbol)
-            ModelExtensions.GetDeclaredSymbol(semanticModel, declaredClass)!;
+            ModelExtensions.GetDeclaredSymbol(syntaxTreeInfo.SemanticModel, declaredClass)!;
         if (
             classSymbol.AllInterfaces.Any(i => i.ToString() == NativeData.IReactiveObjectFullName)
             is false
@@ -32,12 +32,12 @@ internal class ClassChecker
                 Descriptors.NotPartialClass,
                 classSymbol.Locations[0]
             );
-            Generator.ExecutionContext.ReportDiagnostic(diagnostic);
+            assemblyInfo.ProductionContext.ReportDiagnostic(diagnostic);
             return false;
         }
         var classNamespace = classSymbol.ContainingNamespace.ToString();
         var typeName = declaredClass.Identifier.ValueText;
-        var usings = ((CompilationUnitSyntax)compilationSyntaxTree.GetRoot()).Usings;
+        var usings = ((CompilationUnitSyntax)syntaxTreeInfo.SyntaxTree.GetRoot()).Usings;
         classInfo = new ClassInfo
         {
             Name = typeName,

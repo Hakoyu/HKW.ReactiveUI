@@ -9,21 +9,14 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 
 internal class ClassGenerator
 {
-    public static void Execute(
-        GeneratorExecutionContext executionContext,
-        ClassGenerateInfo generateInfo
-    )
+    public static void Execute(AssemblyInfo assemblyInfo, ClassGenerateInfo generateInfo)
     {
-        var t = new ClassGenerator()
-        {
-            ExecutionContext = executionContext,
-            GeneratorInfo = generateInfo
-        };
+        var t = new ClassGenerator() { AssemblyInfo = assemblyInfo, GeneratorInfo = generateInfo };
         t.GenerateClass();
     }
 
     public static string FirstClassFullName = string.Empty;
-    public GeneratorExecutionContext ExecutionContext { get; private set; }
+    public AssemblyInfo AssemblyInfo { get; private set; }
     public ClassGenerateInfo GeneratorInfo { get; private set; } = null!;
     public IndentedTextWriter Writer { get; private set; } = null!;
 
@@ -73,7 +66,7 @@ internal class ClassGenerator
         Writer.Indent--;
         Writer.WriteLine("}");
 
-        ExecutionContext.AddSource(
+        AssemblyInfo.ProductionContext.AddSource(
             $"{GeneratorInfo.FullTypeName.Replace('<', '{').Replace('>', '}')}.ReactiveUI.g.cs",
             stringStream.ToString()
         );

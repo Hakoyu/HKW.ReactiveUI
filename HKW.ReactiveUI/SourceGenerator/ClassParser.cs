@@ -11,16 +11,16 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 internal class ClassParser
 {
     public static void Execute(
-        GeneratorExecutionContext executionContext,
-        SemanticModel semanticModel,
+        AssemblyInfo assemblyInfo,
+        SyntaxTreeInfo syntaxTreeInfo,
         ClassDeclarationSyntax declaredClass,
         ClassInfo classInfo
     )
     {
-        var t = new ClassParser()
+        var parser = new ClassParser()
         {
-            ExecutionContext = executionContext,
-            SemanticModel = semanticModel,
+            AssemblyInfo = assemblyInfo,
+            SyntaxTreeInfo = syntaxTreeInfo,
             ClassInfo = classInfo,
             DeclaredClass = declaredClass,
         };
@@ -29,23 +29,26 @@ internal class ClassParser
             if (member is MethodDeclarationSyntax methodSyntax)
             {
                 var methodSymbol = (IMethodSymbol)
-                    ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax)!;
-                t.MethodSymbols.Add(methodSymbol);
+                    ModelExtensions.GetDeclaredSymbol(syntaxTreeInfo.SemanticModel, methodSyntax)!;
+                parser.MethodSymbols.Add(methodSymbol);
             }
             else if (member is PropertyDeclarationSyntax propertySyntax)
             {
                 var propertySymbol = (IPropertySymbol)
-                    ModelExtensions.GetDeclaredSymbol(semanticModel, propertySyntax)!;
-                t.PropertySymbols.Add(propertySymbol);
+                    ModelExtensions.GetDeclaredSymbol(
+                        syntaxTreeInfo.SemanticModel,
+                        propertySyntax
+                    )!;
+                parser.PropertySymbols.Add(propertySymbol);
             }
         }
 
-        t.ParseMethod();
-        t.ParseProperty();
+        parser.ParseMethod();
+        parser.ParseProperty();
     }
 
-    public GeneratorExecutionContext ExecutionContext { get; private set; }
-    public SemanticModel SemanticModel { get; private set; } = null!;
+    public AssemblyInfo AssemblyInfo { get; private set; }
+    public SyntaxTreeInfo SyntaxTreeInfo { get; private set; }
     public ClassInfo ClassInfo { get; private set; } = null!;
     public ClassDeclarationSyntax DeclaredClass { get; private set; } = null!;
     public List<IMethodSymbol> MethodSymbols { get; private set; } = [];
@@ -83,10 +86,10 @@ internal class ClassParser
             SymbolDisplayFormat.FullyQualifiedFormat
         );
         var realReturnType = isTask
-            ? ExecutionContext.Compilation.GetTaskReturnType(methodSymbol.ReturnType)
+            ? AssemblyInfo.Compilation.GetTaskReturnType(methodSymbol.ReturnType)
             : methodSymbol.ReturnType;
         // 是否为空返回值
-        var isReturnTypeVoid = ExecutionContext.Compilation.IsVoid(realReturnType);
+        var isReturnTypeVoid = AssemblyInfo.Compilation.IsVoid(realReturnType);
 
         ClassInfo.ReactiveCommandInfos.Add(
             new()
@@ -161,7 +164,7 @@ internal class ClassParser
                     attributeData.ApplicationSyntaxReference.Span
                 )
             );
-            Generator.ExecutionContext.ReportDiagnostic(diagnostic);
+            AssemblyInfo.ProductionContext.ReportDiagnostic(diagnostic);
             return;
         }
 
@@ -190,7 +193,7 @@ internal class ClassParser
                     attributeData.ApplicationSyntaxReference.Span
                 )
             );
-            Generator.ExecutionContext.ReportDiagnostic(diagnostic);
+            AssemblyInfo.ProductionContext.ReportDiagnostic(diagnostic);
             return;
         }
         // 获取特性的参数

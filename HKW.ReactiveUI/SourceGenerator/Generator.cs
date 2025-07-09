@@ -8,57 +8,65 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
 [Generator]
-internal partial class Generator : ISourceGenerator
+internal partial class Generator : IIncrementalGenerator
 {
     public Generator() { }
 
-    public void Initialize(GeneratorInitializationContext context) { }
-
-    public static GeneratorExecutionContext ExecutionContext { get; private set; }
-
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        ExecutionContext = context;
-        foreach (var compilationSyntaxTree in context.Compilation.SyntaxTrees)
-        {
-            ParseSyntaxTree(compilationSyntaxTree);
-        }
+        var assemblyName = context.CompilationProvider.Select(static (c, _) => c.AssemblyName);
+        var compilation = context.CompilationProvider.Select(static (c, _) => c);
+
+        var combined = assemblyName.Combine(compilation);
+
+        context.RegisterSourceOutput(
+            combined,
+            (spc, pair) =>
+            {
+                var assemblyInfo = new AssemblyInfo(spc, pair.Right);
+                foreach (var syntaxTree in pair.Right.SyntaxTrees)
+                {
+                    ParseSyntaxTree(assemblyInfo, syntaxTree);
+                }
+            }
+        );
     }
 
-    private void ParseSyntaxTree(SyntaxTree compilationSyntaxTree)
+    public void Initialize(GeneratorInitializationContext context) { }
+
+    private void ParseSyntaxTree(AssemblyInfo assemblyInfo, SyntaxTree syntaxTree)
     {
-        var semanticModel = ExecutionContext.Compilation.GetSemanticModel(compilationSyntaxTree);
-        var declaredClasses = compilationSyntaxTree
+        var semanticModel = assemblyInfo.Compilation.GetSemanticModel(syntaxTree);
+        var syntaxTreeInfo = new SyntaxTreeInfo(syntaxTree, semanticModel);
+        var declaredClasses = syntaxTree
             .GetRoot()
             .DescendantNodesAndSelf()
             .OfType<ClassDeclarationSyntax>();
         foreach (var declaredClass in declaredClasses)
         {
-            ParseClassInfo(compilationSyntaxTree, semanticModel, declaredClass);
+            if (
+                ClassChecker.Execute(assemblyInfo, syntaxTreeInfo, declaredClass, out var classInfo)
+                is false
+            )
+                continue;
+            if (ClassGenerator.FirstClassFullName == string.Empty)
+                ClassGenerator.FirstClassFullName = classInfo.FullTypeName;
+            ClassParser.Execute(assemblyInfo, syntaxTreeInfo, declaredClass, classInfo);
+
+            var generateInfo = ClassAnalyzer.Execute(classInfo);
+            ClassGenerator.Execute(assemblyInfo, generateInfo);
         }
     }
+}
 
-    private void ParseClassInfo(
-        SyntaxTree compilationSyntaxTree,
-        SemanticModel semanticModel,
-        ClassDeclarationSyntax declaredClass
-    )
-    {
-        if (
-            ClassChecker.Execute(
-                compilationSyntaxTree,
-                semanticModel,
-                declaredClass,
-                out var classInfo
-            )
-            is false
-        )
-            return;
-        if (ClassGenerator.FirstClassFullName == string.Empty)
-            ClassGenerator.FirstClassFullName = classInfo.FullTypeName;
-        ClassParser.Execute(ExecutionContext, semanticModel, declaredClass, classInfo);
+readonly struct AssemblyInfo(SourceProductionContext productionContext, Compilation compilation)
+{
+    public readonly SourceProductionContext ProductionContext { get; } = productionContext;
+    public readonly Compilation Compilation { get; } = compilation;
+}
 
-        var generateInfo = ClassAnalyzer.Execute(classInfo);
-        ClassGenerator.Execute(ExecutionContext, generateInfo);
-    }
+readonly struct SyntaxTreeInfo(SyntaxTree syntaxTree, SemanticModel semanticModel)
+{
+    public readonly SyntaxTree SyntaxTree { get; } = syntaxTree;
+    public readonly SemanticModel SemanticModel { get; } = semanticModel;
 }
