@@ -32,8 +32,6 @@ internal partial class Generator : IIncrementalGenerator
         );
     }
 
-    public void Initialize(GeneratorInitializationContext context) { }
-
     private void ParseSyntaxTree(AssemblyInfo assemblyInfo, SyntaxTree syntaxTree)
     {
         var semanticModel = assemblyInfo.Compilation.GetSemanticModel(syntaxTree);

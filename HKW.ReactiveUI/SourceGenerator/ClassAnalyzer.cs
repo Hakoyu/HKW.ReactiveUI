@@ -64,8 +64,6 @@ internal class ClassAnalyzer
             GenerateInfo.Members.Add(
                 CommonData.GeneratedCodeAttribute
                     + Environment.NewLine
-                    //+ CommonData.DebuggerBrowsableNever
-                    + Environment.NewLine
                     + $"private ObservableAsPropertyHelper<{property.Type.GetFullNameAndGeneric()}>  {feildName};"
             );
             if (property.GetMethod is null)

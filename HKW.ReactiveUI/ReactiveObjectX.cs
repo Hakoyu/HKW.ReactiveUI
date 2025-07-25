@@ -1,6 +1,8 @@
 ﻿using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using ReactiveUI;
 
 namespace HKW.HKWReactiveUI;
@@ -31,6 +33,8 @@ public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposableT
     private List<IDisposable>? _disposableList;
 
     /// <inheritdoc/>
+    [JsonIgnore]
+    [IgnoreDataMember]
     public List<IDisposable> DisposableList => _disposableList ??= [];
 
     #region IDisposable
