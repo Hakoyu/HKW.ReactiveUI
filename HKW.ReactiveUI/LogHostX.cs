@@ -9,7 +9,10 @@ namespace HKW.HKWReactiveUI;
 /// 配合 <see cref="LogHostX.LogX{T}(T)"/> 可获取 <typeparamref name="T"/> 注册的日志管理器
 /// </para>
 /// </summary>
+/// <typeparam name="T"></typeparam>
+#pragma warning disable S2326 // Unused type parameters should be removed
 public interface IEnableLogger<T> : IEnableLogger
+#pragma warning restore S2326 // Unused type parameters should be removed
     where T : IEnableLogger { }
 
 /// <summary>

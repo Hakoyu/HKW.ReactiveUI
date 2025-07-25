@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text.RegularExpressions;
 using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
@@ -114,14 +115,18 @@ internal class ClassParser
         foreach (var propertySymbol in PropertySymbols)
         {
             var attributeDataByFullName = new Dictionary<string, AttributeData>();
-            foreach (var attribute in propertySymbol.GetAttributes())
+            foreach (
+                var attribute in propertySymbol
+                    .GetAttributes()
+                    .Where(attribute =>
+                        attributeDataByFullName.ContainsKey(attribute.AttributeClass!.ToString())
+                            is false
+                    )
+            )
             {
-                if (
-                    attributeDataByFullName.ContainsKey(attribute.AttributeClass!.ToString())
-                    is false
-                )
-                    attributeDataByFullName.Add(attribute.AttributeClass!.ToString(), attribute);
+                attributeDataByFullName.Add(attribute.AttributeClass!.ToString(), attribute);
             }
+
             ParseReactiveProperty(propertySymbol, attributeDataByFullName);
             ParseNotifyPropertyChangedFrom(propertySymbol, attributeDataByFullName);
             ParseReactiveI18nProperty(propertySymbol, attributeDataByFullName);

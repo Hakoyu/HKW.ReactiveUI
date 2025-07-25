@@ -25,14 +25,4 @@ internal static class Descriptors
             DiagnosticSeverity.Error,
             isEnabledByDefault: true
         );
-
-    //public static readonly DiagnosticDescriptor ConverterDescriptor =
-    //    new(
-    //        id: "R0003",
-    //        title: "Converter not implemented IConverter interface",
-    //        messageFormat: "Converter \"{0}\", not implemented IMapConverter interface",
-    //        category: "HKWReactiveUI",
-    //        DiagnosticSeverity.Error,
-    //        isEnabledByDefault: true
-    //    );
 }

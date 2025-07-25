@@ -10,7 +10,7 @@ namespace HKW.HKWReactiveUI;
 /// <param name="propertyType">属性类型</param>
 /// <param name="builder">方法</param>
 /// <param name="staticAction">静态行动</param>
-public class NotifyPropertyChangeFromInfo(
+public sealed class NotifyPropertyChangeFromInfo(
     string propertyName,
     ITypeSymbol propertyType,
     StringBuilder builder,

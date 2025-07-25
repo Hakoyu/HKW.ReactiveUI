@@ -10,6 +10,7 @@ namespace HKW.HKWReactiveUI;
 /// <inheritdoc cref="ReactiveObject"/>
 public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposableTracker
 {
+#pragma warning disable S1699 // Constructors should only call non-overridable methods
     /// <inheritdoc/>
     protected ReactiveObjectX()
     {
@@ -23,6 +24,7 @@ public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposableT
         if (initialize)
             InitializeReactiveObject();
     }
+#pragma warning restore S1699 // Constructors should only call non-overridable methods
 
     /// <summary>
     /// 初始化 (用于自动生成)
@@ -62,14 +64,11 @@ public partial class ReactiveObjectX : ReactiveObject, IDisposable, IDisposableT
         if (_disposed)
             return;
 
-        if (disposing)
+        if (disposing && _disposableList is not null)
         {
-            if (_disposableList is not null)
-            {
-                for (var i = 0; i < DisposableList.Count; i++)
-                    DisposableList[i].Dispose();
-                DisposableList.Clear();
-            }
+            for (var i = 0; i < DisposableList.Count; i++)
+                DisposableList[i].Dispose();
+            DisposableList.Clear();
         }
         _disposed = true;
     }

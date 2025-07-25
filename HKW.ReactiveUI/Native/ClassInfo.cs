@@ -43,14 +43,4 @@ internal sealed class ClassInfo
     /// 可观察属性
     /// </summary>
     public List<IPropertySymbol> ObservableAsProperties { get; } = [];
-
-    ///// <summary>
-    ///// (PropertyName, MethodParameterCount)
-    ///// </summary>
-    //public Dictionary<string, int> OnPropertyChanging { get; set; } = [];
-
-    ///// <summary>
-    ///// (PropertyName, MethodParameterCount)
-    ///// </summary>
-    //public Dictionary<string, int> OnPropertyChanged { get; set; } = [];
 }

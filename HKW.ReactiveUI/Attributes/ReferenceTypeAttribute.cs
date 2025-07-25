@@ -4,6 +4,7 @@
 /// 这是一个没有任何意义的特性, 仅用于标记引用程序集, 让其不被编译器优化
 /// </summary>
 /// <param name="type">类型</param>
+[AttributeUsage(AttributeTargets.Class)]
 public sealed class ReferenceTypeAttribute(Type type) : Attribute
 {
     /// <summary>

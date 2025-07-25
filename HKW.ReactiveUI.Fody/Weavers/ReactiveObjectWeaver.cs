@@ -3,6 +3,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -43,21 +44,21 @@ internal class ReactiveObjectWeaver
                 "HKW.HKWReactiveUI",
                 "ReactivePropertyAttribute",
                 ModuleWeaver.HKWReactiveUI
-            ) ?? throw new Exception("ReactivePropertyAttribute is null");
+            ) ?? throw new WeaverException("ReactivePropertyAttribute is null");
 
         NotifyPropertyChangeFromAttribute =
             ModuleDefinition.FindType(
                 "HKW.HKWReactiveUI",
                 "NotifyPropertyChangeFromAttribute",
                 ModuleWeaver.HKWReactiveUI
-            ) ?? throw new Exception("NotifyPropertyChangeFromAttribute is null");
+            ) ?? throw new WeaverException("NotifyPropertyChangeFromAttribute is null");
 
         ObservableAsPropertyAttribute =
             ModuleDefinition.FindType(
                 "HKW.HKWReactiveUI",
                 "ObservableAsPropertyAttribute",
                 ModuleWeaver.HKWReactiveUI
-            ) ?? throw new Exception("ObservableAsPropertyAttribute is null");
+            ) ?? throw new WeaverException("ObservableAsPropertyAttribute is null");
 
         ObservableAsPropertyHelper = ModuleDefinition.FindType(
             "ReactiveUI",
@@ -91,7 +92,7 @@ internal class ReactiveObjectWeaver
         var fieldName = "_" + property.Name.FirstLetterToLower();
         var field =
             classType.Fields.FirstOrDefault(x => x.Name == fieldName)
-            ?? throw new Exception($"Field {fieldName} not exist");
+            ?? throw new WeaverException($"Field {fieldName} not exist");
         var genericHelper = ObservableAsPropertyHelper.MakeGenericInstanceType(
             property.PropertyType
         );
@@ -135,7 +136,7 @@ internal class ReactiveObjectWeaver
         var fieldName = "_" + property.Name.FirstLetterToLower();
         var field =
             classType.Fields.FirstOrDefault(x => x.Name == fieldName)
-            ?? throw new Exception($"Field {fieldName} not exist");
+            ?? throw new WeaverException($"Field {fieldName} not exist");
 
         property.GetMethod.Body = new MethodBody(property.GetMethod);
         property.GetMethod.Body.Emit(il =>
@@ -167,7 +168,7 @@ internal class ReactiveObjectWeaver
             classType
                 .Resolve()
                 .Methods.SingleOrDefault(x => x.Name == $"RaiseAndSet{property.Name}")
-            ?? throw new Exception(
+            ?? throw new WeaverException(
                 $"{classType.FullName} not exists method RaiseAndSet{property.Name}, please check if you have added the partial keyword to class"
             );
 
@@ -210,15 +211,17 @@ internal class ReactiveObjectWeaver
 
         // 查看是否存在自动属性初始化器
         var constructors = classType.Methods.Where(x => x.IsConstructor);
-        foreach (var constructor in constructors)
-        {
-            var fieldAssignment = constructor.Body.Instructions.SingleOrDefault(x =>
+        foreach (
+            var (constructor, fieldAssignment) in from constructor in constructors
+            let fieldAssignment = constructor.Body.Instructions.SingleOrDefault(x =>
                 Equals(x.Operand, oldFieldDefinition)
                 || Equals(x.Operand?.ToString(), oldField.ToString())
-            );
+            )
+            select (constructor, fieldAssignment)
+        )
+        {
             if (fieldAssignment is null)
                 continue;
-
             //使用新字段初始化器替换自动生成的初始化器
             if (isGenericClass)
             {

@@ -15,7 +15,7 @@ internal class ClassGenerator
         t.GenerateClass();
     }
 
-    public static string FirstClassFullName = string.Empty;
+    public static string FirstClassFullName { get; set; } = string.Empty;
     public AssemblyInfo AssemblyInfo { get; private set; }
     public ClassGenerateInfo GeneratorInfo { get; private set; } = null!;
     public IndentedTextWriter Writer { get; private set; } = null!;
@@ -70,8 +70,6 @@ internal class ClassGenerator
             $"{GeneratorInfo.FullTypeName.Replace('<', '{').Replace('>', '}')}.ReactiveUI.g.cs",
             stringStream.ToString()
         );
-
-        //Console.Out.WriteLine(stringStream);
     }
 
     private void GenerateReactiveProperty()

@@ -365,7 +365,7 @@ internal static class SourceGeneratorExtensions
         var isBodied = getMethod.Last() != '}';
         if (isBodied)
         {
-            staticAction = getMethod.IndexOf("this.To(static") > 0;
+            staticAction = getMethod.Contains("this.To(static");
             sb.Remove(0, getMethod.IndexOf("=>") + 2);
             if (staticAction)
             {

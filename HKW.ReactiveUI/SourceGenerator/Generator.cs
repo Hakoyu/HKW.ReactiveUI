@@ -32,7 +32,7 @@ internal partial class Generator : IIncrementalGenerator
         );
     }
 
-    private void ParseSyntaxTree(AssemblyInfo assemblyInfo, SyntaxTree syntaxTree)
+    private static void ParseSyntaxTree(AssemblyInfo assemblyInfo, SyntaxTree syntaxTree)
     {
         var semanticModel = assemblyInfo.Compilation.GetSemanticModel(syntaxTree);
         var syntaxTreeInfo = new SyntaxTreeInfo(syntaxTree, semanticModel);

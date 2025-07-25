@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.4.2</Version>
+    <Version>0.4.4</Version>
     <Company>HKW</Company>
     <Authors>HKW</Authors>
     <PackageDescription>An MVVM library, based on ReactiveUI, using SourceGenerator and Fody for mixed source code generation.</PackageDescription>
@@ -24,10 +24,11 @@
     <PackageId>HKW.ReactiveUI</PackageId>
     <WeaverDirPath>..\HKW.ReactiveUI.Fody\bin\$(Configuration)\</WeaverDirPath>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <SonarQubeExclude>True</SonarQubeExclude>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
@@ -42,6 +43,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Encodings.Web" Version="9.0.7" />
+    <PackageReference Include="System.Text.Json" Version="9.0.7" />
     <ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
     <PackageReference Include="FodyPackaging" Version="6.9.2" PrivateAssets="all" />
   </ItemGroup>
