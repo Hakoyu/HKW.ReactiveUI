@@ -15,14 +15,10 @@ internal class ModuleWeaverLogger(ModuleWeaver moduleWeaver, bool noInfo = false
 
     public void LogInfo(string message)
     {
-        try
-        {
-            if (_noInfo)
-                _logWarning?.Invoke(message);
-            else
-                _logInfo?.Invoke(message);
-        }
-        catch { }
+        if (_noInfo)
+            _logWarning?.Invoke(message);
+        else
+            _logInfo?.Invoke(message);
     }
 
     public void LogWarning(string message)

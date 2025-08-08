@@ -7,10 +7,11 @@
         <ImplicitUsings>Enable</ImplicitUsings>
         <Nullable>Enable</Nullable>
         <IncludeSymbols>false</IncludeSymbols>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <GenerateDocumentationFile>False</GenerateDocumentationFile>
         <RootNamespace>HKW.HKWReactiveUI.Demo</RootNamespace>
         <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <SonarQubeExclude>True</SonarQubeExclude>
     </PropertyGroup>
 
     <ItemGroup>

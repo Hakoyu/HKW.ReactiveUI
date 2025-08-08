@@ -105,7 +105,7 @@ public class ModuleWeaver : BaseModuleWeaver
                 "IReactiveObjectExtensions",
                 moduleDefinition,
                 ReactiveUI
-            ).Resolve() ?? throw new Exception("reactiveObjectExtensions is null");
+            ).Resolve() ?? throw new WeaverException("reactiveObjectExtensions is null");
 
         ReactiveObjectX =
             new TypeReference(
@@ -113,12 +113,12 @@ public class ModuleWeaver : BaseModuleWeaver
                 "ReactiveObjectX",
                 moduleDefinition,
                 HKWReactiveUI
-            ).Resolve() ?? throw new Exception("ReactiveObjectX is null");
+            ).Resolve() ?? throw new WeaverException("ReactiveObjectX is null");
 
         RaiseAndSetIfChangedMethod =
             moduleDefinition.ImportReference(
                 reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
-            ) ?? throw new Exception("RaiseAndSetIfChangedMethod is null");
+            ) ?? throw new WeaverException("RaiseAndSetIfChangedMethod is null");
 
         IReactiveObjectDerivedClasses = moduleDefinition
             .GetAllTypes()
