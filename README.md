@@ -143,12 +143,14 @@ Generated code
 ```csharp
 partial class MyViewModel : ReactiveObject
 {
+    private bool _isSame;
     [NotifyPropertyChangeFrom(nameof(ID), nameof(Name), EnableCache = false)]
     public bool IsSame => Name == ID;
 
     protected void InitializeReactiveObject()
     {
         // InitializeInInitializeObject = true
+       _isSame = Name == ID;
     }
     protected void RaiseIsSameChange()
     {

@@ -94,6 +94,8 @@ partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
     [ReactiveProperty]
     public int Number { get; set; } = -1;
 
+    private string _id;
+
     [ReactiveProperty(false)]
     public string ID { get; set; } = string.Empty;
 
@@ -201,7 +203,7 @@ internal static class TestExtensions
 /// 可观察点
 /// </summary>
 /// <typeparam name="T">数据类型</typeparam>
-//[DebuggerDisplay("({X}, {Y})")]
+[DebuggerDisplay("({X}, {Y})")]
 internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<ObservablePoint<T>>
     where T : struct, INumber<T>
 {
