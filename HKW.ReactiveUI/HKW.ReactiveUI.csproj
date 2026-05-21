@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.4.6</Version>
+    <Version>0.4.7</Version>
     <Company>HKW</Company>
     <Authors>HKW</Authors>
     <PackageDescription>An MVVM library, based on ReactiveUI, using SourceGenerator and Fody for mixed source code generation.</PackageDescription>
@@ -27,23 +27,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0" PrivateAssets="all" />
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ReactiveUI" Version="20.4.1" GeneratePathProperty="true" />
+    <PackageReference Include="ReactiveUI" Version="23.2.27" GeneratePathProperty="true" />
     <None Include="$(PkgReactiveUI)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.9.2">
+    <PackageReference Include="Fody" Version="6.9.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
-    <PackageReference Include="FodyPackaging" Version="6.9.2" PrivateAssets="all" />
+    <PackageReference Include="FodyPackaging" Version="6.9.3" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

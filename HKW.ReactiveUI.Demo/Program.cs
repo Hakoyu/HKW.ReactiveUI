@@ -8,6 +8,7 @@ using System.Windows.Input;
 using DynamicData.Binding;
 using HKW.HKWReactiveUI;
 using ReactiveUI;
+using ReactiveUI.Builder;
 using Splat;
 
 namespace HKW.HKWReactiveUI.Demo;
@@ -20,6 +21,7 @@ internal class Program
 
     static void Main(string[] args)
     {
+        RxAppBuilder.CreateReactiveUIBuilder().WithCoreServices().BuildApp();
         var vm = new TestModel();
         vm.FirstName = "F";
         vm.LastName = "L";

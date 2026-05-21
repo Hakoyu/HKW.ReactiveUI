@@ -10,8 +10,6 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 [Generator]
 internal partial class Generator : IIncrementalGenerator
 {
-    public Generator() { }
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var assemblyName = context.CompilationProvider.Select(static (c, _) => c.AssemblyName);
