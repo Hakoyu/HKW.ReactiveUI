@@ -23,7 +23,7 @@ internal class ReactiveObjectWeaver
     public static void Execute(ModuleDefinition moduleDefinition)
     {
         ModuleWeaver.Logger.LogInfo(nameof(ReactiveObjectWeaver));
-        var w = new ReactiveObjectWeaver() { ModuleDefinition = moduleDefinition, };
+        var w = new ReactiveObjectWeaver() { ModuleDefinition = moduleDefinition };
         w.Execute();
     }
 
@@ -177,9 +177,9 @@ internal class ReactiveObjectWeaver
         if (isGenericClass)
         {
             // 如果是泛型类型,需要拼接一个完整的泛型类型
-            var genericClassType = classType.MakeGenericInstanceType(
-                [.. classType.GenericParameters]
-            );
+            var genericClassType = classType.MakeGenericInstanceType([
+                .. classType.GenericParameters,
+            ]);
             // 这样会生成Class`1<T>::Method 而不是 Class`1::Method, 后者在IL引用中会出错
             raiseAndSetMethod = raiseAndSetMethodDefinition.Bind(genericClassType);
         }
@@ -264,14 +264,10 @@ internal class ReactiveObjectWeaver
             il.Emit(OpCodes.Ldflda, field.BindDefinition(classType));
             // newValue
             il.Emit(OpCodes.Ldarg_1);
-            if (check) // Check
-                il.Emit(OpCodes.Ldc_I4_1);
-            else
-                il.Emit(OpCodes.Ldc_I4_0);
             // this.RaiseAndSetProperty(ref field, newValue, check)
             il.Emit(OpCodes.Call, raiseAndSetMethod);
-            // Nop
-            il.Emit(OpCodes.Nop);
+            // Pop
+            il.Emit(OpCodes.Pop);
             // Return out of the function
             il.Emit(OpCodes.Ret);
         });

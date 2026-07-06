@@ -50,7 +50,7 @@ internal class ClassAnalyzer
                     typeName,
                     CommonData.GeneratedCodeAttribute
                         + Environment.NewLine
-                        + $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue,bool check = true)"
+                        + $"private void RaiseAndSet{property.Name}(ref {typeName} backingField,{typeName} newValue)"
                 )
             );
         }

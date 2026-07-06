@@ -35,7 +35,7 @@ namespace HKW.HKWReactiveUI;
 ///
 ///     private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
 ///     {
-///         if (!check || !EqualityComparer<string>.Default.Equals(backingField, newValue))
+///         if (!EqualityComparer<string>.Default.Equals(backingField, newValue))
 ///         {
 ///             string oldValue = backingField;
 ///             this.RaisePropertyChanging("Name");
@@ -52,15 +52,4 @@ public sealed class ReactivePropertyAttribute : Attribute
     ///
     /// </summary>
     public ReactivePropertyAttribute() { }
-
-    /// <param name="Check">检查</param>
-    public ReactivePropertyAttribute(bool Check)
-    {
-        this.Check = Check;
-    }
-
-    /// <summary>
-    /// 检查
-    /// </summary>
-    public bool Check { get; } = true;
 }

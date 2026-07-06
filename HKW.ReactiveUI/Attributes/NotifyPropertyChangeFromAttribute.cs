@@ -32,12 +32,12 @@
 ///     {
 ///        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
 ///     }
-///     private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
+///     private void RaiseAndSetName(ref string backingField, string newValue)
 ///     {
 ///         ...
 ///         RaiseIsSameChange();
 ///     }
-///     private void RaiseAndSetID(ref string backingField, string newValue, bool check = true)
+///     private void RaiseAndSetID(ref string backingField, string newValue)
 ///     {
 ///         ...
 ///         RaiseIsSameChange();

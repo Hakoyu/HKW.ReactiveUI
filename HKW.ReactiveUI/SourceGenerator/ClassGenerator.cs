@@ -81,7 +81,7 @@ internal class ClassGenerator
             Writer.Indent++;
 
             Writer.WriteLine(
-                @$"if (check && EqualityComparer<{propertyInfo.Value.TypeName}>.Default.Equals(backingField, newValue))
+                @$"if (EqualityComparer<{propertyInfo.Value.TypeName}>.Default.Equals(backingField, newValue))
                 return;
             var oldValue = backingField;"
             );

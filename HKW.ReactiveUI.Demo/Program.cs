@@ -18,7 +18,6 @@ internal class Program
     //private string $Name;
     //public string Name { get; set; } = string.Empty;
 
-
     static void Main(string[] args)
     {
         RxAppBuilder.CreateReactiveUIBuilder().WithCoreServices().BuildApp();
@@ -66,7 +65,7 @@ partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
     //public int Ass =>
     //    this.WhenAnyValue(x => x.B1).Select(x => x).ToProperty(this, nameof(Ass)).ToDefault<int>();
 
-    [ReactiveProperty(false)]
+    [ReactiveProperty]
     public int B1 { get; set; } = int.MaxValue;
 
     [ReactiveProperty]
@@ -98,7 +97,7 @@ partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
 
     private string _id;
 
-    [ReactiveProperty(false)]
+    [ReactiveProperty]
     public string ID { get; set; } = string.Empty;
 
     [ReactiveProperty]
@@ -122,7 +121,6 @@ partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
     /// <summary>
     /// 文化名称
     /// </summary>
-
     [ReactiveProperty]
     public string CultureName { get; set; } = string.Empty;
 
