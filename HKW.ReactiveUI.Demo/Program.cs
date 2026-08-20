@@ -273,3 +273,21 @@ internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<Observab
         return $"X = {A1}, Y = {A2}";
     }
 }
+
+public abstract partial class TestModelbase : ReactiveObjectX
+{
+    [ReactiveProperty]
+    public string NameBase { get; set; } = string.Empty;
+
+    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(NameBase))]
+    public List<int> Listbase => this.To(static x => new List<int>());
+}
+
+public partial class TestModel1 : TestModelbase
+{
+    [ReactiveProperty]
+    public string Name { get; set; } = string.Empty;
+
+    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(Name))]
+    public List<int> List1 => this.To(static x => new List<int>());
+}

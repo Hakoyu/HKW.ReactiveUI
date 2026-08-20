@@ -33,8 +33,8 @@ internal class ClassAnalyzer
         AnalyzeReactiveProperty();
         AnalyzeReactiveCommand();
         AnalyzeNotifyPropertyChangeFrom();
-        AnalyzeI18nObject();
         AnalyzeObservableAsProperty();
+        //AnalyzeI18nObject();
 
         return GenerateInfo;
     }
@@ -186,7 +186,8 @@ internal class ClassAnalyzer
                 }
 
                 var propertyActionSB = new StringBuilder();
-                var fieldName = $"_{info.PropertyName.FirstLetterToLower()}";
+                // 加个cache防止被编译器检查认为是属性的字段
+                var fieldName = $"_cache_{info.PropertyName.FirstLetterToLower()}";
                 var raiseMethodName = $"Raise{info.PropertyName}Change";
                 // 检测为To静态方法
                 if (info.StaticAction)
@@ -234,29 +235,29 @@ ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {fieldName},
         }
     }
 
-    private const string DefaultI18nObjectName = "I18nObject";
+    //private const string DefaultI18nObjectName = "I18nObject";
 
-    private void AnalyzeI18nObject()
-    {
-        var objectNames = new HashSet<string>();
-        foreach (var i18Info in ClassInfo.I18nResourceInfoByName)
-        {
-            var sb = new StringBuilder();
-            foreach (
-                var (keyName, targetName, objectName, retentionValueOnKeyChange) in i18Info.Value
-            )
-            {
-                if (objectNames.Add(objectName))
-                {
-                    sb.AppendLine(
-                        $"{i18Info.Key}?.I18nObjects.Add({(string.IsNullOrWhiteSpace(objectName) ? DefaultI18nObjectName : objectName)});"
-                    );
-                }
-                sb.AppendLine(
-                    $"{(string.IsNullOrWhiteSpace(objectName) ? DefaultI18nObjectName : objectName)}.AddProperty(nameof({keyName}), x => (({ClassInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
-                );
-            }
-            GenerateInfo.InitializeMembers.Add(sb.ToString());
-        }
-    }
+    //private void AnalyzeI18nObject()
+    //{
+    //    var objectNames = new HashSet<string>();
+    //    foreach (var i18Info in ClassInfo.I18nResourceInfoByName)
+    //    {
+    //        var sb = new StringBuilder();
+    //        foreach (
+    //            var (keyName, targetName, objectName, retentionValueOnKeyChange) in i18Info.Value
+    //        )
+    //        {
+    //            if (objectNames.Add(objectName))
+    //            {
+    //                sb.AppendLine(
+    //                    $"{i18Info.Key}?.I18nObjects.Add({(string.IsNullOrWhiteSpace(objectName) ? DefaultI18nObjectName : objectName)});"
+    //                );
+    //            }
+    //            sb.AppendLine(
+    //                $"{(string.IsNullOrWhiteSpace(objectName) ? DefaultI18nObjectName : objectName)}.AddProperty(nameof({keyName}), x => (({ClassInfo.Name})x).{keyName}, nameof({targetName}), {retentionValueOnKeyChange.ToString().ToLowerInvariant()});"
+    //            );
+    //        }
+    //        GenerateInfo.InitializeMembers.Add(sb.ToString());
+    //    }
+    //}
 }

@@ -133,7 +133,7 @@ internal class ReactiveObjectWeaver
             if (enableCache is false)
                 return;
             // 如果启用了缓存,则会生成一个新字段来缓存值
-            var fieldName = "_" + property.Name.FirstLetterToLower();
+            var fieldName = "_cache_" + property.Name.FirstLetterToLower();
             var field =
                 classType.Fields.FirstOrDefault(x => x.Name == fieldName)
                 ?? throw new WeaverException($"Field {fieldName} not exist");
@@ -186,15 +186,6 @@ internal class ReactiveObjectWeaver
         }
         else
             raiseAndSetMethod = ModuleDefinition.ImportReference(raiseAndSetMethodDefinition);
-
-        var attributeParameters = property
-            .CustomAttributes.First(x =>
-                x.AttributeType.FullName == ReactivePropertyAttribute.FullName
-            )
-            .GetAttributeParameters();
-        attributeParameters.TryGetValue("Check", out var checkParameter);
-        // 获取检查属性
-        var check = checkParameter?.Value is not false;
 
         // 生成一个新字段, 命名为 $PropertyName
         var field = new FieldDefinition(
@@ -253,7 +244,7 @@ internal class ReactiveObjectWeaver
             il.Emit(OpCodes.Ret);
         });
 
-        // 创建新的setter
+        // 创建 setter
         property.SetMethod.Body = new MethodBody(property.SetMethod);
         property.SetMethod.Body.Emit(il =>
         {
@@ -265,7 +256,7 @@ internal class ReactiveObjectWeaver
             il.Emit(OpCodes.Ldflda, field.BindDefinition(classType));
             // newValue
             il.Emit(OpCodes.Ldarg_1);
-            // this.RaiseAndSetProperty(ref field, newValue, check)
+            // this.RaiseAndSetProperty(ref field, newValue)
             il.Emit(OpCodes.Call, raiseAndSetMethod);
             // Pop
             il.Emit(OpCodes.Pop);
