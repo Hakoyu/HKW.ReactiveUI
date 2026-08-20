@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
-internal static class ClassChecker
+internal static class ClassValidator
 {
     public static bool Execute(
         AssemblyInfo assemblyInfo,

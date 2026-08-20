@@ -169,7 +169,7 @@ internal class ClassAnalyzer
                 )
                     members = GenerateInfo.PropertyChangedMemberByName[pair.Key] = [];
                 // 如果不启用缓存
-                if (info.CacheMode is NotifyPropertyChangeFromAttribute.CacheModeEnum.Disable)
+                if (info.CacheMode is NotifyPropertyChangeFromCacheMode.Disable)
                 {
                     if (
                         GenerateInfo.PropertyChangingMemberByName.TryGetValue(
@@ -206,7 +206,7 @@ internal class ClassAnalyzer
                 // 添加字段
                 if (fields.Add(fieldName))
                 {
-                    if (info.CacheMode is NotifyPropertyChangeFromAttribute.CacheModeEnum.Enable)
+                    if (info.CacheMode is NotifyPropertyChangeFromCacheMode.Enable)
                     {
                         GenerateInfo.InitializeMembers.Add($"{fieldName} = {info.Builder};");
                     }

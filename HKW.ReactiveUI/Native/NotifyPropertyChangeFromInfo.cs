@@ -30,8 +30,7 @@ public sealed class NotifyPropertyChangeFromInfo(
     /// <summary>
     /// 启用缓存
     /// </summary>
-    public NotifyPropertyChangeFromAttribute.CacheModeEnum CacheMode { get; set; } =
-        NotifyPropertyChangeFromAttribute.CacheModeEnum.Enable;
+    public NotifyPropertyChangeFromCacheMode CacheMode { get; set; }
 
     /// <summary>
     /// 静态行动

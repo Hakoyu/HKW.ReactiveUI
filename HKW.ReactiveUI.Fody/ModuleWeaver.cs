@@ -40,7 +40,7 @@ public class ModuleWeaver : BaseModuleWeaver
             "System",
             "System.Runtime",
             "ReactiveUI",
-            "HKW.ReactiveUI"
+            "HKW.ReactiveUI",
         ];
     }
 

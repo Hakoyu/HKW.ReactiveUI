@@ -7,11 +7,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
-internal class ClassGenerator
+internal class ClassSourceGenerator
 {
     public static void Execute(AssemblyInfo assemblyInfo, ClassGenerateInfo generateInfo)
     {
-        var t = new ClassGenerator() { AssemblyInfo = assemblyInfo, GeneratorInfo = generateInfo };
+        var t = new ClassSourceGenerator()
+        {
+            AssemblyInfo = assemblyInfo,
+            GeneratorInfo = generateInfo,
+        };
         t.GenerateClass();
     }
 
@@ -145,6 +149,8 @@ internal class ClassGenerator
 
     private void GenerateInitializeReactiveObject()
     {
+        if (GeneratorInfo.InitializeMembers.Count is 0)
+            return;
         Writer.WriteLine("/// <inheritdoc/>");
         Writer.WriteLine(CommonData.GeneratedCodeAttribute);
         if (GeneratorInfo.IsReactiveObjectX)
@@ -158,17 +164,12 @@ internal class ClassGenerator
         Writer.WriteLine("{");
         Writer.Indent++;
 
-        GenerateInitializeMember();
-
-        Writer.Indent--;
-        Writer.WriteLine("}");
-    }
-
-    private void GenerateInitializeMember()
-    {
         foreach (var member in GeneratorInfo.InitializeMembers)
         {
             Writer.WriteLine(member);
         }
+
+        Writer.Indent--;
+        Writer.WriteLine("}");
     }
 }

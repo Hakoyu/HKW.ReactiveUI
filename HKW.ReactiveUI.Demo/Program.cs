@@ -109,10 +109,7 @@ partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
     [ReactiveProperty]
     public List<int> List { get; set; } = [];
 
-    [NotifyPropertyChangeFrom(
-        NotifyPropertyChangeFromAttribute.CacheModeEnum.EnableAfterInitialize,
-        nameof(Name)
-    )]
+    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.AfterInitialize, nameof(Name))]
     public List<int> List1 => this.To(static x => new List<int>());
 
     [ReactiveProperty]

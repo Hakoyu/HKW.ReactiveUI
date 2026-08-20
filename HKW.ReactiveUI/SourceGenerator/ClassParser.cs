@@ -100,7 +100,7 @@ internal class ClassParser
                 IsTask = isTask,
                 ArgumentType = methodSymbol.Parameters.SingleOrDefault()?.Type,
                 ReactiveCommandAttributeParameters = attributeParameters,
-                Comment = methodSymbol.GetDocumentationCommentXml() ?? string.Empty
+                Comment = methodSymbol.GetDocumentationCommentXml() ?? string.Empty,
             }
         );
     }
@@ -229,7 +229,7 @@ internal class ClassParser
             )
         )
         {
-            info.CacheMode = (NotifyPropertyChangeFromAttribute.CacheModeEnum)cacheMode?.Value!;
+            info.CacheMode = (NotifyPropertyChangeFromCacheMode)cacheMode?.Value!;
         }
 
         if (value.Values is null)

@@ -127,27 +127,28 @@ internal class ReactiveObjectWeaver
                 x.AttributeType.FullName == NotifyPropertyChangeFromAttribute.FullName
             )
             .GetAttributeParameters();
-        attributeParameters.TryGetValue("CacheMode", out var cacheModeParameter);
-        var enableCache = cacheModeParameter?.Value is not 0;
-
-        if (enableCache is false)
-            return;
-        // 如果启用了缓存,则会生成一个新字段来缓存值
-        var fieldName = "_" + property.Name.FirstLetterToLower();
-        var field =
-            classType.Fields.FirstOrDefault(x => x.Name == fieldName)
-            ?? throw new WeaverException($"Field {fieldName} not exist");
-
-        property.GetMethod.Body = new MethodBody(property.GetMethod);
-        property.GetMethod.Body.Emit(il =>
+        if (attributeParameters.TryGetValue("CacheMode", out var cacheModeParameter))
         {
-            // this
-            il.Emit(OpCodes.Ldarg_0);
-            // this.$PropertyName
-            il.Emit(OpCodes.Ldfld, field.BindDefinition(classType));
-            // Return
-            il.Emit(OpCodes.Ret);
-        });
+            var enableCache = cacheModeParameter.Value is not 0;
+            if (enableCache is false)
+                return;
+            // 如果启用了缓存,则会生成一个新字段来缓存值
+            var fieldName = "_" + property.Name.FirstLetterToLower();
+            var field =
+                classType.Fields.FirstOrDefault(x => x.Name == fieldName)
+                ?? throw new WeaverException($"Field {fieldName} not exist");
+
+            property.GetMethod.Body = new MethodBody(property.GetMethod);
+            property.GetMethod.Body.Emit(il =>
+            {
+                // this
+                il.Emit(OpCodes.Ldarg_0);
+                // this.$PropertyName
+                il.Emit(OpCodes.Ldfld, field.BindDefinition(classType));
+                // Return
+                il.Emit(OpCodes.Ret);
+            });
+        }
     }
 
     public void ReactivePropertyWeaver(TypeDefinition classType, PropertyDefinition property)

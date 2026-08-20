@@ -41,16 +41,21 @@ internal partial class Generator : IIncrementalGenerator
         foreach (var declaredClass in declaredClasses)
         {
             if (
-                ClassChecker.Execute(assemblyInfo, syntaxTreeInfo, declaredClass, out var classInfo)
+                ClassValidator.Execute(
+                    assemblyInfo,
+                    syntaxTreeInfo,
+                    declaredClass,
+                    out var classInfo
+                )
                 is false
             )
                 continue;
-            if (ClassGenerator.FirstClassFullName == string.Empty)
-                ClassGenerator.FirstClassFullName = classInfo.FullTypeName;
+            if (ClassSourceGenerator.FirstClassFullName == string.Empty)
+                ClassSourceGenerator.FirstClassFullName = classInfo.FullTypeName;
             ClassParser.Execute(assemblyInfo, syntaxTreeInfo, declaredClass, classInfo);
 
             var generateInfo = ClassAnalyzer.Execute(classInfo);
-            ClassGenerator.Execute(assemblyInfo, generateInfo);
+            ClassSourceGenerator.Execute(assemblyInfo, generateInfo);
         }
     }
 }
