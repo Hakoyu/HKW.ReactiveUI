@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using HKW.HKWReactiveUI.SourceGenerator;
+using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,9 +14,14 @@ internal sealed class ClassInfo
 
     public string FullName => $"{Namespace}.{Name}";
     public string FullTypeName => $"{Namespace}.{Name}{DeclarationSyntax.TypeParameterList}";
+    public bool IsReactiveObjectX { get; set; }
+    public List<MethodSS> MethodSymbols { get; } = [];
+    public List<PropertySS> PropertySymbols { get; } = [];
+
+    //public Dictionary<IPropertySymbol, AttributeParamDictionary> AttributeByProperty { get; } = [];
+    //public Dictionary<IMethodSymbol, AttributeParamDictionary> AttributeByMethod { get; } = [];
     public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
     public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
-    public bool IsReactiveObjectX { get; set; }
     public List<ReactiveCommandInfo> ReactiveCommandInfos { get; } = [];
 
     /// <summary>
@@ -43,4 +49,10 @@ internal sealed class ClassInfo
     /// 可观察属性
     /// </summary>
     public List<IPropertySymbol> ObservableAsProperties { get; } = [];
+
+    //public AttributeParameterByName GetAttributes(IPropertySymbol property)
+    //{
+    //    if (AttributeByProperty.TryGetValue(property, out var attributes) is false)
+    //        attributes = AttributeByProperty[property] = property.GetAttributes();
+    //}
 }

@@ -11,12 +11,12 @@ public enum NotifyPropertyChangeFromCacheMode
     Disable,
 
     /// <summary>
-    /// 启用, 在对象初始化时缓存
+    /// 启用, 并在对象初始化时缓存
     /// </summary>
     Enable,
 
     /// <summary>
-    /// 在初始化后启用, 在目标属性被调用后才缓存
+    /// 首次关联属性变更时才计算并缓存。
     /// </summary>
-    AfterInitialize,
+    OnFirstChange,
 }

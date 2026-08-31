@@ -49,9 +49,10 @@ public class ModuleWeaver : BaseModuleWeaver
 
     internal static TypeDefinition[] IReactiveObjectDerivedClasses { get; private set; } = null!;
     internal static TypeDefinition IReactiveObject { get; private set; } = null!;
-    internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
-    internal static TypeDefinition ReactiveObjectX { get; private set; } = null!;
-    internal static TypeDefinition IReactiveObjectExtensions { get; private set; } = null!;
+
+    //internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
+    //internal static TypeDefinition ReactiveObjectX { get; private set; } = null!;
+    //internal static TypeDefinition IReactiveObjectExtensions { get; private set; } = null!;
 
     private bool Check(ModuleDefinition moduleDefinition)
     {
@@ -107,23 +108,25 @@ public class ModuleWeaver : BaseModuleWeaver
                 ReactiveUI
             ).Resolve() ?? throw new Exception("reactiveObjectExtensions is null");
 
-        ReactiveObjectX =
-            new TypeReference(
-                "HKW.HKWReactiveUI",
-                "ReactiveObjectX",
-                moduleDefinition,
-                HKWReactiveUI
-            ).Resolve() ?? throw new Exception("ReactiveObjectX is null");
+        //ReactiveObjectX =
+        //    new TypeReference(
+        //        "HKW.HKWReactiveUI",
+        //        "ReactiveObjectX",
+        //        moduleDefinition,
+        //        HKWReactiveUI
+        //    ).Resolve() ?? throw new Exception("ReactiveObjectX is null");
 
-        RaiseAndSetIfChangedMethod =
-            moduleDefinition.ImportReference(
-                reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
-            ) ?? throw new Exception("RaiseAndSetIfChangedMethod is null");
+        //RaiseAndSetIfChangedMethod =
+        //    moduleDefinition.ImportReference(
+        //        reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
+        //    ) ?? throw new Exception("RaiseAndSetIfChangedMethod is null");
 
         IReactiveObjectDerivedClasses = moduleDefinition
             .GetAllTypes()
             .Where(x => x.BaseType is not null && IReactiveObject.IsAssignableFrom(x.BaseType))
             .ToArray();
+
+        NativeData.Initialize(ModuleDefinition);
         return true;
     }
 }

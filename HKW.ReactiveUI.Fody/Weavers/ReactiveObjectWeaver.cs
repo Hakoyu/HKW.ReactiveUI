@@ -78,8 +78,8 @@ internal class ReactiveObjectWeaver
         foreach (var property in classType.Properties)
         {
             ReactivePropertyWeaver(classType, property);
-            NotifyPropertyChangeFromWeaver(classType, property);
-            ObservableAsPropertyWeaver(classType, property);
+            //NotifyPropertyChangeFromWeaver(classType, property);
+            //ObservableAsPropertyWeaver(classType, property);
         }
     }
 
@@ -193,6 +193,7 @@ internal class ReactiveObjectWeaver
             FieldAttributes.Private,
             property.PropertyType
         );
+        NativeData.AddGeneratedCodeAttribute(field);
         classType.Fields.Add(field);
 
         // 寻找旧字段并删除
@@ -258,8 +259,6 @@ internal class ReactiveObjectWeaver
             il.Emit(OpCodes.Ldarg_1);
             // this.RaiseAndSetProperty(ref field, newValue)
             il.Emit(OpCodes.Call, raiseAndSetMethod);
-            // Pop
-            il.Emit(OpCodes.Pop);
             // Return out of the function
             il.Emit(OpCodes.Ret);
         });

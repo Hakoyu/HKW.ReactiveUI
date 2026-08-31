@@ -8,13 +8,13 @@ namespace HKW.HKWReactiveUI;
 /// </summary>
 /// <param name="propertyName">属性名</param>
 /// <param name="propertyType">属性类型</param>
-/// <param name="builder">方法</param>
-/// <param name="staticAction">静态行动</param>
+/// <param name="getMethod">方法</param>
+/// <param name="params">参数</param>
 public sealed class NotifyPropertyChangeFromInfo(
     string propertyName,
     ITypeSymbol propertyType,
-    StringBuilder builder,
-    bool staticAction
+    string getMethod,
+    string[] @params
 ) : IEquatable<NotifyPropertyChangeFromInfo>
 {
     /// <summary>
@@ -33,14 +33,14 @@ public sealed class NotifyPropertyChangeFromInfo(
     public NotifyPropertyChangeFromCacheMode CacheMode { get; set; }
 
     /// <summary>
-    /// 静态行动
+    /// Get方法
     /// </summary>
-    public bool StaticAction { get; set; } = staticAction;
+    public string GetMethod { get; set; } = getMethod;
 
     /// <summary>
-    /// 数据
+    /// 参数
     /// </summary>
-    public StringBuilder Builder { get; set; } = builder;
+    public string[] Params { get; set; } = @params;
 
     #region IEquatable
     /// <inheritdoc/>

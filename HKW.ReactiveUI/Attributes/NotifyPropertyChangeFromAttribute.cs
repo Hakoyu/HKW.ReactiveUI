@@ -7,7 +7,7 @@
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
-///     [NotifyPropertyChangeFrom(nameof(ID), nameof(Name), EnableCache = NotifyPropertyChangeCacheMode.Enable)]
+///     [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(ID), nameof(Name)]
 ///     public string IsSame => ID == Name;
 ///
 ///     protected void InitializeReactiveObject() { }
@@ -19,12 +19,12 @@
 /// partial class MyViewModel : ReactiveObject
 /// {
 ///     private bool _isSame;
-///     [NotifyPropertyChangeFrom(true ,nameof(ID), nameof(Name), EnableCache = true)]
+///     [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable ,nameof(ID), nameof(Name))]
 ///     public string IsSame => Name == ID;
 ///
 ///     protected void InitializeReactiveObject()
 ///     {
-///         // CacheAtInitialize = true
+///         // NotifyPropertyChangeFromCacheMode.Enable
 ///        _isSame = Name == ID;
 ///     }
 ///
@@ -59,7 +59,7 @@ public sealed partial class NotifyPropertyChangeFromAttribute : Attribute
 
     ///<inheritdoc/>
     /// <param name="PropertyNames">属性名称</param>
-    /// <param name="CacheMode">缓存模式, 非禁用时会生成一个字段来缓存上次目标属性改变后的结果</param>
+    /// <param name="CacheMode">缓存模式</param>
     public NotifyPropertyChangeFromAttribute(
         NotifyPropertyChangeFromCacheMode CacheMode,
         params string[] PropertyNames
@@ -75,7 +75,7 @@ public sealed partial class NotifyPropertyChangeFromAttribute : Attribute
     public string[] PropertyNames { get; }
 
     /// <summary>
-    /// 缓存模式, 非禁用时会生成一个字段来缓存上次目标属性改变后的结果
+    /// 缓存模式
     /// </summary>
-    public NotifyPropertyChangeFromCacheMode CacheMode { get; set; }
+    public NotifyPropertyChangeFromCacheMode CacheMode { get; }
 }

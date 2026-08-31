@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>0.4.7</Version>
@@ -28,13 +27,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0" PrivateAssets="all" />
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ReactiveUI" Version="23.2.27" GeneratePathProperty="true" />
-    <None Include="$(PkgReactiveUI)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <PackageReference
+      Include="Microsoft.CodeAnalysis.Analyzers"
+      Version="5.3.0"
+      PrivateAssets="all"
+    />
+    <None
+      Include="$(OutputPath)\$(AssemblyName).dll"
+      Pack="true"
+      PackagePath="analyzers/dotnet/cs"
+      Visible="false"
+    />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +45,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <ProjectReference Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference
+      Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj"
+      ReferenceOutputAssembly="false"
+    />
     <PackageReference Include="FodyPackaging" Version="6.9.3" PrivateAssets="all" />
   </ItemGroup>
 
@@ -51,5 +57,23 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker
+        Include="..\..\HKW.SourceGeneratorUtils\HKW.SourceGeneratorUtils\bin\Debug\netstandard2.0\HKW.SourceGeneratorUtils.dll"
+        IncludeRuntimeDependency="false"
+      />
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <Reference Include="HKW.SourceGeneratorUtils">
+      <HintPath>..\..\HKW.SourceGeneratorUtils\HKW.SourceGeneratorUtils\bin\Debug\netstandard2.0\HKW.SourceGeneratorUtils.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

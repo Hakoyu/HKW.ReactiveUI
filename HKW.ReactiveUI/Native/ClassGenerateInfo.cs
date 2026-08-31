@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using HKW.SourceGeneratorUtils;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace HKW.HKWReactiveUI;
@@ -14,6 +15,11 @@ internal sealed class ClassGenerateInfo
     public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
     public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
 
+    /// <summary>
+    /// (PropertyName, RaiseAndSetMethod)
+    /// </summary>
+    public Dictionary<string, MethodGenerateInfo> ReactivePropertyMethodInfoByName { get; } = [];
+    public List<IMemberGenerateInfo> MemberInfos { get; } = [];
     public bool IsReactiveObjectX { get; set; }
 
     /// <summary>
