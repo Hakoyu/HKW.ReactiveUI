@@ -126,7 +126,7 @@ internal class ReactiveObjectWeaver
             .CustomAttributes.First(x =>
                 x.AttributeType.FullName == NotifyPropertyChangeFromAttribute.FullName
             )
-            .GetAttributeParameters();
+            .GetParams();
         if (attributeParameters.TryGetValue("CacheMode", out var cacheModeParameter))
         {
             var enableCache = cacheModeParameter.Value is not 0;

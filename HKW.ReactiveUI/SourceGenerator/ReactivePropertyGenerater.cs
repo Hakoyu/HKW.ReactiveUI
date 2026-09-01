@@ -55,8 +55,8 @@ internal class ReactivePropertyGenerater
             {
                 Params = new()
                 {
-                    new("backingField", typeName) { GenerateType = ParameterGenerateType.Ref },
-                    new("newValue", typeName),
+                    new(typeName, "backingField") { GenerateType = ParameterGenerateType.Ref },
+                    new(typeName, "newValue"),
                 },
             }
         );
@@ -109,14 +109,14 @@ internal class ReactivePropertyGenerater
         _generateInfo.MemberInfos.Add(
             new MethodGenerateInfo($"On{property.Name}Changing", SourceGeneratorHelper.TypeVoid, "")
             {
-                Params = [new("oldValue", typeName), new("newValue", typeName)],
+                Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
                 GenerateType = MethodGenerateType.Partial,
             }
         );
         _generateInfo.MemberInfos.Add(
             new MethodGenerateInfo($"On{property.Name}Changed", SourceGeneratorHelper.TypeVoid, "")
             {
-                Params = [new("oldValue", typeName), new("newValue", typeName)],
+                Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
                 GenerateType = MethodGenerateType.Partial,
             }
         );

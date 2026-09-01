@@ -15,30 +15,12 @@ internal sealed class ClassGenerateInfo
     public SyntaxList<UsingDirectiveSyntax> Usings { get; set; }
     public ClassDeclarationSyntax DeclarationSyntax { get; set; } = null!;
 
-    /// <summary>
-    /// (PropertyName, RaiseAndSetMethod)
-    /// </summary>
-    public Dictionary<string, MethodGenerateInfo> ReactivePropertyMethodInfoByName { get; } = [];
     public List<IMemberGenerateInfo> MemberInfos { get; } = [];
-    public bool IsReactiveObjectX { get; set; }
-
-    /// <summary>
-    /// 所有成员
-    /// </summary>
-    public List<string> Members { get; set; } = [];
 
     /// <summary>
     /// 所有初始化成员
     /// </summary>
     public List<string> InitializeMembers { get; set; } = [];
-
-    /// <summary>
-    /// (PropertyName, (PropertyTypeFullName ,PropertyAction))
-    /// </summary>
-    public Dictionary<
-        string,
-        (string TypeName, string Action)
-    > ReactivePropertyActionByName { get; } = [];
 
     /// <summary>
     /// (Property, Actions)
