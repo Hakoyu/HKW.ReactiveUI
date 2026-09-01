@@ -57,7 +57,7 @@ public abstract partial class TestModelbase : ReactiveObject
     [ReactiveProperty]
     public string NameBase { get; set; } = string.Empty;
 
-    [NotifyPropertyChangeFrom(nameof(NameBase))]
+    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(NameBase))]
     public List<int> Listbase
     {
         get { return new List<int>(); }

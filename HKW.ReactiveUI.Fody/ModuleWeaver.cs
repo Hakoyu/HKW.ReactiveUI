@@ -24,10 +24,19 @@ public class ModuleWeaver : BaseModuleWeaver
         //Debugger.Launch();
         Logger = new ModuleWeaverLogger(this, false);
 
-        if (Check(ModuleDefinition) is false)
+        if (WeaverHelper.Initialize(ModuleDefinition, Logger) is false)
             return;
 
-        ReactiveObjectWeaver.Execute(ModuleDefinition);
+        // 筛选所有实现了IReactiveObject接口的类
+        var classArray = ModuleDefinition
+            .GetAllTypes()
+            .Where(x => x.BaseType?.IsAssignableFrom(WeaverHelper.IReactiveObject) is true)
+            .ToArray();
+        foreach (var classType in classArray)
+        {
+            ReactivePropertyWeaver.Weave(classType);
+            NotifyPropertyChangeFromWeaver.Weave(classType);
+        }
     }
 
     /// <inheritdoc/>
@@ -42,91 +51,5 @@ public class ModuleWeaver : BaseModuleWeaver
             "ReactiveUI",
             "HKW.ReactiveUI",
         ];
-    }
-
-    internal static AssemblyNameReference ReactiveUI { get; private set; } = null!;
-    internal static AssemblyNameReference HKWReactiveUI { get; private set; } = null!;
-
-    internal static TypeDefinition[] IReactiveObjectDerivedClasses { get; private set; } = null!;
-    internal static TypeDefinition IReactiveObject { get; private set; } = null!;
-
-    //internal static MethodReference RaiseAndSetIfChangedMethod { get; private set; } = null!;
-    //internal static TypeDefinition ReactiveObjectX { get; private set; } = null!;
-    //internal static TypeDefinition IReactiveObjectExtensions { get; private set; } = null!;
-
-    private bool Check(ModuleDefinition moduleDefinition)
-    {
-        ReactiveUI = ModuleDefinition
-            .AssemblyReferences.Where(x => x.Name == "ReactiveUI")
-            .OrderByDescending(x => x.Version)
-            .FirstOrDefault();
-        if (ReactiveUI is null)
-        {
-            Logger.LogError(
-                "Could not find assembly: ReactiveUI in ("
-                    + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
-            return false;
-        }
-        Logger.LogInfo($"{ReactiveUI.Name} {ReactiveUI.Version}");
-
-        if (moduleDefinition.Assembly.Name.Name == "HKW.ReactiveUI")
-        {
-            HKWReactiveUI = moduleDefinition.Assembly.Name;
-        }
-        else
-        {
-            HKWReactiveUI = ModuleDefinition
-                .AssemblyReferences.Where(x => x.Name == "HKW.ReactiveUI")
-                .OrderByDescending(x => x.Version)
-                .FirstOrDefault();
-            if (HKWReactiveUI is null)
-            {
-                Logger.LogError(
-                    "Could not find assembly: HKW.ReactiveUI ("
-                        + string.Join(", ", ModuleDefinition.AssemblyReferences.Select(x => x.Name))
-                        + ")"
-                );
-                return false;
-            }
-        }
-        Logger.LogInfo($"{HKWReactiveUI.Name} {HKWReactiveUI.Version}");
-
-        IReactiveObject = new TypeReference(
-            "ReactiveUI",
-            "IReactiveObject",
-            moduleDefinition,
-            ReactiveUI
-        ).Resolve();
-
-        var reactiveObjectExtensions =
-            new TypeReference(
-                "ReactiveUI",
-                "IReactiveObjectExtensions",
-                moduleDefinition,
-                ReactiveUI
-            ).Resolve() ?? throw new Exception("reactiveObjectExtensions is null");
-
-        //ReactiveObjectX =
-        //    new TypeReference(
-        //        "HKW.HKWReactiveUI",
-        //        "ReactiveObjectX",
-        //        moduleDefinition,
-        //        HKWReactiveUI
-        //    ).Resolve() ?? throw new Exception("ReactiveObjectX is null");
-
-        //RaiseAndSetIfChangedMethod =
-        //    moduleDefinition.ImportReference(
-        //        reactiveObjectExtensions.Methods.Single(x => x.Name == "RaiseAndSetIfChanged")
-        //    ) ?? throw new Exception("RaiseAndSetIfChangedMethod is null");
-
-        IReactiveObjectDerivedClasses = moduleDefinition
-            .GetAllTypes()
-            .Where(x => x.BaseType is not null && IReactiveObject.IsAssignableFrom(x.BaseType))
-            .ToArray();
-
-        NativeData.Initialize(ModuleDefinition);
-        return true;
     }
 }

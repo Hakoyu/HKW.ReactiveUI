@@ -8,3 +8,4 @@ Rule ID | Category | Severity | Notes
 R0001 | HKWReactiveUI | Error | Descriptors
 R0002 | HKWReactiveUI | Error | Descriptors
 R0003 | HKWReactiveUI | Error | Descriptors
+R0004 | HKWReactiveUI | Error | Descriptors

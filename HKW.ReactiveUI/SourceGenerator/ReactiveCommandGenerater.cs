@@ -6,28 +6,22 @@ using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
-internal class ReactiveCommandGenerater
+internal class ReactiveCommandGenerator
 {
-    public static void Generate(
-        AssemblyInfo assemblyInfo,
-        ClassInfo classInfo,
-        ClassGenerateInfo generateInfo
-    )
+    public static void Generate(ClassInfo classInfo, ClassGenerateInfo generateInfo)
     {
-        var analyzer = new ReactiveCommandGenerater()
-        {
-            _assemblyInfo = assemblyInfo,
-            _classInfo = classInfo,
-            _generateInfo = generateInfo,
-        };
-        analyzer.Process();
+        var g = new ReactiveCommandGenerator(classInfo, generateInfo);
+        g.Process();
     }
 
-#pragma warning disable CS8618
-    private AssemblyInfo _assemblyInfo;
-    private ClassInfo _classInfo;
-    private ClassGenerateInfo _generateInfo;
-#pragma warning restore CS8618
+    private readonly ClassInfo _classInfo;
+    private readonly ClassGenerateInfo _generateInfo;
+
+    public ReactiveCommandGenerator(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    {
+        _classInfo = classInfo;
+        _generateInfo = generateInfo;
+    }
 
     private void Process()
     {
@@ -55,7 +49,7 @@ internal class ReactiveCommandGenerater
                 Descriptors.ReactiveCommandParametersGreaterThan1,
                 methodSyntax.GetLocation()
             );
-            _assemblyInfo.ProductionContext.ReportDiagnostic(diagnostic);
+            GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
             return;
         }
         // 获取特性的参数
@@ -63,7 +57,7 @@ internal class ReactiveCommandGenerater
 
         // 是否为异步方法
         bool isTask = methodSymbol.ReturnType.InheritedFrom(
-            SourceGeneratorHelper.TaskTypeFullName,
+            GeneratorHelper.TaskTypeFullName,
             SymbolDisplayFormat.FullyQualifiedFormat
         );
         var realReturnType = isTask
@@ -72,7 +66,7 @@ internal class ReactiveCommandGenerater
         // 是否为空返回值
         var isReturnTypeVoid = realReturnType.IsVoid();
 
-        GenerateReactiveCommand(
+        GeneratoreactiveCommand(
             new(
                 methodSymbol.Name,
                 isReturnTypeVoid ? null : realReturnType,
@@ -83,7 +77,7 @@ internal class ReactiveCommandGenerater
         );
     }
 
-    private void GenerateReactiveCommand(ReactiveCommandInfo commandInfo)
+    private void GeneratoreactiveCommand(ReactiveCommandInfo commandInfo)
     {
         var outputType = commandInfo.GetOutputTypeText();
         var inputType = commandInfo.GetInputTypeText();
@@ -101,6 +95,7 @@ internal class ReactiveCommandGenerater
         {
             Comment =
                 $"/// <inheritdoc cref=\"{commandInfo.MethodName}({(commandInfo.ArgumentType is null ? string.Empty : inputType.ReplaceBraces())})\"/>",
+            Accessibility = Accessibility.Public,
         };
         _generateInfo.MemberInfos.Add(field);
         _generateInfo.MemberInfos.Add(property);

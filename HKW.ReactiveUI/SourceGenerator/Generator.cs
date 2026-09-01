@@ -20,19 +20,18 @@ internal partial class Generator : IIncrementalGenerator
             compilation,
             static (spc, compilation) =>
             {
-                SourceGeneratorHelper.Initialize(compilation);
-                var assemblyInfo = new AssemblyInfo(spc, compilation);
+                GeneratorHelper.Initialize(spc, compilation);
                 foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
-                    ParseSyntaxTree(assemblyInfo, syntaxTree);
+                    ParseSyntaxTree(syntaxTree);
                 }
             }
         );
     }
 
-    private static void ParseSyntaxTree(AssemblyInfo assemblyInfo, SyntaxTree syntaxTree)
+    private static void ParseSyntaxTree(SyntaxTree syntaxTree)
     {
-        var semanticModel = assemblyInfo.Compilation.GetSemanticModel(syntaxTree);
+        var semanticModel = GeneratorHelper.Compilation.GetSemanticModel(syntaxTree);
         var syntaxTreeInfo = new SyntaxTreeInfo(syntaxTree, semanticModel);
         var declaredClasses = syntaxTree
             .GetRoot()
@@ -40,12 +39,9 @@ internal partial class Generator : IIncrementalGenerator
             .OfType<ClassDeclarationSyntax>();
         foreach (var declaredClass in declaredClasses)
         {
-            if (
-                ClassValidator(assemblyInfo, syntaxTreeInfo, declaredClass)
-                is not ClassInfo classInfo
-            )
+            if (ClassValidator(syntaxTreeInfo, declaredClass) is not ClassInfo classInfo)
                 continue;
-            //ClassParser.Execute(assemblyInfo, syntaxTreeInfo, declaredClass, classInfo);
+            //ClassParser.Execute(syntaxTreeInfo, declaredClass, classInfo);
             var generateInfo = new ClassGenerateInfo()
             {
                 Namespace = classInfo.Namespace,
@@ -53,18 +49,17 @@ internal partial class Generator : IIncrementalGenerator
                 DeclarationSyntax = declaredClass,
                 Usings = classInfo.Usings,
             };
-            ReactivePropertyChangeFromGenerater.Generate(assemblyInfo, classInfo, generateInfo);
-            ReactivePropertyGenerater.Generate(assemblyInfo, classInfo, generateInfo);
-            ReactiveCommandGenerater.Generate(assemblyInfo, classInfo, generateInfo);
+            ReactivePropertyChangeFromGenerator.Generate(classInfo, generateInfo);
+            ReactivePropertyGenerator.Generate(classInfo, generateInfo);
+            ReactiveCommandGenerator.Generate(classInfo, generateInfo);
 
             if (ClassSourceWriter.FirstClassFullName == string.Empty)
                 ClassSourceWriter.FirstClassFullName = classInfo.FullTypeName;
-            ClassSourceWriter.Execute(assemblyInfo, generateInfo);
+            ClassSourceWriter.Execute(generateInfo);
         }
     }
 
     private static ClassInfo? ClassValidator(
-        AssemblyInfo assemblyInfo,
         SyntaxTreeInfo syntaxTreeInfo,
         ClassDeclarationSyntax declaredClass
     )
@@ -84,7 +79,7 @@ internal partial class Generator : IIncrementalGenerator
                 Descriptors.NotPartialClass,
                 classSymbol.Locations[0]
             );
-            assemblyInfo.ProductionContext.ReportDiagnostic(diagnostic);
+            GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
             return null;
         }
         var classNamespace = classSymbol.ContainingNamespace.ToString();

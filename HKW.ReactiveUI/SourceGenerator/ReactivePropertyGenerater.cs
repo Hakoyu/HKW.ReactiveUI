@@ -1,55 +1,58 @@
-﻿// Source from https://github.com/SparkyTD/ReactiveCommand.SourceGenerator
-
-using HKW.SourceGeneratorUtils;
+﻿using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
-internal class ReactivePropertyGenerater
+internal class ReactivePropertyGenerator
 {
-    public static void Generate(
-        AssemblyInfo assemblyInfo,
-        ClassInfo classInfo,
-        ClassGenerateInfo generateInfo
-    )
+    public static void Generate(ClassInfo classInfo, ClassGenerateInfo generateInfo)
     {
-        var analyzer = new ReactivePropertyGenerater()
-        {
-            _assemblyInfo = assemblyInfo,
-            _classInfo = classInfo,
-            _generateInfo = generateInfo,
-        };
+        var analyzer = new ReactivePropertyGenerator(classInfo, generateInfo);
         analyzer.Process();
     }
 
-#pragma warning disable CS8618
-    private AssemblyInfo _assemblyInfo;
-    private ClassInfo _classInfo;
-    private ClassGenerateInfo _generateInfo;
-#pragma warning restore CS8618
+    private readonly ClassInfo _classInfo;
+    private readonly ClassGenerateInfo _generateInfo;
+
+    public ReactivePropertyGenerator(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    {
+        _classInfo = classInfo;
+        _generateInfo = generateInfo;
+    }
 
     private void Process()
     {
         for (var i = 0; i < _classInfo.PropertySymbols.Count; i++)
         {
             var property = _classInfo.PropertySymbols[i];
-            ProcessProperty(property.Symbol);
+            ProcessProperty(property);
         }
     }
 
-    private void ProcessProperty(IPropertySymbol property)
+    private void ProcessProperty(PropertySS ss)
     {
-        if (property.GetFirstAttribute(TypeFullNames.ReactiveProperty) is null)
+        ss.OutData(out var propertySyntax, out var propertySymbol);
+        if (propertySymbol.GetFirstAttribute(TypeFullNames.ReactiveProperty) is null)
             return;
-        var typeName = property.Type.GetName();
+        // 如果没有Set方法则异常
+        if (propertySymbol.SetMethod is null)
+        {
+            var diagnostic = Diagnostic.Create(
+                Descriptors.PropertyNotHaveSetMethod,
+                propertySyntax.GetLocation()
+            );
+            GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
+            return;
+        }
+        var typeName = propertySymbol.Type.GetName();
 
-        GeneratePartialMethod(property, typeName);
-        var contents = GenerateSetMethodContexts(property, typeName);
+        GeneratePartialMethod(propertySymbol, typeName);
+        var contents = GenerateSetMethodContexts(propertySymbol, typeName);
 
         _generateInfo.MemberInfos.Add(
             new MethodGenerateInfo(
-                $"RaiseAndSet{property.Name}",
-                SourceGeneratorHelper.TypeVoid,
+                $"RaiseAndSet{propertySymbol.Name}",
+                GeneratorHelper.TypeVoid,
                 contents
             )
             {
@@ -107,14 +110,14 @@ internal class ReactivePropertyGenerater
     private void GeneratePartialMethod(IPropertySymbol property, string typeName)
     {
         _generateInfo.MemberInfos.Add(
-            new MethodGenerateInfo($"On{property.Name}Changing", SourceGeneratorHelper.TypeVoid, "")
+            new MethodGenerateInfo($"On{property.Name}Changing", GeneratorHelper.TypeVoid, "")
             {
                 Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
                 GenerateType = MethodGenerateType.Partial,
             }
         );
         _generateInfo.MemberInfos.Add(
-            new MethodGenerateInfo($"On{property.Name}Changed", SourceGeneratorHelper.TypeVoid, "")
+            new MethodGenerateInfo($"On{property.Name}Changed", GeneratorHelper.TypeVoid, "")
             {
                 Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
                 GenerateType = MethodGenerateType.Partial,

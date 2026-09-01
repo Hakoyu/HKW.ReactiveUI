@@ -1,33 +1,25 @@
-﻿// Source from https://github.com/SparkyTD/ReactiveCommand.SourceGenerator
-
-using System.Text;
+﻿using System.Text;
 using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
 
-internal class ReactivePropertyChangeFromGenerater
+internal class ReactivePropertyChangeFromGenerator
 {
-    public static void Generate(
-        AssemblyInfo assemblyInfo,
-        ClassInfo classInfo,
-        ClassGenerateInfo generateInfo
-    )
+    public static void Generate(ClassInfo classInfo, ClassGenerateInfo generateInfo)
     {
-        var analyzer = new ReactivePropertyChangeFromGenerater()
-        {
-            _assemblyInfo = assemblyInfo,
-            _classInfo = classInfo,
-            _generateInfo = generateInfo,
-        };
+        var analyzer = new ReactivePropertyChangeFromGenerator(classInfo, generateInfo);
         analyzer.Process();
     }
 
-#pragma warning disable CS8618
-    private AssemblyInfo _assemblyInfo;
-    private ClassInfo _classInfo;
-    private ClassGenerateInfo _generateInfo;
-#pragma warning restore CS8618
+    public ReactivePropertyChangeFromGenerator(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    {
+        _classInfo = classInfo;
+        _generateInfo = generateInfo;
+    }
+
+    private readonly ClassInfo _classInfo;
+    private readonly ClassGenerateInfo _generateInfo;
 
     private void Process()
     {
@@ -42,7 +34,7 @@ internal class ReactivePropertyChangeFromGenerater
         Generate(infos);
     }
 
-    private NotifyPropertyChangeFromInfo? ProcessProperty(IPropertySymbol propertySymbol)
+    private static NotifyPropertyChangeFromInfo? ProcessProperty(IPropertySymbol propertySymbol)
     {
         // 获取特性数据
         if (
@@ -62,7 +54,7 @@ internal class ReactivePropertyChangeFromGenerater
                     attributeData.ApplicationSyntaxReference.Span
                 )
             );
-            _assemblyInfo.ProductionContext.ReportDiagnostic(diagnostic);
+            GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
             return null;
         }
         // 获取特性的参数
@@ -122,7 +114,7 @@ internal class ReactivePropertyChangeFromGenerater
         );
         var raiseMethod = new MethodGenerateInfo(
             $"RaiseAndSet{info.PropertyName}",
-            SourceGeneratorHelper.TypeVoid,
+            GeneratorHelper.TypeVoid,
             $$"""
             ReactiveUI.IReactiveObjectExtensions.RaiseAndSetIfChanged(this, ref {{field.Name}}, {{getMethod.Name}}(), "{{info.PropertyName}}");
             """

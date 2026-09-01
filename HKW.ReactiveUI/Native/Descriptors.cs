@@ -7,27 +7,37 @@ namespace HKW.HKWReactiveUI;
 
 internal static class Descriptors
 {
+    public const string Category = "HKWReactiveUI";
+
     public static readonly DiagnosticDescriptor NotPartialClass = new(
         id: "R0001",
         title: "Not partial class",
         messageFormat: "This class implemented IReactiveObject but it is not partial class, place add partial key word",
-        category: "HKWReactiveUI",
+        category: Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+    public static readonly DiagnosticDescriptor PropertyNotHaveSetMethod = new(
+        id: "R0002",
+        title: "Property not have SetMethod",
+        messageFormat: "Attribute [ReactiveProperty] is not valid for property without SetMethod",
+        category: Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true
     );
     public static readonly DiagnosticDescriptor PropertyHasSetMethod = new(
-        id: "R0002",
+        id: "R0003",
         title: "Property has SetMethod",
-        messageFormat: "Feature [NotifyPropertyChangeFrom] is not valid for property with SetMethod",
-        category: "HKWReactiveUI",
+        messageFormat: "Attribute [NotifyPropertyChangeFrom] is not valid for property with SetMethod",
+        category: Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true
     );
     public static readonly DiagnosticDescriptor ReactiveCommandParametersGreaterThan1 = new(
-        id: "R0003",
+        id: "R0004",
         title: "Parameters greater than 1",
         messageFormat: "Reactive command parameters greater than 1",
-        category: "HKWReactiveUI",
+        category: Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true
     );
