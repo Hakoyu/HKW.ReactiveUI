@@ -30,12 +30,16 @@ public class ModuleWeaver : BaseModuleWeaver
         // 筛选所有实现了IReactiveObject接口的类
         var classArray = ModuleDefinition
             .GetAllTypes()
-            .Where(x => x.BaseType?.IsAssignableFrom(WeaverHelper.IReactiveObject) is true)
+            .Where(x =>
+                x.BaseType is not null && WeaverHelper.IReactiveObject.IsAssignableFrom(x.BaseType)
+            )
             .ToArray();
         foreach (var classType in classArray)
         {
-            ReactivePropertyWeaver.Weave(classType);
-            NotifyPropertyChangeFromWeaver.Weave(classType);
+            var classInfo = new ClassInfo(classType);
+            ReactivePropertyWeaver.Weave(classInfo);
+            NotifyPropertyChangeFromWeaver.Weave(classInfo);
+            ObservableAsPropertyWeaver.Weave(classInfo);
         }
     }
 

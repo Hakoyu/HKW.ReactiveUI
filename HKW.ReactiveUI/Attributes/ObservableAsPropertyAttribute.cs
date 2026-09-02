@@ -8,18 +8,13 @@
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
-///     [ReactiveProperty]
-///     public string FirstName { get; set; } = string.Empty;
-///
-///     [ReactiveProperty]
-///     public string LastName { get; set; } = string.Empty;
-///
 ///     [ObservableAsProperty]
-///     public string FullName =>
-///         this.WhenAnyValue(x => x.FirstName, x => x.LastName)
-///             .Select((x, _) => $"{x.Item1} {x.Item2}")
-///             .ToProperty(this, nameof(FullName))
-///             .ToDefault<string>();
+///     public string FirstName =>
+///         this.WhenAnyValue(x => Name)
+///             .Where(n => !string.IsNullOrWhiteSpace(n))
+///             .Select(n => n.Split(' ')[0])
+///             .ToProperty(this, nameof(FirstName))
+///             .Value;
 ///
 ///     protected void InitializeReactiveObject() { }
 /// }
@@ -29,24 +24,21 @@
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
-///     [ReactiveProperty]
-///     public string FirstName { get; set; } = string.Empty;
-///
-///     [ReactiveProperty]
-///     public string LastName { get; set; } = string.Empty;
-///
 ///     [ObservableAsProperty]
-///     public string FullName => _fullName.Value;
+///     public string FirstName => _firstName
 ///
-///     private ObservableAsPropertyHelper<string> _fullName;
+///     private ObservableAsPropertyHelper<string> _firstName;
 ///
 ///     protected void InitializeReactiveObject()
 ///     {
-///        _fullName = this.WhenAnyValue(x => x.FirstName, x => x.LastName)
-///             .Select((x, _) => $"{x.Item1} {x.Item2}")
-///             .ToProperty(this, nameof(FullName));
+///        _fullName =
+///            this.WhenAnyValue(x => Name)
+///                .Where(n => !string.IsNullOrWhiteSpace(n))
+///                .Select(n => n.Split(' ')[0])
+///                .ToProperty(this, nameof(FirstName))
+///                .Value;
 ///     }
 /// }
 /// ]]></code></summary>
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Property)]
 public sealed class ObservableAsPropertyAttribute : Attribute { }

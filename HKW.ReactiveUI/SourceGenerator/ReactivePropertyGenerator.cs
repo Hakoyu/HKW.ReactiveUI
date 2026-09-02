@@ -39,39 +39,42 @@ internal class ReactivePropertyGenerator
         {
             var diagnostic = Diagnostic.Create(
                 Descriptors.PropertyNotHaveSetMethod,
-                propertySyntax.GetLocation()
+                propertySyntax.GetLocation(),
+                nameof(TypeFullNames.ReactiveProperty)
             );
             GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
             return;
         }
         var typeName = propertySymbol.Type.GetName();
 
-        GeneratePartialMethod(propertySymbol, typeName);
-        var contents = GenerateSetMethodContexts(propertySymbol, typeName);
+        GeneratePartialMethod(propertySymbol);
+        var contents = GenerateSetMethodContexts(propertySymbol);
 
-        _generateInfo.MemberInfos.Add(
-            new MethodGenerateInfo(
-                $"RaiseAndSet{propertySymbol.Name}",
-                GeneratorHelper.TypeVoid,
-                contents
-            )
+        var raiseMethod = new MethodGenerateInfo(
+            GeneratorHelper.TypeVoid,
+            $"RaiseAndSet{propertySymbol.Name}",
+            contents
+        )
+        {
+            Accessibility = Accessibility.Public,
+            Params = new()
             {
-                Params = new()
-                {
-                    new(typeName, "backingField") { GenerateType = ParameterGenerateType.Ref },
-                    new(typeName, "newValue"),
-                },
-            }
-        );
+                new(typeName, "backingField") { GenerateType = ParameterGenerateType.Ref },
+                new(typeName, "newValue"),
+            },
+        };
+        _generateInfo.HelperMembers.Add(raiseMethod);
     }
 
-    private List<string> GenerateSetMethodContexts(IPropertySymbol property, string typeName)
+    public List<string> GenerateSetMethodContexts(IPropertySymbol property)
     {
         var contents = new List<string>();
-        contents.Add($"if (EqualityComparer<{typeName}>.Default.Equals(backingField, newValue))");
+        contents.Add(
+            $"if (EqualityComparer<{property.Type.GetName()}>.Default.Equals(backingField, newValue))"
+        );
         contents.Add("    return;");
         contents.Add("var oldValue = backingField;");
-        contents.Add($"this.RaisePropertyChanging(\"{property.Name}\");");
+        contents.Add($"_source.RaisePropertyChanging(\"{property.Name}\");");
         contents.Add($"On{property.Name}Changing(oldValue,newValue);");
         if (
             _generateInfo.PropertyChangingMemberByName.TryGetValue(
@@ -89,7 +92,7 @@ internal class ReactivePropertyGenerator
         contents.Add("backingField = newValue;");
         contents.Add("");
 
-        contents.Add($"this.RaisePropertyChanged(\"{property.Name}\");");
+        contents.Add($"_source.RaisePropertyChanged(\"{property.Name}\");");
         contents.Add($"On{property.Name}Changed(oldValue,newValue);");
 
         if (
@@ -107,17 +110,18 @@ internal class ReactivePropertyGenerator
         return contents;
     }
 
-    private void GeneratePartialMethod(IPropertySymbol property, string typeName)
+    public void GeneratePartialMethod(IPropertySymbol property)
     {
-        _generateInfo.MemberInfos.Add(
-            new MethodGenerateInfo($"On{property.Name}Changing", GeneratorHelper.TypeVoid, "")
+        var typeName = property.Type.GetName();
+        _generateInfo.HelperMembers.Add(
+            new MethodGenerateInfo(GeneratorHelper.TypeVoid, $"On{property.Name}Changing", "")
             {
                 Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
                 GenerateType = MethodGenerateType.Partial,
             }
         );
-        _generateInfo.MemberInfos.Add(
-            new MethodGenerateInfo($"On{property.Name}Changed", GeneratorHelper.TypeVoid, "")
+        _generateInfo.HelperMembers.Add(
+            new MethodGenerateInfo(GeneratorHelper.TypeVoid, $"On{property.Name}Changed", "")
             {
                 Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
                 GenerateType = MethodGenerateType.Partial,

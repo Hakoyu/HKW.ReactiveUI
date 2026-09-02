@@ -9,7 +9,6 @@ using DynamicData.Binding;
 using HKW.HKWReactiveUI;
 using ReactiveUI;
 using ReactiveUI.Builder;
-using Splat;
 
 namespace HKW.HKWReactiveUI.Demo;
 
@@ -21,65 +20,64 @@ internal class Program
     static void Main(string[] args)
     {
         RxAppBuilder.CreateReactiveUIBuilder().WithCoreServices().BuildApp();
-        //var vm = new TestModel();
-        //vm.FirstName = "F";
-        //vm.LastName = "L";
-        //var f = vm.FullName;
-        //LogHostX.AssignLoggerService(typeof(TestModel), LogHost.Default);
-        //var p = new ObservablePoint<int>()
-        //{
-        //    A1 = 1,
-        //    A2 = 1,
-        //    B1 = 1,
-        //    B2 = 1,
-        //    C1 = 1,
-        //    C2 = 1,
-        //    D1 = 1,
-        //    D2 = 1
-        //};
-        //return;
+        var mb = new TestModelBase();
+        mb.FirstName = "114";
+        mb.LastName = "514";
+        Console.WriteLine(mb.FullName);
+        //mb.NameBase = "114514";
+        //Console.WriteLine(mb.FirstName);
+        //mb.NameBase = "114 514";
+        //Console.WriteLine(mb.FirstName);
     }
-
-    //private static void TestModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    //{
-    //    if (sender is not TestModel model)
-    //        return;
-    //    Console.WriteLine(
-    //        $"{e.PropertyName} = {typeof(TestModel).GetProperty(e.PropertyName!)!.GetValue(sender)}"
-    //    );
-    //}
 }
 
-public abstract partial class TestModelbase : ReactiveObject
+public partial class TestModelBase : ReactiveObject
 {
-    protected TestModelbase() { }
+    public TestModelBase() { }
 
     [ReactiveProperty]
     public string NameBase { get; set; } = string.Empty;
 
-    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(NameBase))]
-    public List<int> Listbase
-    {
-        get { return new List<int>(); }
-    }
-
-    public bool IsEmpty { get; set; }
-
-    [ReactiveCommand(nameof(IsEmpty))]
-    Task<string> GetName(string str)
-    {
-        return Task.Run(() => str);
-    }
-}
-
-public partial class TestModel1 : TestModelbase
-{
     [ReactiveProperty]
-    public string Name { get; set; } = string.Empty;
+    public bool CanExecute { get; set; }
 
-    [NotifyPropertyChangeFrom(nameof(Name))]
-    public List<int> List1 => new List<int>();
+    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(NameBase))]
+    public List<int> ListBase => new List<int>();
+
+    [NotifyPropertyChangeFrom(nameof(ListBase))]
+    public List<int> ListBase1 => new List<int>();
+
+    [ReactiveProperty]
+    public string FirstName { get; set; } = string.Empty;
+
+    [ReactiveProperty]
+    public string LastName { get; set; } = string.Empty;
+
+    [ObservableAsProperty]
+    public string FullName =>
+        this.WhenAnyValue(x => x.FirstName, x => x.LastName)
+            .Select(x => $"{x.Item1} {x.Item2}")
+            .ToProperty(this, nameof(FullName))
+            .Value;
 }
+
+
+//}
+//public partial class TestModel1 : TestModelBase
+//{
+//    public TestModel1() { }
+
+//    [ReactiveProperty]
+//    public string Name { get; set; } = string.Empty;
+
+//    [NotifyPropertyChangeFrom(nameof(Name))]
+//    public List<int> List1 => new List<int>();
+
+//    //protected new class ReactiveHelper : TestModelBaseReactiveHelper
+//    //{
+//    //    public ReactiveHelper() { }
+//    //}
+//}
 
 //partial class TestModel : ReactiveObject
 //{

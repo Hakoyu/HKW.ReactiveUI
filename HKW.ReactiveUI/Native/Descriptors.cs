@@ -20,7 +20,7 @@ internal static class Descriptors
     public static readonly DiagnosticDescriptor PropertyNotHaveSetMethod = new(
         id: "R0002",
         title: "Property not have SetMethod",
-        messageFormat: "Attribute [ReactiveProperty] is not valid for property without SetMethod",
+        messageFormat: "Attribute [{0}] is not valid for property without SetMethod",
         category: Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true
@@ -28,7 +28,7 @@ internal static class Descriptors
     public static readonly DiagnosticDescriptor PropertyHasSetMethod = new(
         id: "R0003",
         title: "Property has SetMethod",
-        messageFormat: "Attribute [NotifyPropertyChangeFrom] is not valid for property with SetMethod",
+        messageFormat: "Attribute [{0}] is not valid for property with SetMethod",
         category: Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true

@@ -18,11 +18,7 @@ internal static class WeaverHelper
             .FirstOrDefault();
         if (ReactiveUI is null)
         {
-            Logger.LogError(
-                "Could not find assembly: ReactiveUI in ("
-                    + string.Join(", ", moduleDefinition.AssemblyReferences.Select(x => x.Name))
-                    + ")"
-            );
+            //Logger.LogError($"Could not find assembly: ReactiveUI in (\"{moduleDefinition.Name}\")");
             return false;
         }
         Logger.LogInfo($"{ReactiveUI.Name} {ReactiveUI.Version}");
@@ -82,6 +78,7 @@ internal static class WeaverHelper
             ReactiveUI,
             "T"
         );
+        InitializeGeneratedCodeAttribute(ModuleDefinition);
         return true;
     }
 

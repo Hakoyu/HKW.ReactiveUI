@@ -41,12 +41,12 @@ internal class ClassSourceWriter
         _writer.WriteLine($"namespace {_generatorInfo.Namespace}");
         _writer.WriteLine("{");
         _writer.Indent++;
-        if (_generatorInfo.FullTypeName == FirstClassFullName)
-        {
-            // 添加ReferenceType特性,并引用ReactiveObject
-            // 防止编译器优化,如果整个项目中不引用ReactiveUI,则ReactiveUI的Assembly不会被程序集引用,会导致Fody无法正常构建
-            _writer.WriteLine("[HKW.HKWReactiveUI.ReferenceType(typeof(ReactiveObject))]");
-        }
+        //if (_generatorInfo.FullTypeName == FirstClassFullName)
+        //{
+        //    // 添加ReferenceType特性,并引用ReactiveObject
+        //    // 防止编译器优化,如果整个项目中不引用ReactiveUI,则ReactiveUI的Assembly不会被程序集引用,会导致Fody无法正常构建
+        //    _writer.WriteLine("[HKW.HKWReactiveUI.ReferenceType(typeof(ReactiveObject))]");
+        //}
         // 检测是否为抽象类
         var isAbstract = _generatorInfo.DeclarationSyntax.Modifiers.Any(SyntaxKind.AbstractKeyword);
         // 获取可访问性
@@ -55,14 +55,16 @@ internal class ClassSourceWriter
             $"{accessibility}{(isAbstract ? " abstract" : string.Empty)} partial class {_generatorInfo.TypeName}"
         );
         // 添加约束列表
-        _writer.WriteLine($"{_generatorInfo.DeclarationSyntax.ConstraintClauses}");
+        if (_generatorInfo.DeclarationSyntax.ConstraintClauses.Count > 0)
+            _writer.WriteLine($"{_generatorInfo.DeclarationSyntax.ConstraintClauses}");
         _writer.WriteLine("{");
         _writer.Indent++;
 
-        GenerateInitializeReactiveObject();
-        _writer.WriteLine();
-        foreach (var info in _generatorInfo.MemberInfos)
+        //GenerateInitializeReactiveObject();
+        //_writer.WriteLine();
+        foreach (var info in _generatorInfo.Members)
             _writer.WriteInfo(info);
+        GenerateReactiveHelper();
 
         _writer.Indent--;
         _writer.WriteLine();
@@ -71,21 +73,41 @@ internal class ClassSourceWriter
         _writer.WriteLine("}");
 
         GeneratorHelper.ProductionContext.AddSource(
-            $"{_generatorInfo.FullTypeName.Replace('<', '{').Replace('>', '}')}.ReactiveUI.g.cs",
+            $"{_generatorInfo.FullTypeName.ReplaceBraces()}.ReactiveUI.g.cs",
             ((StringWriter)_writer.InnerWriter).ToString()
         );
     }
 
-    private void GenerateInitializeReactiveObject()
+    public void GenerateReactiveHelper()
     {
-        if (_generatorInfo.InitializeMembers.Count is 0)
-            return;
+        _writer.WriteLine();
+        _writer.WriteLine("/// <inheritdoc/>");
+        _writer.WriteLine(GeneratorHelper.GeneratedCodeAttribute);
+        _writer.WriteLine($"protected sealed partial class {_generatorInfo.HelperObjectName}");
+        _writer.WriteLine("{");
+        _writer.Indent++;
+        GenerateReactiveHelperCtor();
+        _writer.WriteLine(GeneratorHelper.GeneratedCodeAttribute);
+        _writer.WriteLine(GeneratorHelper.DebuggerBrowsableNeverAttribute);
+        _writer.WriteLine($"{_generatorInfo.FullTypeName} _source;");
+        foreach (var info in _generatorInfo.HelperMembers)
+            _writer.WriteInfo(info);
+
+        _writer.Indent--;
+        _writer.WriteLine("}");
+    }
+
+    private void GenerateReactiveHelperCtor()
+    {
         _writer.WriteLine("/// <inheritdoc/>");
         _writer.WriteLine(GeneratorHelper.GeneratedCodeAttribute);
 
-        _writer.WriteLine("protected void InitializeReactiveObject()");
+        _writer.WriteLine(
+            $"public {_generatorInfo.HelperObjectName}({_generatorInfo.FullTypeName} source)"
+        );
         _writer.WriteLine("{");
         _writer.Indent++;
+        _writer.WriteLine("_source = source;");
 
         foreach (var member in _generatorInfo.InitializeMembers)
         {

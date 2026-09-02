@@ -3,49 +3,57 @@
 /// <summary>
 /// 从目标属性通知当前属性改变
 /// <para>
-/// 示例:
+/// 示例1:
 /// <code><![CDATA[
-/// partial class MyViewModel : ReactiveObject
+/// [NotifyPropertyChangeFrom(nameof(Name)]
+/// public bool IsValidName => string.IsNullOrWhiteSpace(Name) is false;
+/// ]]></code>
+/// 生成代码:
+/// <code><![CDATA[
+/// private void RaiseAndSetName(ref string backingField, string newValue)
 /// {
-///     [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(ID), nameof(Name)]
-///     public string IsSame => ID == Name;
-///
-///     protected void InitializeReactiveObject() { }
+///     ...
+///     this.RaisePropertyChanging("IsValidName");
+///     // backingField = newValue
+///     ...
+///     this.RaisePropertyChanged("IsValidName");
 /// }
 /// ]]></code>
 /// </para>
-/// 这样就会生成代码
+/// <para>
+/// 示例2:
 /// <code><![CDATA[
-/// partial class MyViewModel : ReactiveObject
+/// [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(Name)]
+/// public bool IsValidName => string.IsNullOrWhiteSpace(Name) is false;
+/// ]]></code>
+/// 生成代码:
+/// <code><![CDATA[
+/// private bool _isValidName;
+/// [NotifyPropertyChangeFrom(nameof(Name)]
+/// public bool IsValidName => _isValidName;
+///
+/// private bool GetIsValidName()
 /// {
-///     private bool _isSame;
-///     [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable ,nameof(ID), nameof(Name))]
-///     public string IsSame => Name == ID;
-///
-///     protected void InitializeReactiveObject()
-///     {
-///         // NotifyPropertyChangeFromCacheMode.Enable
-///        _isSame = Name == ID;
-///     }
-///
-///     protected void RaiseIsSameChange()
-///     {
-///        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
-///     }
-///     private void RaiseAndSetName(ref string backingField, string newValue)
-///     {
-///         ...
-///         RaiseIsSameChange();
-///     }
-///     private void RaiseAndSetID(ref string backingField, string newValue)
-///     {
-///         ...
-///         RaiseIsSameChange();
-///     }
+///     return string.IsNullOrWhiteSpace(Name) is false;
 /// }
-/// ]]></code></summary>
+/// protected void RaiseAndSetIsValidName()
+/// {
+///     this.RaiseAndSetIfChanged(ref _isValidName, GetIsValidName(), "IsValidName");
+/// }
+///
+/// private void RaiseAndSetName(ref string backingField, string newValue)
+/// {
+///     ...
+///     this.RaisePropertyChanging("IsValidName");
+///     // backingField = newValue
+///     ...
+///     this.RaisePropertyChanged("IsValidName");
+/// }
+/// ]]></code>
+/// </para>
+/// </summary>
 /// <remarks>
-/// 启用 <see cref="CacheMode"/> 启用时会生成一个字段来提高性能
+/// <see cref="CacheMode"/> 启用时会生成一个字段来提高性能
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
 public sealed partial class NotifyPropertyChangeFromAttribute : Attribute
@@ -59,7 +67,7 @@ public sealed partial class NotifyPropertyChangeFromAttribute : Attribute
 
     ///<inheritdoc/>
     /// <param name="PropertyNames">属性名称</param>
-    /// <param name="CacheMode">缓存模式</param>
+    /// <param name="CacheMode">启用缓存</param>
     public NotifyPropertyChangeFromAttribute(
         NotifyPropertyChangeFromCacheMode CacheMode,
         params string[] PropertyNames
@@ -78,4 +86,25 @@ public sealed partial class NotifyPropertyChangeFromAttribute : Attribute
     /// 缓存模式
     /// </summary>
     public NotifyPropertyChangeFromCacheMode CacheMode { get; }
+}
+
+/// <summary>
+/// 缓存模式
+/// </summary>
+public enum NotifyPropertyChangeFromCacheMode
+{
+    /// <summary>
+    /// 禁用
+    /// </summary>
+    Disable,
+
+    /// <summary>
+    /// 启用, 并在对象初始化时缓存
+    /// </summary>
+    Enable,
+
+    /// <summary>
+    /// 首次关联属性变更时才计算并缓存。
+    /// </summary>
+    OnFirstChange,
 }

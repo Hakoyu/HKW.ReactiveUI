@@ -41,20 +41,18 @@ internal partial class Generator : IIncrementalGenerator
         {
             if (ClassValidator(syntaxTreeInfo, declaredClass) is not ClassInfo classInfo)
                 continue;
-            //ClassParser.Execute(syntaxTreeInfo, declaredClass, classInfo);
-            var generateInfo = new ClassGenerateInfo()
+
+            var generateInfo = new ClassGenerateInfo(classInfo)
             {
-                Namespace = classInfo.Namespace,
-                Name = classInfo.Name,
                 DeclarationSyntax = declaredClass,
                 Usings = classInfo.Usings,
             };
+
             ReactivePropertyChangeFromGenerator.Generate(classInfo, generateInfo);
             ReactivePropertyGenerator.Generate(classInfo, generateInfo);
             ReactiveCommandGenerator.Generate(classInfo, generateInfo);
+            ObservableAsPropertyGenerator.Generate(classInfo, generateInfo);
 
-            if (ClassSourceWriter.FirstClassFullName == string.Empty)
-                ClassSourceWriter.FirstClassFullName = classInfo.FullTypeName;
             ClassSourceWriter.Execute(generateInfo);
         }
     }

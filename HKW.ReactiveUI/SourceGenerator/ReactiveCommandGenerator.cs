@@ -84,12 +84,16 @@ internal class ReactiveCommandGenerator
         var fieldName = $"_{commandInfo.MethodName.FirstLetterToLower()}Command";
         var propretyName = $"{commandInfo.MethodName}Command";
         var typeName = $"ReactiveUI.ReactiveCommand<{inputType}, {outputType}>";
-        var field = new FieldGenerateInfo(fieldName, typeName) { Default = "default!" };
+        var field = new FieldGenerateInfo(typeName, fieldName)
+        {
+            Default = "default!",
+            Accessibility = Accessibility.Public,
+        };
         var property = new PropertyGenerateInfo(
-            propretyName,
             typeName,
+            propretyName,
             new(
-                $"=> {fieldName} ?? ({fieldName} = {GenerateGetMethod(commandInfo, outputType, inputType)}"
+                $"=> {_generateInfo.HelperPropertyName}.{fieldName} ?? ({_generateInfo.HelperPropertyName}.{fieldName} = {GenerateGetMethod(commandInfo, outputType, inputType)}"
             )
         )
         {
@@ -97,8 +101,8 @@ internal class ReactiveCommandGenerator
                 $"/// <inheritdoc cref=\"{commandInfo.MethodName}({(commandInfo.ArgumentType is null ? string.Empty : inputType.ReplaceBraces())})\"/>",
             Accessibility = Accessibility.Public,
         };
-        _generateInfo.MemberInfos.Add(field);
-        _generateInfo.MemberInfos.Add(property);
+        _generateInfo.HelperMembers.Add(field);
+        _generateInfo.Members.Add(property);
     }
 
     private static string GenerateGetMethod(

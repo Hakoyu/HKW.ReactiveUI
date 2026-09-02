@@ -5,23 +5,23 @@ namespace HKW.HKWReactiveUI.Fody;
 
 internal class NotifyPropertyChangeFromWeaver
 {
-    public static void Weave(TypeDefinition classType)
+    public static void Weave(ClassInfo classInfo)
     {
-        ModuleWeaver.Logger.LogInfo(nameof(ReactivePropertyWeaver));
-        var w = new ReactivePropertyWeaver(classType);
+        ModuleWeaver.Logger.LogInfo(nameof(NotifyPropertyChangeFromWeaver));
+        var w = new NotifyPropertyChangeFromWeaver(classInfo);
         w.Weave();
     }
 
-    private readonly TypeDefinition _classType;
+    private readonly ClassInfo _classInfo;
 
-    public NotifyPropertyChangeFromWeaver(TypeDefinition obj)
+    public NotifyPropertyChangeFromWeaver(ClassInfo classInfo)
     {
-        _classType = obj;
+        _classInfo = classInfo;
     }
 
     public void Weave()
     {
-        foreach (var property in _classType.Properties)
+        foreach (var property in _classInfo.Type.Properties)
         {
             WeaveProperty(property);
         }
@@ -37,27 +37,29 @@ internal class NotifyPropertyChangeFromWeaver
                 x.AttributeType.FullName == WeaverHelper.NotifyPropertyChangeFromAttribute.FullName
             )
             .GetParams();
-        if (attributeParameters.TryGetValue("CacheMode", out var cacheModeParameter))
-        {
-            var enableCache = cacheModeParameter.Value is not 0;
-            if (enableCache is false)
-                return;
-            // 如果启用了缓存,则会生成一个新字段来缓存值
-            var fieldName = "_" + property.Name.FirstLetterToLower();
-            var field =
-                _classType.Fields.FirstOrDefault(x => x.Name == fieldName)
-                ?? throw new WeaverException($"Field {fieldName} not exist");
+        if (
+            attributeParameters.TryGetValue("CacheMode", out var cacheModeParameter) is false
+            || cacheModeParameter.Value is 0
+        )
+            return;
 
-            property.GetMethod.Body = new MethodBody(property.GetMethod);
-            property.GetMethod.Body.Emit(il =>
-            {
-                // this
-                il.Emit(OpCodes.Ldarg_0);
-                // this.$PropertyName
-                il.Emit(OpCodes.Ldfld, field.BindDefinition(_classType));
-                // Return
-                il.Emit(OpCodes.Ret);
-            });
-        }
+        // 如果启用了缓存,则会生成一个新字段来缓存值
+        var fieldName = $"_{property.Name.FirstLetterToLower()}Cache";
+        var field =
+            _classInfo.HelperType.Fields.FirstOrDefault(x => x.Name == fieldName)
+            ?? throw new WeaverException($"Field {fieldName} not exist");
+
+        property.GetMethod.Body = new MethodBody(property.GetMethod);
+        property.GetMethod.Body.Emit(il =>
+        {
+            // this
+            il.Emit(OpCodes.Ldarg_0);
+            // Helper
+            il.Emit(OpCodes.Call, _classInfo.HelperProperty.GetMethod);
+            // this.Helper._cache
+            il.Emit(OpCodes.Ldfld, field.BindDefinition(_classInfo.HelperType));
+            // Return
+            il.Emit(OpCodes.Ret);
+        });
     }
 }

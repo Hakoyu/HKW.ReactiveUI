@@ -7,23 +7,23 @@ namespace HKW.HKWReactiveUI.Fody;
 
 internal class ReactivePropertyWeaver
 {
-    public static void Weave(TypeDefinition classType)
+    public static void Weave(ClassInfo classInfo)
     {
         ModuleWeaver.Logger.LogInfo(nameof(ReactivePropertyWeaver));
-        var w = new ReactivePropertyWeaver(classType);
+        var w = new ReactivePropertyWeaver(classInfo);
         w.Weave();
     }
 
-    private readonly TypeDefinition _classType;
+    private readonly ClassInfo _classInfo;
 
-    public ReactivePropertyWeaver(TypeDefinition obj)
+    public ReactivePropertyWeaver(ClassInfo classInfo)
     {
-        _classType = obj;
+        _classInfo = classInfo;
     }
 
     public void Weave()
     {
-        foreach (var property in _classType.Properties)
+        foreach (var property in _classInfo.Type.Properties)
         {
             WeaveProperty(property);
         }
@@ -44,20 +44,20 @@ internal class ReactivePropertyWeaver
         }
 
         var raiseAndSetMethodDefinition =
-            _classType
-                .Resolve()
+            _classInfo
+                .HelperType.Resolve()
                 .Methods.SingleOrDefault(x => x.Name == $"RaiseAndSet{property.Name}")
             ?? throw new WeaverException(
-                $"{_classType.FullName} not exists method RaiseAndSet{property.Name}, please check if you have added the partial keyword to class"
+                $"{_classInfo.HelperType.FullName} not exists method RaiseAndSet{property.Name}, please check if you have added the partial keyword to class"
             );
 
         MethodReference raiseAndSetMethod = null!;
-        var isGenericClass = _classType.GenericParameters.Count > 0;
+        var isGenericClass = _classInfo.Type.GenericParameters.Count > 0;
         if (isGenericClass)
         {
             // 如果是泛型类型,需要拼接一个完整的泛型类型
-            var genericClassType = _classType.MakeGenericInstanceType([
-                .. _classType.GenericParameters,
+            var genericClassType = _classInfo.Type.MakeGenericInstanceType([
+                .. _classInfo.Type.GenericParameters,
             ]);
             // 这样会生成Class`1<T>::Method 而不是 Class`1::Method, 后者在IL引用中会出错
             raiseAndSetMethod = raiseAndSetMethodDefinition.Bind(genericClassType);
@@ -74,16 +74,17 @@ internal class ReactivePropertyWeaver
             property.PropertyType
         );
         WeaverHelper.AddGeneratedCodeAttribute(field);
-        _classType.Fields.Add(field);
+
+        _classInfo.Type.Fields.Add(field);
 
         // 寻找旧字段并删除
         var oldField = (FieldReference)
             property.GetMethod.Body.Instructions.Single(x => x.Operand is FieldReference).Operand;
         var oldFieldDefinition = oldField.Resolve();
-        _classType.Fields.Remove(oldFieldDefinition);
+        _classInfo.Type.Fields.Remove(oldFieldDefinition);
 
         // 查看是否存在自动属性初始化器
-        var constructors = _classType.Methods.Where(x => x.IsConstructor);
+        var constructors = _classInfo.Type.Methods.Where(x => x.IsConstructor);
         foreach (
             var (constructor, fieldAssignment) in from constructor in constructors
             let fieldAssignment = constructor.Body.Instructions.SingleOrDefault(x =>
@@ -102,7 +103,10 @@ internal class ReactivePropertyWeaver
                     .Body.GetILProcessor()
                     .Replace(
                         fieldAssignment,
-                        Instruction.Create(fieldAssignment.OpCode, field.BindDefinition(_classType))
+                        Instruction.Create(
+                            fieldAssignment.OpCode,
+                            field.BindDefinition(_classInfo.Type)
+                        )
                     );
             }
             else
@@ -120,8 +124,8 @@ internal class ReactivePropertyWeaver
             // this
             il.Emit(OpCodes.Ldarg_0);
             // this.$PropertyName
-            il.Emit(OpCodes.Ldfld, field.BindDefinition(_classType));
-            // Return the field value that is lying on the stack
+            il.Emit(OpCodes.Ldfld, field.BindDefinition(_classInfo.Type));
+            // Return
             il.Emit(OpCodes.Ret);
         });
 
@@ -131,15 +135,17 @@ internal class ReactivePropertyWeaver
         {
             // this
             il.Emit(OpCodes.Ldarg_0);
-            // this
+            // Helper
+            il.Emit(OpCodes.Call, _classInfo.HelperProperty.GetMethod);
+            // ref this.Helper
             il.Emit(OpCodes.Ldarg_0);
-            // ref field
-            il.Emit(OpCodes.Ldflda, field.BindDefinition(_classType));
-            // newValue
+            il.Emit(OpCodes.Ldflda, field.BindDefinition(_classInfo.Type));
+
+            // value
             il.Emit(OpCodes.Ldarg_1);
-            // this.RaiseAndSetProperty(ref field, newValue)
-            il.Emit(OpCodes.Call, raiseAndSetMethod);
-            // Return out of the function
+
+            // Helper.RaiseAndSetProperty(ref this.$PropertyName, value)
+            il.Emit(OpCodes.Callvirt, raiseAndSetMethod);
             il.Emit(OpCodes.Ret);
         });
     }
