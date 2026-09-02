@@ -53,6 +53,7 @@ public class ModuleWeaver : BaseModuleWeaver
             "System",
             "System.Runtime",
             "ReactiveUI",
+            "ReactiveUI.Core",
             "HKW.ReactiveUI",
         ];
     }

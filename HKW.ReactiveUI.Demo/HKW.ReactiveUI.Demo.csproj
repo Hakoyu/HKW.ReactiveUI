@@ -11,16 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="true"
-    />
+    <ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
 
     <WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" />
-    <PackageReference Include="ReactiveUI" Version="23.2.27" />
+    <PackageReference Include="ReactiveUI" Version="24.1.0" />
   </ItemGroup>
 </Project>

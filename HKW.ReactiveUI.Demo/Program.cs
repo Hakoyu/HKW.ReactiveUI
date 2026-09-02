@@ -3,12 +3,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
-using System.Reactive.Linq;
 using System.Windows.Input;
-using DynamicData.Binding;
 using HKW.HKWReactiveUI;
 using ReactiveUI;
 using ReactiveUI.Builder;
+using ReactiveUI.Primitives;
 
 namespace HKW.HKWReactiveUI.Demo;
 
@@ -61,6 +60,21 @@ public partial class TestModelBase : ReactiveObject
             .Value;
 }
 
+public partial class Test : ReactiveUI.IReactiveObject
+{
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public event PropertyChangingEventHandler? PropertyChanging;
+
+    public void RaisePropertyChanged(PropertyChangedEventArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RaisePropertyChanging(PropertyChangingEventArgs args)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 //}
 //public partial class TestModel1 : TestModelBase

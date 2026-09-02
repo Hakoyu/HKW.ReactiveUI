@@ -1,10 +1,11 @@
-﻿namespace HKW.ReactiveUITest;
+﻿using HKW.HKWReactiveUI;
+using ReactiveUI;
+
+namespace HKW.ReactiveUITest;
 
 [TestClass]
 public sealed class Test1
 {
     [TestMethod]
-    public void TestMethod1()
-    {
-    }
+    public void TestMethod1() { }
 }

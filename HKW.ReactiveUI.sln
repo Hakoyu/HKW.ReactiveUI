@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HKW.ReactiveUITest", "HKW.ReactiveUITest\HKW.ReactiveUITest.csproj", "{97C19CF0-7AE7-1CA1-5495-04E67FD31934}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{EEDE4891-DC50-4C13-92BD-E21198335C04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEDE4891-DC50-4C13-92BD-E21198335C04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EEDE4891-DC50-4C13-92BD-E21198335C04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97C19CF0-7AE7-1CA1-5495-04E67FD31934}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97C19CF0-7AE7-1CA1-5495-04E67FD31934}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97C19CF0-7AE7-1CA1-5495-04E67FD31934}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97C19CF0-7AE7-1CA1-5495-04E67FD31934}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

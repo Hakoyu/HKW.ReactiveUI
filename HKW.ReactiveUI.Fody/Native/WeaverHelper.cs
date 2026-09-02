@@ -21,6 +21,10 @@ internal static class WeaverHelper
             //Logger.LogError($"Could not find assembly: ReactiveUI in (\"{moduleDefinition.Name}\")");
             return false;
         }
+        ReactiveUICore = moduleDefinition
+            .AssemblyReferences.Where(x => x.Name == "ReactiveUI.Core")
+            .OrderByDescending(x => x.Version)
+            .FirstOrDefault();
         Logger.LogInfo($"{ReactiveUI.Name} {ReactiveUI.Version}");
 
         if (moduleDefinition.Assembly.Name.Name == "HKW.ReactiveUI")
@@ -44,12 +48,13 @@ internal static class WeaverHelper
         }
         Logger.LogInfo($"{HKWReactiveUI!.Name} {HKWReactiveUI.Version}");
 
-        IReactiveObject = new TypeReference(
+        var type = new TypeReference(
             "ReactiveUI",
             "IReactiveObject",
             moduleDefinition,
-            ReactiveUI
-        ).Resolve();
+            ReactiveUICore ?? ReactiveUI
+        );
+        IReactiveObject = type.Resolve();
 
         ReactivePropertyAttribute =
             ModuleDefinition.FindType(
@@ -123,6 +128,7 @@ internal static class WeaverHelper
     public static ModuleDefinition ModuleDefinition { get; private set; } = null!;
     public static ModuleWeaverLogger Logger { get; private set; } = null!;
     public static AssemblyNameReference ReactiveUI { get; private set; } = null!;
+    public static AssemblyNameReference ReactiveUICore { get; private set; } = null!;
     public static AssemblyNameReference HKWReactiveUI { get; private set; } = null!;
     public static TypeDefinition IReactiveObject { get; private set; } = null!;
     public static TypeReference ReactivePropertyAttribute { get; private set; } = null!;
