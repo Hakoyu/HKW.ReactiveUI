@@ -6,20 +6,18 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 
 internal class ReactivePropertyChangeFromGenerator
 {
-    public static void Generate(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public static void Generate(ClassInfo classInfo)
     {
-        var analyzer = new ReactivePropertyChangeFromGenerator(classInfo, generateInfo);
+        var analyzer = new ReactivePropertyChangeFromGenerator(classInfo);
         analyzer.Process();
     }
 
-    public ReactivePropertyChangeFromGenerator(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public ReactivePropertyChangeFromGenerator(ClassInfo classInfo)
     {
         _classInfo = classInfo;
-        _generateInfo = generateInfo;
     }
 
     private readonly ClassInfo _classInfo;
-    private readonly ClassGenerateInfo _generateInfo;
 
     private void Process()
     {
@@ -89,18 +87,15 @@ internal class ReactivePropertyChangeFromGenerator
         foreach (var param in info.Params)
         {
             if (
-                _generateInfo.PropertyChangedMemberByName.TryGetValue(param, out var changedMembers)
+                _classInfo.PropertyChangedMemberByName.TryGetValue(param, out var changedMembers)
                 is false
             )
-                changedMembers = _generateInfo.PropertyChangedMemberByName[param] = [];
+                changedMembers = _classInfo.PropertyChangedMemberByName[param] = [];
             if (
-                _generateInfo.PropertyChangingMemberByName.TryGetValue(
-                    param,
-                    out var changingMembers
-                )
+                _classInfo.PropertyChangingMemberByName.TryGetValue(param, out var changingMembers)
                 is false
             )
-                changingMembers = _generateInfo.PropertyChangingMemberByName[param] = [];
+                changingMembers = _classInfo.PropertyChangingMemberByName[param] = [];
             changingMembers.Add(info.ChangingMethodName + "();");
             changedMembers.Add(info.ChangedMethodName + "();");
         }
@@ -144,12 +139,12 @@ internal class ReactivePropertyChangeFromGenerator
                 info.GetMethod
             );
             if (info.CacheMode is NotifyPropertyChangeFromCacheMode.Enable)
-                _generateInfo.InitializeMembers.Add($"{field.Name} = {getMethod.Name}();");
-            _generateInfo.HelperMembers.Add(field);
-            _generateInfo.HelperMembers.Add(getMethod);
+                _classInfo.InitializeMembers.Add($"{field.Name} = {getMethod.Name}();");
+            _classInfo.HelperMembers.Add(field);
+            _classInfo.HelperMembers.Add(getMethod);
         }
-        _generateInfo.HelperMembers.Add(changingMethod);
-        _generateInfo.HelperMembers.Add(changedMethod);
+        _classInfo.HelperMembers.Add(changingMethod);
+        _classInfo.HelperMembers.Add(changedMethod);
     }
 
     public List<string> GenerateChangingMethodContexts(NotifyPropertyChangeFromInfo info)
@@ -157,7 +152,7 @@ internal class ReactivePropertyChangeFromGenerator
         var contents = new List<string>();
         contents.Add($"_source.RaisePropertyChanging(\"{info.Property.Name}\");");
         if (
-            _generateInfo.PropertyChangingMemberByName.TryGetValue(
+            _classInfo.PropertyChangingMemberByName.TryGetValue(
                 info.Property.Name,
                 out var changingActions
             )
@@ -177,7 +172,7 @@ internal class ReactivePropertyChangeFromGenerator
         contents.Add($"_source.RaisePropertyChanged(\"{info.Property.Name}\");");
 
         if (
-            _generateInfo.PropertyChangedMemberByName.TryGetValue(
+            _classInfo.PropertyChangedMemberByName.TryGetValue(
                 info.Property.Name,
                 out var changedActions
             )

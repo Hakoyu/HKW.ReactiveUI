@@ -69,74 +69,14 @@ internal class ObservableAsPropertyWeaver
         {
             // this
             il.Emit(OpCodes.Ldarg_0);
-            // Helper
-            il.Emit(OpCodes.Call, _classInfo.HelperProperty.GetMethod);
+            // this.Helper
+            il.Emit(OpCodes.Call, _classInfo.HelperPropertyGetMethod);
             // this.Helper._OAPH
             il.Emit(OpCodes.Ldfld, field.BindDefinition(_classInfo.HelperType));
-            // this.Helper.
+            // this.Helper._OAPH.Value
             il.Emit(OpCodes.Callvirt, genericObservableAsPropertyHelperGetValue);
-            il.Emit(OpCodes.Ret); // Return the value that is on the stack
+            // Return
+            il.Emit(OpCodes.Ret);
         });
-    }
-
-    /// <summary>
-    /// Emits the default value.
-    /// </summary>
-    /// <param name="methodBody">The method body.</param>
-    /// <param name="il">The il.</param>
-    /// <param name="type">The type.</param>
-    public static void EmitDefaultValue(
-        ModuleDefinition moduleDefinition,
-        MethodBody methodBody,
-        ILProcessor il,
-        TypeReference type
-    )
-    {
-        if (methodBody is null)
-        {
-            throw new ArgumentNullException(nameof(methodBody));
-        }
-
-        if (il is null)
-        {
-            throw new ArgumentNullException(nameof(il));
-        }
-        if (moduleDefinition is not null)
-        {
-            if (
-                type.CompareTo(moduleDefinition.TypeSystem.Boolean)
-                || type.CompareTo(moduleDefinition.TypeSystem.Byte)
-                || type.CompareTo(moduleDefinition.TypeSystem.Int16)
-                || type.CompareTo(moduleDefinition.TypeSystem.Int32)
-            )
-            {
-                il.Emit(OpCodes.Ldc_I4_0);
-            }
-            else if (type.CompareTo(moduleDefinition.TypeSystem.Single))
-            {
-                il.Emit(OpCodes.Ldc_R4, 0F);
-            }
-            else if (type.CompareTo(moduleDefinition.TypeSystem.Int64))
-            {
-                il.Emit(OpCodes.Ldc_I8, 0L);
-            }
-            else if (type.CompareTo(moduleDefinition.TypeSystem.Double))
-            {
-                il.Emit(OpCodes.Ldc_R8, 0D);
-            }
-            else if (type.IsGenericParameter || type.IsValueType)
-            {
-                methodBody.InitLocals = true;
-                var local = new VariableDefinition(type);
-                il.Body.Variables.Add(local);
-                il.Emit(OpCodes.Ldloca_S, local);
-                il.Emit(OpCodes.Initobj, type);
-                il.Emit(OpCodes.Ldloc, local);
-            }
-            else
-            {
-                il.Emit(OpCodes.Ldnull);
-            }
-        }
     }
 }

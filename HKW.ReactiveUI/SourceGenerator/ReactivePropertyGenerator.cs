@@ -5,19 +5,17 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 
 internal class ReactivePropertyGenerator
 {
-    public static void Generate(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public static void Generate(ClassInfo classInfo)
     {
-        var analyzer = new ReactivePropertyGenerator(classInfo, generateInfo);
+        var analyzer = new ReactivePropertyGenerator(classInfo);
         analyzer.Process();
     }
 
     private readonly ClassInfo _classInfo;
-    private readonly ClassGenerateInfo _generateInfo;
 
-    public ReactivePropertyGenerator(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public ReactivePropertyGenerator(ClassInfo classInfo)
     {
         _classInfo = classInfo;
-        _generateInfo = generateInfo;
     }
 
     private void Process()
@@ -63,7 +61,7 @@ internal class ReactivePropertyGenerator
                 new(typeName, "newValue"),
             },
         };
-        _generateInfo.HelperMembers.Add(raiseMethod);
+        _classInfo.HelperMembers.Add(raiseMethod);
     }
 
     public List<string> GenerateSetMethodContexts(IPropertySymbol property)
@@ -77,7 +75,7 @@ internal class ReactivePropertyGenerator
         contents.Add($"_source.RaisePropertyChanging(\"{property.Name}\");");
         contents.Add($"On{property.Name}Changing(oldValue,newValue);");
         if (
-            _generateInfo.PropertyChangingMemberByName.TryGetValue(
+            _classInfo.PropertyChangingMemberByName.TryGetValue(
                 property.Name,
                 out var changingActions
             )
@@ -96,7 +94,7 @@ internal class ReactivePropertyGenerator
         contents.Add($"On{property.Name}Changed(oldValue,newValue);");
 
         if (
-            _generateInfo.PropertyChangedMemberByName.TryGetValue(
+            _classInfo.PropertyChangedMemberByName.TryGetValue(
                 property.Name,
                 out var changedActions
             )
@@ -113,14 +111,14 @@ internal class ReactivePropertyGenerator
     public void GeneratePartialMethod(IPropertySymbol property)
     {
         var typeName = property.Type.GetName();
-        _generateInfo.HelperMembers.Add(
+        _classInfo.HelperMembers.Add(
             new MethodGenerateInfo(GeneratorHelper.TypeVoid, $"On{property.Name}Changing", "")
             {
                 Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
                 GenerateType = MethodGenerateType.Partial,
             }
         );
-        _generateInfo.HelperMembers.Add(
+        _classInfo.HelperMembers.Add(
             new MethodGenerateInfo(GeneratorHelper.TypeVoid, $"On{property.Name}Changed", "")
             {
                 Params = [new(typeName, "oldValue"), new(typeName, "newValue")],

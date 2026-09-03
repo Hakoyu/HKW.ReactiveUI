@@ -55,7 +55,7 @@ internal class NotifyPropertyChangeFromWeaver
             // this
             il.Emit(OpCodes.Ldarg_0);
             // Helper
-            il.Emit(OpCodes.Call, _classInfo.HelperProperty.GetMethod);
+            il.Emit(OpCodes.Call, _classInfo.HelperPropertyGetMethod);
             // this.Helper._cache
             il.Emit(OpCodes.Ldfld, field.BindDefinition(_classInfo.HelperType));
             // Return

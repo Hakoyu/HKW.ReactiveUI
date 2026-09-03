@@ -21,6 +21,15 @@ internal partial class Generator : IIncrementalGenerator
             static (spc, compilation) =>
             {
                 GeneratorHelper.Initialize(spc, compilation);
+                var reactiveUIType = compilation.GetTypeByMetadataName(
+                    TypeFullNames.IReactiveObject
+                );
+                if (reactiveUIType is not null)
+                    ReactiveUIVersionInfo.CurrentVersion = reactiveUIType
+                        .ContainingAssembly
+                        .Identity
+                        .Version;
+
                 foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
                     ParseSyntaxTree(syntaxTree);
@@ -42,18 +51,12 @@ internal partial class Generator : IIncrementalGenerator
             if (ClassValidator(syntaxTreeInfo, declaredClass) is not ClassInfo classInfo)
                 continue;
 
-            var generateInfo = new ClassGenerateInfo(classInfo)
-            {
-                DeclarationSyntax = declaredClass,
-                Usings = classInfo.Usings,
-            };
+            ReactivePropertyChangeFromGenerator.Generate(classInfo);
+            ReactivePropertyGenerator.Generate(classInfo);
+            ReactiveCommandGenerator.Generate(classInfo);
+            ObservableAsPropertyGenerator.Generate(classInfo);
 
-            ReactivePropertyChangeFromGenerator.Generate(classInfo, generateInfo);
-            ReactivePropertyGenerator.Generate(classInfo, generateInfo);
-            ReactiveCommandGenerator.Generate(classInfo, generateInfo);
-            ObservableAsPropertyGenerator.Generate(classInfo, generateInfo);
-
-            ClassSourceWriter.Execute(generateInfo);
+            ClassSourceWriter.Execute(classInfo);
         }
     }
 
@@ -80,20 +83,8 @@ internal partial class Generator : IIncrementalGenerator
             GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
             return null;
         }
-        var classNamespace = classSymbol.ContainingNamespace.ToString();
-        var typeName = declaredClass.Identifier.ValueText;
-        var usings = ((CompilationUnitSyntax)syntaxTreeInfo.SyntaxTree.GetRoot()).Usings;
-        var classInfo = new ClassInfo
-        {
-            Name = typeName,
-            Namespace = classNamespace,
-            Usings = usings,
-            DeclarationSyntax = declaredClass,
-        };
 
-        // 如果实现了ReactiveObjectX,则标记
-        if (classSymbol.InheritedFrom(TypeFullNames.ReactiveObjectX))
-            classInfo.IsReactiveObjectX = true;
+        var classInfo = new ClassInfo(syntaxTreeInfo, declaredClass, classSymbol);
 
         // 分析所有成员
         foreach (var member in declaredClass.Members)

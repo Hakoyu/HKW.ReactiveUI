@@ -51,21 +51,15 @@ internal class ReactivePropertyWeaver
                 $"{_classInfo.HelperType.FullName} not exists method RaiseAndSet{property.Name}, please check if you have added the partial keyword to class"
             );
 
-        MethodReference raiseAndSetMethod = null!;
-        var isGenericClass = _classInfo.Type.GenericParameters.Count > 0;
-        if (isGenericClass)
-        {
-            // 如果是泛型类型,需要拼接一个完整的泛型类型
-            var genericClassType = _classInfo.Type.MakeGenericInstanceType([
-                .. _classInfo.Type.GenericParameters,
-            ]);
-            // 这样会生成Class`1<T>::Method 而不是 Class`1::Method, 后者在IL引用中会出错
-            raiseAndSetMethod = raiseAndSetMethodDefinition.Bind(genericClassType);
-        }
-        else
-            raiseAndSetMethod = WeaverHelper.ModuleDefinition.ImportReference(
-                raiseAndSetMethodDefinition
-            );
+        var raiseAndSetMethod = _classInfo.IsGeneric
+            ? raiseAndSetMethodDefinition.Bind(
+                _classInfo.HelperType.MakeGenericInstanceType([
+                    .. _classInfo.HelperType.GenericParameters,
+                ])
+            )
+            : raiseAndSetMethodDefinition;
+
+        raiseAndSetMethod = WeaverHelper.ModuleDefinition.ImportReference(raiseAndSetMethod);
 
         // 生成一个新字段, 命名为 $PropertyName
         var field = new FieldDefinition(
@@ -97,7 +91,7 @@ internal class ReactivePropertyWeaver
             if (fieldAssignment is null)
                 continue;
             //使用新字段初始化器替换自动生成的初始化器
-            if (isGenericClass)
+            if (_classInfo.IsGeneric)
             {
                 constructor
                     .Body.GetILProcessor()
@@ -135,17 +129,17 @@ internal class ReactivePropertyWeaver
         {
             // this
             il.Emit(OpCodes.Ldarg_0);
-            // Helper
-            il.Emit(OpCodes.Call, _classInfo.HelperProperty.GetMethod);
-            // ref this.Helper
+            // this.Helper
+            il.Emit(OpCodes.Call, _classInfo.HelperPropertyGetMethod);
+            // ref this
             il.Emit(OpCodes.Ldarg_0);
+            // ref this.field
             il.Emit(OpCodes.Ldflda, field.BindDefinition(_classInfo.Type));
-
             // value
             il.Emit(OpCodes.Ldarg_1);
-
-            // Helper.RaiseAndSetProperty(ref this.$PropertyName, value)
+            // this.Helper.RaiseAndSetProperty(ref this.field, value)
             il.Emit(OpCodes.Callvirt, raiseAndSetMethod);
+            // Return
             il.Emit(OpCodes.Ret);
         });
     }

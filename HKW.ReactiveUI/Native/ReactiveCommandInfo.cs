@@ -4,9 +4,19 @@ using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI;
 
+internal static class ReactiveUIVersionInfo
+{
+    public static Version CurrentVersion { get; set; }
+    private static readonly Version ReactiveUI24Version = new(24, 0, 0);
+    public static string UnitTypeName =>
+        CurrentVersion < ReactiveUI24Version
+            ? "System.Reactive.Unit"
+            : "ReactiveUI.Primitives.RxVoid";
+}
+
 internal class ReactiveCommandInfo
 {
-    public const string UnitTypeName = "System.Reactive.Unit";
+    public static string UnitTypeName => ReactiveUIVersionInfo.UnitTypeName;
 
     public ReactiveCommandInfo(
         string methodName,

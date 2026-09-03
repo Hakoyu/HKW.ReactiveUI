@@ -14,5 +14,4 @@ internal static class TypeFullNames
     public static string ObservableAsProperty { get; } =
         typeof(ObservableAsPropertyAttribute).FullName;
     public static string IReactiveObject { get; } = "ReactiveUI.IReactiveObject";
-    public static string ReactiveObjectX { get; } = "HKW.HKWReactiveUI.ReactiveObjectX";
 }

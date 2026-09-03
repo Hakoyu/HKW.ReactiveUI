@@ -8,19 +8,17 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 
 internal class ReactiveCommandGenerator
 {
-    public static void Generate(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public static void Generate(ClassInfo classInfo)
     {
-        var g = new ReactiveCommandGenerator(classInfo, generateInfo);
+        var g = new ReactiveCommandGenerator(classInfo);
         g.Process();
     }
 
     private readonly ClassInfo _classInfo;
-    private readonly ClassGenerateInfo _generateInfo;
 
-    public ReactiveCommandGenerator(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public ReactiveCommandGenerator(ClassInfo classInfo)
     {
         _classInfo = classInfo;
-        _generateInfo = generateInfo;
     }
 
     private void Process()
@@ -93,7 +91,7 @@ internal class ReactiveCommandGenerator
             typeName,
             propretyName,
             new(
-                $"=> {_generateInfo.HelperPropertyName}.{fieldName} ?? ({_generateInfo.HelperPropertyName}.{fieldName} = {GenerateGetMethod(commandInfo, outputType, inputType)}"
+                $"=> {_classInfo.HelperPropertyName}.{fieldName} ?? ({_classInfo.HelperPropertyName}.{fieldName} = {GenerateGetMethod(commandInfo, outputType, inputType)}"
             )
         )
         {
@@ -101,8 +99,8 @@ internal class ReactiveCommandGenerator
                 $"/// <inheritdoc cref=\"{commandInfo.MethodName}({(commandInfo.ArgumentType is null ? string.Empty : inputType.ReplaceBraces())})\"/>",
             Accessibility = Accessibility.Public,
         };
-        _generateInfo.HelperMembers.Add(field);
-        _generateInfo.Members.Add(property);
+        _classInfo.HelperMembers.Add(field);
+        _classInfo.Members.Add(property);
     }
 
     private static string GenerateGetMethod(
@@ -146,9 +144,7 @@ internal class ReactiveCommandGenerator
             )
         )
         {
-            sb.Append(
-                $", DynamicData.Binding.NotifyPropertyChangedEx.WhenValueChanged(this, static x => x.{canExecutePropertyName}, true)"
-            );
+            sb.Append($", this.WhenAnyValue(x => x.{canExecutePropertyName}, true)");
         }
         sb.AppendLine("));");
         return sb.ToString();

@@ -6,12 +6,15 @@
     <ImplicitUsings>Enable</ImplicitUsings>
     <Nullable>Enable</Nullable>
     <RootNamespace>HKW.HKWReactiveUI.Demo</RootNamespace>
-    <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+    <ProjectReference
+      Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="true"
+    />
 
     <WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
   </ItemGroup>

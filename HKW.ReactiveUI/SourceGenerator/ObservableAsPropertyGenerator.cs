@@ -5,19 +5,17 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 
 internal class ObservableAsPropertyGenerator
 {
-    public static void Generate(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public static void Generate(ClassInfo classInfo)
     {
-        var analyzer = new ObservableAsPropertyGenerator(classInfo, generateInfo);
+        var analyzer = new ObservableAsPropertyGenerator(classInfo);
         analyzer.Process();
     }
 
     private readonly ClassInfo _classInfo;
-    private readonly ClassGenerateInfo _generateInfo;
 
-    public ObservableAsPropertyGenerator(ClassInfo classInfo, ClassGenerateInfo generateInfo)
+    public ObservableAsPropertyGenerator(ClassInfo classInfo)
     {
         _classInfo = classInfo;
-        _generateInfo = generateInfo;
     }
 
     private void Process()
@@ -58,15 +56,15 @@ internal class ObservableAsPropertyGenerator
         var oaphInitializaMethodName = propertySymbol.Name + "OAPHInitializa";
         var field = "_" + propertySymbol.Name.FirstLetterToLower() + "OAPH";
 
-        _generateInfo.HelperMembers.Add(
+        _classInfo.HelperMembers.Add(
             new FieldGenerateInfo(oaphType, field)
             {
                 Default = "default!",
                 Accessibility = Accessibility.Public,
             }
         );
-        _generateInfo.InitializeMembers.Add($"{field} = {oaphInitializaMethodName}();");
-        _generateInfo.HelperMembers.Add(
+        _classInfo.InitializeMembers.Add($"{field} = {oaphInitializaMethodName}();");
+        _classInfo.HelperMembers.Add(
             new MethodGenerateInfo(oaphType, oaphInitializaMethodName, getMethod.SplitLine())
         );
     }

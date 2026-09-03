@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 
 namespace HKW.HKWReactiveUI.Fody;
 
@@ -10,16 +11,34 @@ internal sealed class ClassInfo
     public ClassInfo(TypeDefinition type)
     {
         Type = type;
-        var helperPropertytName = type.Name + "ReactiveHelper";
-        var helperObjectName = type.Name + "ReactiveObjectHelper";
-        HelperType = type.NestedTypes.SingleOrDefault(x => x.Name == helperObjectName);
-        HelperProperty = type.Properties.SingleOrDefault(x => x.Name == helperPropertytName);
-        if (HelperType is null)
-            throw new WeaverException($"Class {type.Name} has no {helperObjectName}");
+        TypeName = type.Name.GetRealName();
+
+        var helperPropertytName = TypeName + "ReactiveHelper";
+        var helperObjectName = TypeName + "ReactiveObjectHelper";
+        IsGeneric = Type.GenericParameters.Count > 0;
+
+        HelperType =
+            type.NestedTypes.SingleOrDefault(x => x.Name == helperObjectName)
+            ?? throw new WeaverException($"Class {type.Name} has no {helperObjectName}");
+        var helperProperty =
+            type.Properties.SingleOrDefault(x => x.Name == helperPropertytName)
+            ?? throw new WeaverException($"Class {type.Name} has no {helperPropertytName}");
+
+        if (IsGeneric)
+        {
+            GenericType = Type.MakeGenericInstanceType([.. Type.GenericParameters]);
+            HelperPropertyGetMethod = helperProperty.GetMethod.Bind(GenericType);
+        }
+        else
+        {
+            HelperPropertyGetMethod = helperProperty.GetMethod;
+        }
     }
 
     public TypeDefinition Type { get; }
-
+    public string TypeName { get; }
     public TypeDefinition HelperType { get; }
-    public PropertyDefinition HelperProperty { get; }
+    public MethodReference HelperPropertyGetMethod { get; }
+    public bool IsGeneric { get; }
+    public GenericInstanceType GenericType { get; } = null!;
 }

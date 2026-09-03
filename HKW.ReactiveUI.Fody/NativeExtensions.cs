@@ -8,6 +8,17 @@ namespace HKW.HKWReactiveUI.Fody;
 internal static class NativeExtensions
 {
     /// <summary>
+    /// 获取真实名称, 去除类名中"`1"等内容
+    /// </summary>
+    /// <param name="name">名称</param>
+    /// <returns>真实名称</returns>
+    public static string GetRealName(this string name)
+    {
+        var genericMarkerIndex = name.IndexOf('`');
+        return genericMarkerIndex < 0 ? name : name.Substring(0, genericMarkerIndex);
+    }
+
+    /// <summary>
     /// 首字母小写
     /// </summary>
     /// <param name="str">字符串</param>

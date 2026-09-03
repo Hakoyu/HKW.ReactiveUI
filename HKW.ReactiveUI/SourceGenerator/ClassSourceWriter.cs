@@ -9,20 +9,20 @@ namespace HKW.HKWReactiveUI.SourceGenerator;
 
 internal class ClassSourceWriter
 {
-    public static void Execute(ClassGenerateInfo generateInfo)
+    public static void Execute(ClassInfo classInfo)
     {
-        var w = new ClassSourceWriter(generateInfo);
+        var w = new ClassSourceWriter(classInfo);
         w.Write();
     }
 
     public static string FirstClassFullName { get; set; } = string.Empty;
 
-    private readonly ClassGenerateInfo _generatorInfo;
+    private readonly ClassInfo _classInfo;
     private readonly IndentedTextWriter _writer;
 
-    public ClassSourceWriter(ClassGenerateInfo generatorInfo)
+    public ClassSourceWriter(ClassInfo classInfo)
     {
-        _generatorInfo = generatorInfo;
+        _classInfo = classInfo;
         var stringStream = new StringWriter();
         _writer = new IndentedTextWriter(stringStream);
     }
@@ -33,36 +33,27 @@ internal class ClassSourceWriter
         _writer.WriteLine("#nullable enable");
         _writer.WriteLine("#pragma warning disable CS1591");
         // 添加全部引用
-        _writer.WriteLine(_generatorInfo.Usings);
+        _writer.WriteLine(_classInfo.Usings);
         // 手动添加ReactiveUI引用
-        if (_generatorInfo.Usings.All(x => x.ToString() != "using ReactiveUI;"))
+        if (_classInfo.Usings.All(x => x.ToString() != "using ReactiveUI;"))
             _writer.WriteLine("using ReactiveUI;");
         // 添加命名空间
-        _writer.WriteLine($"namespace {_generatorInfo.Namespace}");
+        _writer.WriteLine($"namespace {_classInfo.Namespace}");
         _writer.WriteLine("{");
         _writer.Indent++;
-        //if (_generatorInfo.FullTypeName == FirstClassFullName)
-        //{
-        //    // 添加ReferenceType特性,并引用ReactiveObject
-        //    // 防止编译器优化,如果整个项目中不引用ReactiveUI,则ReactiveUI的Assembly不会被程序集引用,会导致Fody无法正常构建
-        //    _writer.WriteLine("[HKW.HKWReactiveUI.ReferenceType(typeof(ReactiveObject))]");
-        //}
         // 检测是否为抽象类
-        var isAbstract = _generatorInfo.DeclarationSyntax.Modifiers.Any(SyntaxKind.AbstractKeyword);
         // 获取可访问性
-        var accessibility = _generatorInfo.DeclarationSyntax.Modifiers.GetAccessibility();
+        var accessibility = _classInfo.DeclarationSyntax.Modifiers.GetAccessibility();
         _writer.WriteLine(
-            $"{accessibility}{(isAbstract ? " abstract" : string.Empty)} partial class {_generatorInfo.TypeName}"
+            $"{accessibility}{(_classInfo.ClassSymbol.IsAbstract ? " abstract" : string.Empty)} partial class {_classInfo.TypeName}"
         );
         // 添加约束列表
-        if (_generatorInfo.DeclarationSyntax.ConstraintClauses.Count > 0)
-            _writer.WriteLine($"{_generatorInfo.DeclarationSyntax.ConstraintClauses}");
+        if (_classInfo.DeclarationSyntax.ConstraintClauses.Count > 0)
+            _writer.WriteLine($"{_classInfo.DeclarationSyntax.ConstraintClauses}");
         _writer.WriteLine("{");
         _writer.Indent++;
 
-        //GenerateInitializeReactiveObject();
-        //_writer.WriteLine();
-        foreach (var info in _generatorInfo.Members)
+        foreach (var info in _classInfo.Members)
             _writer.WriteInfo(info);
         GenerateReactiveHelper();
 
@@ -73,7 +64,7 @@ internal class ClassSourceWriter
         _writer.WriteLine("}");
 
         GeneratorHelper.ProductionContext.AddSource(
-            $"{_generatorInfo.FullTypeName.ReplaceBraces()}.ReactiveUI.g.cs",
+            $"{_classInfo.FullTypeName.ReplaceBraces()}.ReactiveUI.g.cs",
             ((StringWriter)_writer.InnerWriter).ToString()
         );
     }
@@ -83,14 +74,14 @@ internal class ClassSourceWriter
         _writer.WriteLine();
         _writer.WriteLine("/// <inheritdoc/>");
         _writer.WriteLine(GeneratorHelper.GeneratedCodeAttribute);
-        _writer.WriteLine($"protected sealed partial class {_generatorInfo.HelperObjectName}");
+        _writer.WriteLine($"protected sealed partial class {_classInfo.HelperObjectName}");
         _writer.WriteLine("{");
         _writer.Indent++;
         GenerateReactiveHelperCtor();
         _writer.WriteLine(GeneratorHelper.GeneratedCodeAttribute);
         _writer.WriteLine(GeneratorHelper.DebuggerBrowsableNeverAttribute);
-        _writer.WriteLine($"{_generatorInfo.FullTypeName} _source;");
-        foreach (var info in _generatorInfo.HelperMembers)
+        _writer.WriteLine($"{_classInfo.FullTypeName} _source;");
+        foreach (var info in _classInfo.HelperMembers)
             _writer.WriteInfo(info);
 
         _writer.Indent--;
@@ -103,13 +94,13 @@ internal class ClassSourceWriter
         _writer.WriteLine(GeneratorHelper.GeneratedCodeAttribute);
 
         _writer.WriteLine(
-            $"public {_generatorInfo.HelperObjectName}({_generatorInfo.FullTypeName} source)"
+            $"public {_classInfo.HelperObjectName}({_classInfo.FullTypeName} source)"
         );
         _writer.WriteLine("{");
         _writer.Indent++;
         _writer.WriteLine("_source = source;");
 
-        foreach (var member in _generatorInfo.InitializeMembers)
+        foreach (var member in _classInfo.InitializeMembers)
         {
             _writer.WriteLine(member);
         }

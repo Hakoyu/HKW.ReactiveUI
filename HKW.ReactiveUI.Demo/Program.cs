@@ -11,6 +11,7 @@ using ReactiveUI.Primitives;
 
 namespace HKW.HKWReactiveUI.Demo;
 
+#if DEBUG
 internal class Program
 {
     //private string $Name;
@@ -19,10 +20,10 @@ internal class Program
     static void Main(string[] args)
     {
         RxAppBuilder.CreateReactiveUIBuilder().WithCoreServices().BuildApp();
-        var mb = new TestModelBase();
-        mb.FirstName = "114";
-        mb.LastName = "514";
-        Console.WriteLine(mb.FullName);
+        //var mb = new TestModelBase();
+        //mb.FirstName = "114";
+        //mb.LastName = "514";
+        //Console.WriteLine(mb.FullName);
         //mb.NameBase = "114514";
         //Console.WriteLine(mb.FirstName);
         //mb.NameBase = "114 514";
@@ -30,51 +31,67 @@ internal class Program
     }
 }
 
-public partial class TestModelBase : ReactiveObject
-{
-    public TestModelBase() { }
+//public partial class TestModelBase : ReactiveObject
+//{
+//    public TestModelBase() { }
 
-    [ReactiveProperty]
-    public string NameBase { get; set; } = string.Empty;
+//    [ReactiveProperty]
+//    public string NameBase { get; set; } = string.Empty;
 
-    [ReactiveProperty]
-    public bool CanExecute { get; set; }
+//    [ReactiveProperty]
+//    public bool CanExecute { get; set; }
 
-    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(NameBase))]
-    public List<int> ListBase => new List<int>();
+//    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(NameBase))]
+//    public List<int> ListBase => new List<int>();
 
-    [NotifyPropertyChangeFrom(nameof(ListBase))]
-    public List<int> ListBase1 => new List<int>();
+//    [NotifyPropertyChangeFrom(nameof(ListBase))]
+//    public List<int> ListBase1 => new List<int>();
 
-    [ReactiveProperty]
-    public string FirstName { get; set; } = string.Empty;
+//    [ReactiveProperty]
+//    public string FirstName { get; set; } = string.Empty;
 
-    [ReactiveProperty]
-    public string LastName { get; set; } = string.Empty;
+//    [ReactiveProperty]
+//    public string LastName { get; set; } = string.Empty;
 
-    [ObservableAsProperty]
-    public string FullName =>
-        this.WhenAnyValue(x => x.FirstName, x => x.LastName)
-            .Select(x => $"{x.Item1} {x.Item2}")
-            .ToProperty(this, nameof(FullName))
-            .Value;
-}
+//    [ObservableAsProperty]
+//    public string FullName =>
+//        this.WhenAnyValue(x => x.FirstName, x => x.LastName)
+//            .Select(x => $"{x.Item1} {x.Item2}")
+//            .ToProperty(this, nameof(FullName))
+//            .Value;
 
-public partial class Test : ReactiveUI.IReactiveObject
-{
-    public event PropertyChangedEventHandler? PropertyChanged;
-    public event PropertyChangingEventHandler? PropertyChanging;
+//    [ReactiveCommand]
+//    public void Test1()
+//    {
+//        Console.WriteLine(nameof(Test1));
+//    }
 
-    public void RaisePropertyChanged(PropertyChangedEventArgs args)
-    {
-        throw new NotImplementedException();
-    }
+//    [ReactiveCommand]
+//    public void Test2(string str)
+//    {
+//        Console.WriteLine(nameof(Test2));
+//    }
 
-    public void RaisePropertyChanging(PropertyChangingEventArgs args)
-    {
-        throw new NotImplementedException();
-    }
-}
+//    [ReactiveCommand(nameof(CanExecute))]
+//    public void Test3(string str)
+//    {
+//        Console.WriteLine(nameof(Test2));
+//    }
+
+//    [ReactiveCommand]
+//    public async Task TestAsync1()
+//    {
+//        await Task.Delay(100);
+//        Console.WriteLine(nameof(TestAsync1));
+//    }
+
+//    [ReactiveCommand]
+//    public async Task TestAsync2()
+//    {
+//        await Task.Delay(100);
+//        Console.WriteLine(nameof(TestAsync2));
+//    }
+//}
 
 //}
 //public partial class TestModel1 : TestModelBase
@@ -237,80 +254,38 @@ public partial class Test : ReactiveUI.IReactiveObject
 //    }
 //}
 
-///// <summary>
-///// 可观察点
-///// </summary>
-///// <typeparam name="T">数据类型</typeparam>
-//[DebuggerDisplay("({X}, {Y})")]
-//internal partial class ObservablePoint<T> : ReactiveObject, IEquatable<ObservablePoint<T>>
-//    where T : struct, INumber<T>
-//{
-//    /// <inheritdoc/>
-//    public ObservablePoint() { }
+/// <summary>
+/// 可观察点
+/// </summary>
+/// <typeparam name="T">数据类型</typeparam>
+[DebuggerDisplay("({X}, {Y})")]
+internal partial class ObservablePoint<T> : ReactiveObject
+    where T : struct, INumber<T>
+{
+    /// <inheritdoc/>
+    public ObservablePoint() { }
 
-//    /// <inheritdoc/>
-//    /// <param name="x">坐标X</param>
-//    /// <param name="y">坐标Y</param>
-//    public ObservablePoint(T x, T y)
-//    {
-//        A1 = x;
-//        A2 = y;
-//    }
+    /// <inheritdoc/>
+    /// <param name="x">坐标X</param>
+    /// <param name="y">坐标Y</param>
+    public ObservablePoint(T x, T y)
+    {
+        X = x;
+        Y = y;
+    }
 
-//    /// <inheritdoc/>
-//    [ReactiveProperty]
-//    public T A1 { get; set; } = T.Zero;
+    /// <inheritdoc/>
+    [ReactiveProperty]
+    public T X { get; set; }
 
-//    /// <inheritdoc/>
-//    [ReactiveProperty]
-//    public T A2 { get; set; } = default!;
+    /// <inheritdoc/>
+    [ReactiveProperty]
+    public T Y { get; set; }
 
-//    [ReactiveProperty]
-//    public int B1 { get; set; } = int.MaxValue;
-
-//    [ReactiveProperty]
-//    public int B2 { get; set; } = default;
-
-//    public T C1 { get; set; } = T.Zero;
-
-//    public T C2 { get; set; } = default!;
-
-//    public int D1 { get; set; } = int.MaxValue;
-//    public int D2 { get; set; } = default;
-
-//    #region Clone
-//    /// <inheritdoc/>
-//    public ObservablePoint<T> Clone()
-//    {
-//        return new(A1, A2);
-//    }
-//    #endregion
-
-//    #region Equals
-
-//    /// <inheritdoc/>
-//    public override int GetHashCode()
-//    {
-//        return HashCode.Combine(A1, A2);
-//    }
-
-//    /// <inheritdoc/>
-//    public override bool Equals(object? obj)
-//    {
-//        return Equals(obj as ObservablePoint<T>);
-//    }
-
-//    /// <inheritdoc/>
-//    public bool Equals(ObservablePoint<T>? other)
-//    {
-//        if (other is null)
-//            return false;
-//        return A1 == other.A1 && A2 == other.A2;
-//    }
-//    #endregion
-//    /// <inheritdoc/>
-//    public override string ToString()
-//    {
-//        return $"X = {A1}, Y = {A2}";
-//    }
-//}
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return $"X = {X}, Y = {Y}";
+    }
+}
+#endif
