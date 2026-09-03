@@ -7,7 +7,7 @@ namespace HKW.HKWReactiveUI;
 
 internal static class Descriptors
 {
-    public const string Category = "HKWReactiveUI";
+    public const string Category = "HKW.ReactiveUI";
 
     public static readonly DiagnosticDescriptor NotPartialClass = new(
         id: "R0001",

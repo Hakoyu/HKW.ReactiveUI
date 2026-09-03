@@ -6,7 +6,7 @@ namespace HKW.HKWReactiveUI;
 
 internal static class ReactiveUIVersionInfo
 {
-    public static Version CurrentVersion { get; set; }
+    public static Version CurrentVersion { get; set; } = null!;
     private static readonly Version ReactiveUI24Version = new(24, 0, 0);
     public static string UnitTypeName =>
         CurrentVersion < ReactiveUI24Version

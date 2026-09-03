@@ -5,7 +5,7 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-R0001 | HKWReactiveUI | Error | Descriptors
-R0002 | HKWReactiveUI | Error | Descriptors
-R0003 | HKWReactiveUI | Error | Descriptors
-R0004 | HKWReactiveUI | Error | Descriptors
+R0001 | HKW.ReactiveUI | Error | Descriptors
+R0002 | HKW.ReactiveUI | Error | Descriptors
+R0003 | HKW.ReactiveUI | Error | Descriptors
+R0004 | HKW.ReactiveUI | Error | Descriptors
