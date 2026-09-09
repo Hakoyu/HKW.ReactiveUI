@@ -127,17 +127,6 @@ partial class MyViewModel : ReactiveObject
 
 ---
 
-When `EnableCache` is false
-
-```csharp
-partial class MyViewModel : ReactiveObject
-{
-    [NotifyPropertyChangeFrom(nameof(ID), nameof(Name), EnableCache = false)]
-    public bool IsSame => ID == Name;
-    protected void InitializeReactiveObject() { }
-}
-```
-
 Generated code
 
 ```csharp
