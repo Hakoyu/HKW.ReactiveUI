@@ -25,9 +25,6 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release ./HKW.ReactiveUI/HKW.ReactiveUI.csproj
 
-      - name: Pack
-        run: dotnet pack --configuration Release HKW.ReactiveUI
-
       # 登录并获取临时 API Key
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
