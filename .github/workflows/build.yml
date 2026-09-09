@@ -1,8 +1,8 @@
 name: build-and-publish
 on:
   push:
-    branches:
-      - main 
+    tags:
+      - 'v*'   # 例如推送 v1.0.0 时触发
 
 jobs:
   publish-nuget:
@@ -18,15 +18,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 10.0.x
-      
-      - name: Check commit message for version
-        id: check_version
-        run: |
-          if git log -1 --pretty=%B | grep -E "pushv[0-9]+\.[0-9]+\.[0-9]+"; then
-            echo "match=true" >> $GITHUB_OUTPUT
-          else
-            echo "match=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Restore
         run: dotnet restore
