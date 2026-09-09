@@ -9,7 +9,7 @@ using ReactiveUI;
 using ReactiveUI.Builder;
 using ReactiveUI.Primitives;
 
-namespace HKW.HKWReactiveUI.Demo;
+namespace HKW.HKWReactiveUITest;
 
 internal class Program
 {

@@ -11,7 +11,6 @@ using ReactiveUI.Primitives;
 
 namespace HKW.HKWReactiveUI.Demo;
 
-#if DEBUG
 internal class Program
 {
     //private string $Name;
@@ -21,9 +20,11 @@ internal class Program
     {
         RxAppBuilder.CreateReactiveUIBuilder().WithCoreServices().BuildApp();
         var p = new ObservablePoint<int>();
-        p.X = 1;
+        p.X = -1;
         Console.WriteLine(p.X);
-        p.X = 2;
+        p.X = 0;
+        Console.WriteLine(p.X);
+        p.X = 1;
         Console.WriteLine(p.X);
         //mb.FirstName = "114";
         //mb.LastName = "514";
@@ -98,18 +99,18 @@ internal class Program
 //}
 
 //}
-public partial class TestModel : ReactiveObject
-{
-    public TestModel() { }
+//public partial class TestModel : ReactiveObject
+//{
+//    public TestModel() { }
 
-    //[ReactiveProperty]
-    //public string Name { get; set; } = string.Empty;
-    [ReactiveCommand]
-    public void Test1()
-    {
-        Console.WriteLine(nameof(Test1));
-    }
-}
+//    //[ReactiveProperty]
+//    //public string Name { get; set; } = string.Empty;
+//    [ReactiveCommand]
+//    public void Test1()
+//    {
+//        Console.WriteLine(nameof(Test1));
+//    }
+//}
 
 //public class NotifyTest : INotifyPropertyChanged
 //{
@@ -169,8 +170,8 @@ internal partial class ObservablePoint<T> : ReactiveObject
     {
         partial void OnXChanging(T oldValue, T newValue, ref bool cancel)
         {
-            cancel = true;
+            if (newValue > T.Zero)
+                cancel = true;
         }
     }
 }
-#endif
