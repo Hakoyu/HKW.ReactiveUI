@@ -23,7 +23,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration Release .\HKW.ReactiveUI\HKW.ReactiveUI.csproj
+        run: dotnet build --configuration Release ./HKW.ReactiveUI.csproj
 
       - name: Pack
         run: dotnet pack --configuration Release HKW.ReactiveUI
