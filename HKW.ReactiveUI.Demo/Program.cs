@@ -11,7 +11,6 @@ using ReactiveUI.Primitives;
 
 namespace HKW.HKWReactiveUI.Demo;
 
-#if DEBUG
 internal class Program
 {
     //private string $Name;
@@ -173,4 +172,3 @@ internal partial class ObservablePoint<T> : ReactiveObject
         }
     }
 }
-#endif

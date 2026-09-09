@@ -24,7 +24,12 @@
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="true"
     />
-
+    <PackageReference
+      Include="HKW.SourceGeneratorUtils"
+      Version="0.1.1"
+      GeneratePathProperty="true"
+    />
+    <Analyzer Include="$(PkgHKW_SourceGeneratorUtils)\lib\netstandard2.0\*.dll" />
     <WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
   </ItemGroup>
   <ItemGroup>
