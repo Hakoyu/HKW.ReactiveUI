@@ -25,6 +25,9 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(OutDir)\$(AssemblyName).dll $(OutDir)\HKW.ReactiveUI.dll" />
+    <Copy
+      SourceFiles="$(OutDir)$(AssemblyName).dll"
+      DestinationFiles="$(OutDir)HKW.ReactiveUI.dll"
+    />
   </Target>
 </Project>
