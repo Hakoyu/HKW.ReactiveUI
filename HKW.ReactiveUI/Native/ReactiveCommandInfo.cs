@@ -1,14 +1,39 @@
 ﻿using HKW.HKWReactiveUI.SourceGenerator;
+using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI;
 
+internal static class ReactiveUIVersionInfo
+{
+    public static Version CurrentVersion { get; set; } = null!;
+    private static readonly Version ReactiveUI24Version = new(24, 0, 0);
+    public static string UnitTypeName =>
+        CurrentVersion < ReactiveUI24Version
+            ? "System.Reactive.Unit"
+            : "ReactiveUI.Primitives.RxVoid";
+}
+
 internal class ReactiveCommandInfo
 {
-    public const string UnitTypeName = "System.Reactive.Unit";
+    public static string UnitTypeName => ReactiveUIVersionInfo.UnitTypeName;
 
-    public string Comment { get; set; } = string.Empty;
-    public string MethodName { get; set; } = string.Empty;
+    public ReactiveCommandInfo(
+        string methodName,
+        ITypeSymbol? methodReturnType,
+        ITypeSymbol? argumentType,
+        bool isTask,
+        AttributeParamDictionary attributeParams
+    )
+    {
+        MethodName = methodName;
+        MethodReturnType = methodReturnType;
+        ArgumentType = argumentType;
+        IsTask = isTask;
+        AttributeParams = attributeParams;
+    }
+
+    public string MethodName { get; set; }
     public ITypeSymbol? MethodReturnType { get; set; }
     public ITypeSymbol? ArgumentType { get; set; }
     public bool IsTask { get; set; }
@@ -16,10 +41,7 @@ internal class ReactiveCommandInfo
     /// <summary>
     /// (ParamName, TypeAndValue)
     /// </summary>
-    public Dictionary<
-        string,
-        AttributeParameterValue
-    > ReactiveCommandAttributeParameters { get; set; } = [];
+    public AttributeParamDictionary AttributeParams { get; set; }
 
     public string GetOutputTypeText()
     {

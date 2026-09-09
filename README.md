@@ -28,9 +28,9 @@ partial class MyViewModel : ReactiveObject
         set => RaiseAndSetName(ref $Name, value, true);
     }
 
-    private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
+    private void RaiseAndSetName(ref string backingField, string newValue)
     {
-        if (!check || !EqualityComparer<string>.Default.Equals(backingField, newValue))
+        if (!EqualityComparer<string>.Default.Equals(backingField, newValue))
         {
             string oldValue = backingField;
             this.RaisePropertyChanging("Name");
@@ -110,13 +110,13 @@ partial class MyViewModel : ReactiveObject
     {
        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
     }
-    private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
+    private void RaiseAndSetName(ref string backingField, string newValue)
     {
         ...
         this.RaisePropertyChanged("Name");
         RaiseIsSameChange();
     }
-    private void RaiseAndSetID(ref string backingField, string newValue, bool check = true)
+    private void RaiseAndSetID(ref string backingField, string newValue)
     {
         ...
         this.RaisePropertyChanged("ID");
@@ -156,7 +156,7 @@ partial class MyViewModel : ReactiveObject
     {
        this.RaiseAndSetIfChanged(ref _isSame, Name == ID, "IsSame");
     }
-    private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
+    private void RaiseAndSetName(ref string backingField, string newValue)
     {
         ...
         this.RaisePropertyChanging("Name");
@@ -166,7 +166,7 @@ partial class MyViewModel : ReactiveObject
         this.RaisePropertyChanged("IsSame");
         ...
     }
-    private void RaiseAndSetID(ref string backingField, string newValue, bool check = true)
+    private void RaiseAndSetID(ref string backingField, string newValue)
     {
         ...
         this.RaisePropertyChanging("ID");

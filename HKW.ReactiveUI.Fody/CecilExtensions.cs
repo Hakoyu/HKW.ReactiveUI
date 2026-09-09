@@ -20,10 +20,6 @@ public static class CecilExtensions
     /// <param name="il">The il.</param>
     public static void Emit(this MethodBody body, Action<ILProcessor> il)
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(body);
-        ArgumentNullException.ThrowIfNull(il);
-#else
         if (body is null)
         {
             throw new ArgumentNullException(nameof(body));
@@ -33,7 +29,6 @@ public static class CecilExtensions
         {
             throw new ArgumentNullException(nameof(il));
         }
-#endif
 
         il(body.GetILProcessor());
     }
@@ -49,14 +44,10 @@ public static class CecilExtensions
         params TypeReference[] genericArguments
     )
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(genericArguments);
-#else
         if (genericArguments is null)
         {
             throw new ArgumentNullException(nameof(genericArguments));
         }
-#endif
 
         var result = new GenericInstanceMethod(method);
         foreach (var argument in genericArguments)
@@ -82,10 +73,6 @@ public static class CecilExtensions
         Action<string>? logger = null
     )
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(baseType);
-        ArgumentNullException.ThrowIfNull(type);
-#else
         if (baseType is null)
         {
             throw new ArgumentNullException(nameof(baseType));
@@ -95,7 +82,6 @@ public static class CecilExtensions
         {
             throw new ArgumentNullException(nameof(type));
         }
-#endif
 
         return baseType.Resolve().IsAssignableFrom(type.Resolve(), logger);
     }
@@ -115,14 +101,10 @@ public static class CecilExtensions
         Action<string>? logger = null
     )
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(baseType);
-#else
         if (baseType is null)
         {
             throw new ArgumentNullException(nameof(baseType));
         }
-#endif
 
         logger ??= _ => { };
 
@@ -163,14 +145,10 @@ public static class CecilExtensions
     /// </returns>
     public static bool IsDefined(this IMemberDefinition member, TypeReference attributeType)
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(member);
-#else
         if (member is null)
         {
             throw new ArgumentNullException(nameof(member));
         }
-#endif
 
         return member.HasCustomAttributes
             && member.CustomAttributes.Any(x => x.AttributeType.FullName == attributeType.FullName);
@@ -184,20 +162,16 @@ public static class CecilExtensions
     /// <returns>The method bound to the generic type.</returns>
     public static MethodReference Bind(this MethodReference method, GenericInstanceType genericType)
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(method);
-#else
         if (method is null)
         {
             throw new ArgumentNullException(nameof(method));
         }
-#endif
 
         var reference = new MethodReference(method.Name, method.ReturnType, genericType)
         {
             HasThis = method.HasThis,
             ExplicitThis = method.ExplicitThis,
-            CallingConvention = method.CallingConvention
+            CallingConvention = method.CallingConvention,
         };
 
         foreach (var parameter in method.Parameters)
@@ -219,10 +193,6 @@ public static class CecilExtensions
         TypeReference genericTypeDefinition
     )
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(field);
-        ArgumentNullException.ThrowIfNull(genericTypeDefinition);
-#else
         if (field is null)
         {
             throw new ArgumentNullException(nameof(field));
@@ -232,7 +202,6 @@ public static class CecilExtensions
         {
             throw new ArgumentNullException(nameof(genericTypeDefinition));
         }
-#endif
 
         if (!genericTypeDefinition.HasGenericParameters)
         {
@@ -259,14 +228,10 @@ public static class CecilExtensions
         string assemblyName
     )
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(currentModule);
-#else
         if (currentModule is null)
         {
             throw new ArgumentNullException(nameof(currentModule));
         }
-#endif
 
         var assemblyReferences = currentModule.AssemblyReferences;
 
@@ -290,14 +255,10 @@ public static class CecilExtensions
         params string[] typeParameters
     )
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(typeParameters);
-#else
         if (typeParameters is null)
         {
             throw new ArgumentNullException(nameof(typeParameters));
         }
-#endif
 
         var result = new TypeReference(@namespace, typeName, currentModule, scope);
         foreach (var typeParameter in typeParameters)
@@ -316,10 +277,6 @@ public static class CecilExtensions
     /// <returns>A value indicating the result of the comparison.</returns>
     public static bool CompareTo(this TypeReference type, TypeReference compareTo)
     {
-#if NET6_0_OR_GREATER
-        ArgumentNullException.ThrowIfNull(type);
-        ArgumentNullException.ThrowIfNull(compareTo);
-#else
         if (type is null)
         {
             throw new ArgumentNullException(nameof(type));
@@ -329,7 +286,6 @@ public static class CecilExtensions
         {
             throw new ArgumentNullException(nameof(compareTo));
         }
-#endif
 
         return type.FullName == compareTo.FullName;
     }

@@ -1,6 +1,8 @@
 ﻿// Source from https://github.com/SparkyTD/ReactiveCommand.SourceGenerator
 
 using System.CodeDom.Compiler;
+using System.Reflection;
+using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,27 +14,33 @@ internal partial class Generator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var assemblyName = context.CompilationProvider.Select(static (c, _) => c.AssemblyName);
         var compilation = context.CompilationProvider.Select(static (c, _) => c);
 
-        var combined = assemblyName.Combine(compilation);
-
         context.RegisterSourceOutput(
-            combined,
-            (spc, pair) =>
+            compilation,
+            static (spc, compilation) =>
             {
-                var assemblyInfo = new AssemblyInfo(spc, pair.Right);
-                foreach (var syntaxTree in pair.Right.SyntaxTrees)
+                GeneratorHelper.Initialize(spc, compilation);
+                var reactiveUIType = compilation.GetTypeByMetadataName(
+                    TypeFullNames.IReactiveObject
+                );
+                if (reactiveUIType is not null)
+                    ReactiveUIVersionInfo.CurrentVersion = reactiveUIType
+                        .ContainingAssembly
+                        .Identity
+                        .Version;
+
+                foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
-                    ParseSyntaxTree(assemblyInfo, syntaxTree);
+                    ParseSyntaxTree(syntaxTree);
                 }
             }
         );
     }
 
-    private static void ParseSyntaxTree(AssemblyInfo assemblyInfo, SyntaxTree syntaxTree)
+    private static void ParseSyntaxTree(SyntaxTree syntaxTree)
     {
-        var semanticModel = assemblyInfo.Compilation.GetSemanticModel(syntaxTree);
+        var semanticModel = GeneratorHelper.Compilation.GetSemanticModel(syntaxTree);
         var syntaxTreeInfo = new SyntaxTreeInfo(syntaxTree, semanticModel);
         var declaredClasses = syntaxTree
             .GetRoot()
@@ -40,29 +48,64 @@ internal partial class Generator : IIncrementalGenerator
             .OfType<ClassDeclarationSyntax>();
         foreach (var declaredClass in declaredClasses)
         {
-            if (
-                ClassChecker.Execute(assemblyInfo, syntaxTreeInfo, declaredClass, out var classInfo)
-                is false
-            )
+            if (ClassValidator(syntaxTreeInfo, declaredClass) is not ClassInfo classInfo)
                 continue;
-            if (ClassGenerator.FirstClassFullName == string.Empty)
-                ClassGenerator.FirstClassFullName = classInfo.FullTypeName;
-            ClassParser.Execute(assemblyInfo, syntaxTreeInfo, declaredClass, classInfo);
 
-            var generateInfo = ClassAnalyzer.Execute(classInfo);
-            ClassGenerator.Execute(assemblyInfo, generateInfo);
+            ReactivePropertyChangeFromGenerator.Generate(classInfo);
+            ReactivePropertyGenerator.Generate(classInfo);
+            ReactiveCommandGenerator.Generate(classInfo);
+            ObservableAsPropertyGenerator.Generate(classInfo);
+
+            ClassSourceWriter.Execute(classInfo);
         }
     }
-}
 
-readonly struct AssemblyInfo(SourceProductionContext productionContext, Compilation compilation)
-{
-    public readonly SourceProductionContext ProductionContext { get; } = productionContext;
-    public readonly Compilation Compilation { get; } = compilation;
-}
+    private static ClassInfo? ClassValidator(
+        SyntaxTreeInfo syntaxTreeInfo,
+        ClassDeclarationSyntax declaredClass
+    )
+    {
+        var classSymbol = (INamedTypeSymbol)
+            ModelExtensions.GetDeclaredSymbol(syntaxTreeInfo.SemanticModel, declaredClass)!;
+        if (
+            classSymbol.AllInterfaces.Any(i => i.ToString() == TypeFullNames.IReactiveObject)
+            is false
+        )
+            return null; // 如果没有实现IReactiveObject接口,则跳过
 
-readonly struct SyntaxTreeInfo(SyntaxTree syntaxTree, SemanticModel semanticModel)
-{
-    public readonly SyntaxTree SyntaxTree { get; } = syntaxTree;
-    public readonly SemanticModel SemanticModel { get; } = semanticModel;
+        // 如果不是分布类型,则触发异常
+        if (declaredClass.Modifiers.Any(SyntaxKind.PartialKeyword) is false)
+        {
+            var diagnostic = Diagnostic.Create(
+                Descriptors.NotPartialClass,
+                classSymbol.Locations[0]
+            );
+            GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
+            return null;
+        }
+
+        var classInfo = new ClassInfo(syntaxTreeInfo, declaredClass, classSymbol);
+
+        // 分析所有成员
+        foreach (var member in declaredClass.Members)
+        {
+            if (member is MethodDeclarationSyntax methodSyntax)
+            {
+                methodSyntax.GetLocation();
+                var methodSymbol = (IMethodSymbol)
+                    ModelExtensions.GetDeclaredSymbol(syntaxTreeInfo.SemanticModel, methodSyntax)!;
+                classInfo.MethodSymbols.Add(new(methodSyntax, methodSymbol));
+            }
+            else if (member is PropertyDeclarationSyntax propertySyntax)
+            {
+                var propertySymbol = (IPropertySymbol)
+                    ModelExtensions.GetDeclaredSymbol(
+                        syntaxTreeInfo.SemanticModel,
+                        propertySyntax
+                    )!;
+                classInfo.PropertySymbols.Add(new(propertySyntax, propertySymbol));
+            }
+        }
+        return classInfo;
+    }
 }

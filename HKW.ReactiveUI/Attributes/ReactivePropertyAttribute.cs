@@ -15,7 +15,7 @@ namespace HKW.HKWReactiveUI;
 /// <code><![CDATA[
 /// partial class MyViewModel : ReactiveObject
 /// {
-///     [ReactiveProperty(Check = true)]
+///     [ReactiveProperty]
 ///     public string Name { get; set; } = string.Empty;
 /// }
 /// ]]></code>
@@ -26,18 +26,18 @@ namespace HKW.HKWReactiveUI;
 /// {
 ///     private string $Name;
 ///
-///     [ReactiveProperty(Check = true)]
+///     [ReactiveProperty]
 ///     public string Name
 ///     {
 ///         get => $Name;
 ///         set => RaiseAndSetName(ref $Name, value, true);
 ///     }
 ///
-///     private void RaiseAndSetName(ref string backingField, string newValue, bool check = true)
+///     private void RaiseAndSetName(ref string backingField, string newValue)
 ///     {
-///         if (!check || !EqualityComparer<string>.Default.Equals(backingField, newValue))
+///         if (!EqualityComparer<string>.Default.Equals(backingField, newValue))
 ///         {
-///             string oldValue = backingField;
+///             var oldValue = backingField;
 ///             this.RaisePropertyChanging("Name");
 ///             backingField = newValue;
 ///             this.RaisePropertyChanged("Name");
@@ -52,15 +52,4 @@ public sealed class ReactivePropertyAttribute : Attribute
     ///
     /// </summary>
     public ReactivePropertyAttribute() { }
-
-    /// <param name="Check">检查</param>
-    public ReactivePropertyAttribute(bool Check)
-    {
-        this.Check = Check;
-    }
-
-    /// <summary>
-    /// 检查
-    /// </summary>
-    public bool Check { get; } = true;
 }

@@ -6,10 +6,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>HKW.HKWReactiveUI.Fody</RootNamespace>
-    <PathMap>$(SolutionDir)=$(MSBuildProjectName.Replace(" ", "_"))/</PathMap>
     <IsPackable>False</IsPackable>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <PackageLicenseExpression>TIM</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <Deterministic>true</Deterministic>
+    <PathMap Condition="'$(SolutionDir)' != ''">$(SolutionDir)=/_/</PathMap>
+    <PathMap Condition="'$(SolutionDir)' == ''"
+      >$(MSBuildProjectDirectory)=/_/$(AssemblyName)/</PathMap
+    >
   </PropertyGroup>
 
   <ItemGroup>

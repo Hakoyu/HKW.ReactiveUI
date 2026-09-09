@@ -73,5 +73,5 @@ public sealed class ReactiveCommandAttribute : Attribute
     ///         _testCommand ?? (_testCommand = ReactiveCommand.Create(Test, this.WhenValueChanged(static x => x.CanExecute)));
     /// }
     /// ]]></code></summary>
-    public string CanExecute { get; set; } = string.Empty;
+    public string CanExecute { get; } = string.Empty;
 }

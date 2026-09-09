@@ -7,22 +7,38 @@ namespace HKW.HKWReactiveUI;
 
 internal static class Descriptors
 {
-    public static readonly DiagnosticDescriptor NotPartialClass =
-        new(
-            id: "R0001",
-            title: "Not partial class",
-            messageFormat: "This class implemented IReactiveObject but it is not partial class, place add partial key word",
-            category: "HKWReactiveUI",
-            DiagnosticSeverity.Error,
-            isEnabledByDefault: true
-        );
-    public static readonly DiagnosticDescriptor PropertyHasSetMethod =
-        new(
-            id: "R0002",
-            title: "Property has SetMethod",
-            messageFormat: "Feature {0} is not valid for property with SetMethod",
-            category: "HKWReactiveUI",
-            DiagnosticSeverity.Error,
-            isEnabledByDefault: true
-        );
+    public const string Category = "HKW.ReactiveUI";
+
+    public static readonly DiagnosticDescriptor NotPartialClass = new(
+        id: "R0001",
+        title: "Not partial class",
+        messageFormat: "This class implemented IReactiveObject but it is not partial class, place add partial key word",
+        category: Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+    public static readonly DiagnosticDescriptor PropertyNotHaveSetMethod = new(
+        id: "R0002",
+        title: "Property not have SetMethod",
+        messageFormat: "Attribute [{0}] is not valid for property without SetMethod",
+        category: Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+    public static readonly DiagnosticDescriptor PropertyHasSetMethod = new(
+        id: "R0003",
+        title: "Property has SetMethod",
+        messageFormat: "Attribute [{0}] is not valid for property with SetMethod",
+        category: Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+    public static readonly DiagnosticDescriptor ReactiveCommandParametersGreaterThan1 = new(
+        id: "R0004",
+        title: "Parameters greater than 1",
+        messageFormat: "Reactive command parameters greater than 1",
+        category: Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
 }

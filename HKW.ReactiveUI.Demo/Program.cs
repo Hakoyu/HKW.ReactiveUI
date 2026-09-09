@@ -3,210 +3,140 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
-using System.Reactive.Linq;
 using System.Windows.Input;
-using DynamicData.Binding;
 using HKW.HKWReactiveUI;
 using ReactiveUI;
 using ReactiveUI.Builder;
-using Splat;
+using ReactiveUI.Primitives;
 
 namespace HKW.HKWReactiveUI.Demo;
 
+#if DEBUG
 internal class Program
 {
     //private string $Name;
     //public string Name { get; set; } = string.Empty;
 
-
     static void Main(string[] args)
     {
         RxAppBuilder.CreateReactiveUIBuilder().WithCoreServices().BuildApp();
-        var vm = new TestModel();
-        vm.FirstName = "F";
-        vm.LastName = "L";
-        var f = vm.FullName;
-        //LogHostX.AssignLoggerService(typeof(TestModel), LogHost.Default);
-        //var p = new ObservablePoint<int>()
-        //{
-        //    A1 = 1,
-        //    A2 = 1,
-        //    B1 = 1,
-        //    B2 = 1,
-        //    C1 = 1,
-        //    C2 = 1,
-        //    D1 = 1,
-        //    D2 = 1
-        //};
-        //return;
+        var p = new ObservablePoint<int>();
+        p.X = 1;
+        Console.WriteLine(p.X);
+        p.X = 2;
+        Console.WriteLine(p.X);
+        //mb.FirstName = "114";
+        //mb.LastName = "514";
+        //Console.WriteLine(mb.FullName);
+        //mb.NameBase = "114514";
+        //Console.WriteLine(mb.FirstName);
+        //mb.NameBase = "114 514";
+        //Console.WriteLine(mb.FirstName);
     }
-
-    //private static void TestModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    //{
-    //    if (sender is not TestModel model)
-    //        return;
-    //    Console.WriteLine(
-    //        $"{e.PropertyName} = {typeof(TestModel).GetProperty(e.PropertyName!)!.GetValue(sender)}"
-    //    );
-    //}
 }
 
-partial class TestModel : ReactiveObjectX, IEnableLogger<ReactiveObjectX>
+//public partial class TestModelBase : ReactiveObject
+//{
+//    public TestModelBase() { }
+
+//    [ReactiveProperty]
+//    public string NameBase { get; set; } = string.Empty;
+
+//    [ReactiveProperty]
+//    public bool CanExecute { get; set; }
+
+//    [NotifyPropertyChangeFrom(NotifyPropertyChangeFromCacheMode.Enable, nameof(NameBase))]
+//    public List<int> ListBase => new List<int>();
+
+//    [NotifyPropertyChangeFrom(nameof(ListBase))]
+//    public List<int> ListBase1 => new List<int>();
+
+//    [ReactiveProperty]
+//    public string FirstName { get; set; } = string.Empty;
+
+//    [ReactiveProperty]
+//    public string LastName { get; set; } = string.Empty;
+
+//    [ObservableAsProperty]
+//    public string FullName =>
+//        this.WhenAnyValue(x => x.FirstName, x => x.LastName)
+//            .Select(x => $"{x.Item1} {x.Item2}")
+//            .ToProperty(this, nameof(FullName))
+//            .Value;
+
+//    [ReactiveCommand]
+//    public void Test1()
+//    {
+//        Console.WriteLine(nameof(Test1));
+//    }
+
+//    [ReactiveCommand]
+//    public void Test2(string str)
+//    {
+//        Console.WriteLine(nameof(Test2));
+//    }
+
+//    [ReactiveCommand(nameof(CanExecute))]
+//    public void Test3(string str)
+//    {
+//        Console.WriteLine(nameof(Test2));
+//    }
+
+//    [ReactiveCommand]
+//    public async Task TestAsync1()
+//    {
+//        await Task.Delay(100);
+//        Console.WriteLine(nameof(TestAsync1));
+//    }
+
+//    [ReactiveCommand]
+//    public async Task TestAsync2()
+//    {
+//        await Task.Delay(100);
+//        Console.WriteLine(nameof(TestAsync2));
+//    }
+//}
+
+//}
+public partial class TestModel : ReactiveObject
 {
-    public TestModel()
-    {
-        //var a = this.WhenAnyValue(x => x.B1, x => x.B2)
-        //    .Select(x => x)
-        //    .ToProperty(this, nameof(Ass));
-        //_ass = ;
-    }
+    public TestModel() { }
 
-    //ObservableAsPropertyHelper<int> _ass;
-    //[ObservableAsProperty]
-    //public int Ass =>
-    //    this.WhenAnyValue(x => x.B1).Select(x => x).ToProperty(this, nameof(Ass)).ToDefault<int>();
-
-    [ReactiveProperty(false)]
-    public int B1 { get; set; } = int.MaxValue;
-
-    [ReactiveProperty]
-    public int B2 { get; set; } = default!;
-
-    public int D1 { get; set; } = int.MaxValue;
-    public int D2 { get; set; } = default;
-
-    public TestModel(List<int> list)
-    {
-        List = list;
-    }
-
-    [ReactiveProperty]
-    public string FirstName { get; set; } = string.Empty;
-
-    [ReactiveProperty]
-    public string LastName { get; set; } = string.Empty;
-
-    [ObservableAsProperty]
-    public string FullName =>
-        this.WhenAnyValue(x => x.FirstName, x => x.LastName)
-            .Select((x, _) => $"{x.Item1} {x.Item2}")
-            .ToProperty(this, nameof(FullName))
-            .ToDefault<string>();
-
-    [ReactiveProperty]
-    public int Number { get; set; } = -1;
-
-    private string _id;
-
-    [ReactiveProperty(false)]
-    public string ID { get; set; } = string.Empty;
-
-    [ReactiveProperty]
-    public string Name { get; set; } = string.Empty;
-
-    [NotifyPropertyChangeFrom(nameof(Name), nameof(ID))]
-    public bool CanExecute => Name == ID;
-
-    [ReactiveProperty]
-    public List<int> List { get; set; } = [];
-
-    [NotifyPropertyChangeFrom(
-        NotifyPropertyChangeFromAttribute.CacheModeEnum.EnableAfterInitialize,
-        nameof(Name)
-    )]
-    public List<int> List1 => this.To(static x => new List<int>());
-
-    [ReactiveProperty]
-    public bool[,] Bools { get; set; }
-
-    /// <summary>
-    /// 文化名称
-    /// </summary>
-
-    [ReactiveProperty]
-    public string CultureName { get; set; } = string.Empty;
-
-    ///// <summary>
-    ///// 文化全名
-    ///// </summary>
-    //[NotifyPropertyChangeFrom(nameof(CultureName))]
-    //public string CultureFullName =>
-    //    this.To(static x =>
-    //    {
-    //        if (string.IsNullOrWhiteSpace(x.CultureName))
-    //        {
-    //            return UnknownCulture;
-    //        }
-    //        CultureInfo info = null!;
-    //        try
-    //        {
-    //            info = CultureInfo.GetCultureInfo(x.CultureName);
-    //        }
-    //        catch
-    //        {
-    //            return UnknownCulture;
-    //        }
-    //        if (info is not null)
-    //        {
-    //            return $"{info.DisplayName} [{info.Name}]";
-    //        }
-    //        return UnknownCulture;
-    //    });
-    //public static string UnknownCulture => "未知文化";
-
-    //public void OnNameChanging(string value)
-    //{
-    //    return;
-    //}
-
-    /// <summary>
-    /// Test
-    /// </summary>
-    [ReactiveCommand(CanExecute = nameof(CanExecute))]
-    public void Test(List<int> list)
-    {
-        Console.WriteLine(nameof(Test));
-    }
-
-    /// <summary>
-    /// TestAsync
-    /// </summary>
-    /// <returns></returns>
+    //[ReactiveProperty]
+    //public string Name { get; set; } = string.Empty;
     [ReactiveCommand]
-    public async Task TestAsync()
+    public void Test1()
     {
-        await Task.Delay(1000);
-        Console.WriteLine(nameof(TestAsync));
+        Console.WriteLine(nameof(Test1));
     }
 }
 
-internal static class TestExtensions
-{
-    public static IObservable<(T? Previous, T? Current)> Zip<T>(this IObservable<T> source)
-    {
-        return source.Scan(
-            (Previous: default(T), Current: default(T)),
-            (pair, current) => (pair.Current, current)
-        );
-    }
+//public class NotifyTest : INotifyPropertyChanged
+//{
+//    public NotifyTest() { }
 
-    public static T ToDefault<T>(this object obj)
-    {
-        return default!;
-    }
-
-    public static TTarget To<TSource, TTarget>(this TSource source, Func<TSource, TTarget> func)
-    {
-        return func(source);
-    }
-}
+//    private string _name = string.Empty;
+//    public string Name
+//    {
+//        get => _name;
+//        set
+//        {
+//            if (_name != value)
+//            {
+//                _name = value;
+//                PropertyChanged?.Invoke(this, new(nameof(Name)));
+//            }
+//        }
+//    }
+//    public event PropertyChangedEventHandler? PropertyChanged;
+//}
 
 /// <summary>
 /// 可观察点
 /// </summary>
 /// <typeparam name="T">数据类型</typeparam>
 [DebuggerDisplay("({X}, {Y})")]
-internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<ObservablePoint<T>>
+internal partial class ObservablePoint<T> : ReactiveObject
     where T : struct, INumber<T>
 {
     /// <inheritdoc/>
@@ -217,64 +147,30 @@ internal partial class ObservablePoint<T> : ReactiveObjectX, IEquatable<Observab
     /// <param name="y">坐标Y</param>
     public ObservablePoint(T x, T y)
     {
-        A1 = x;
-        A2 = y;
+        X = x;
+        Y = y;
     }
 
     /// <inheritdoc/>
     [ReactiveProperty]
-    public T A1 { get; set; } = T.Zero;
+    public T X { get; set; }
 
     /// <inheritdoc/>
     [ReactiveProperty]
-    public T A2 { get; set; } = default!;
+    public T Y { get; set; }
 
-    [ReactiveProperty]
-    public int B1 { get; set; } = int.MaxValue;
-
-    [ReactiveProperty]
-    public int B2 { get; set; } = default;
-
-    public T C1 { get; set; } = T.Zero;
-
-    public T C2 { get; set; } = default!;
-
-    public int D1 { get; set; } = int.MaxValue;
-    public int D2 { get; set; } = default;
-
-    #region Clone
-    /// <inheritdoc/>
-    public ObservablePoint<T> Clone()
-    {
-        return new(A1, A2);
-    }
-    #endregion
-
-    #region Equals
-
-    /// <inheritdoc/>
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(A1, A2);
-    }
-
-    /// <inheritdoc/>
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as ObservablePoint<T>);
-    }
-
-    /// <inheritdoc/>
-    public bool Equals(ObservablePoint<T>? other)
-    {
-        if (other is null)
-            return false;
-        return A1 == other.A1 && A2 == other.A2;
-    }
-    #endregion
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"X = {A1}, Y = {A2}";
+        return $"X = {X}, Y = {Y}";
+    }
+
+    partial class ObservablePointReactiveObjectHelper
+    {
+        partial void OnXChanging(T oldValue, T newValue, ref bool cancel)
+        {
+            cancel = true;
+        }
     }
 }
+#endif
