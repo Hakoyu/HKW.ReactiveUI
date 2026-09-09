@@ -64,7 +64,7 @@ internal class ClassSourceWriter
         _writer.WriteLine("}");
 
         GeneratorHelper.ProductionContext.AddSource(
-            $"{_classInfo.FullTypeName.ReplaceBraces()}.ReactiveUI.g.cs",
+            $"{_classInfo.FullTypeName.ReplaceBraces()}.g.cs",
             ((StringWriter)_writer.InnerWriter).ToString()
         );
     }

@@ -52,7 +52,7 @@ internal class ObservableAsPropertyGenerator
             return;
         getMethod = getMethod.Substring(0, getMethod.Length - 7) + ";";
         getMethod = getMethod.Replace("this", "_source");
-        var oaphType = $"ObservableAsPropertyHelper<{propertySymbol.Type.GetName()}>";
+        var oaphType = $"ObservableAsPropertyHelper<{propertySymbol.Type.GetFullName()}>";
         var oaphInitializaMethodName = propertySymbol.Name + "OAPHInitializa";
         var field = "_" + propertySymbol.Name.FirstLetterToLower() + "OAPH";
 

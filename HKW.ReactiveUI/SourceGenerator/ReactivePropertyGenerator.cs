@@ -1,4 +1,5 @@
-﻿using HKW.SourceGeneratorUtils;
+﻿using System.ComponentModel;
+using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 
 namespace HKW.HKWReactiveUI.SourceGenerator;
@@ -43,7 +44,7 @@ internal class ReactivePropertyGenerator
             GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
             return;
         }
-        var typeName = propertySymbol.Type.GetName();
+        var typeName = propertySymbol.Type.GetFullName();
 
         GeneratePartialMethod(propertySymbol);
         var contents = GenerateSetMethodContexts(propertySymbol);
@@ -68,12 +69,14 @@ internal class ReactivePropertyGenerator
     {
         var contents = new List<string>();
         contents.Add(
-            $"if (EqualityComparer<{property.Type.GetName()}>.Default.Equals(backingField, newValue))"
+            $"if (EqualityComparer<{property.Type.GetFullName()}>.Default.Equals(backingField, newValue))"
         );
         contents.Add("    return;");
         contents.Add("var oldValue = backingField;");
         contents.Add($"_source.RaisePropertyChanging(\"{property.Name}\");");
-        contents.Add($"On{property.Name}Changing(oldValue,newValue);");
+        contents.Add($"var cancel = false;");
+        contents.Add($"On{property.Name}Changing(oldValue,newValue,ref cancel);");
+        contents.Add($"if(cancel) return;");
         if (
             _classInfo.PropertyChangingMemberByName.TryGetValue(
                 property.Name,
@@ -110,11 +113,21 @@ internal class ReactivePropertyGenerator
 
     public void GeneratePartialMethod(IPropertySymbol property)
     {
-        var typeName = property.Type.GetName();
+        var a = new CancelEventArgs();
+
+        var typeName = property.Type.GetFullName();
         _classInfo.HelperMembers.Add(
             new MethodGenerateInfo(GeneratorHelper.TypeVoid, $"On{property.Name}Changing", "")
             {
-                Params = [new(typeName, "oldValue"), new(typeName, "newValue")],
+                Params =
+                [
+                    new(typeName, "oldValue"),
+                    new(typeName, "newValue"),
+                    new(TypeFullNames.Boolen, "cancel")
+                    {
+                        GenerateType = ParameterGenerateType.Ref,
+                    },
+                ],
                 GenerateType = MethodGenerateType.Partial,
             }
         );

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -14,4 +15,6 @@ internal static class TypeFullNames
     public static string ObservableAsProperty { get; } =
         typeof(ObservableAsPropertyAttribute).FullName;
     public static string IReactiveObject { get; } = "ReactiveUI.IReactiveObject";
+
+    public static string Boolen { get; } = typeof(bool).FullName;
 }

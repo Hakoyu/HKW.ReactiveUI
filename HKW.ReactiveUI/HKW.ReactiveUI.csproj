@@ -9,8 +9,6 @@
     <Nullable>enable</Nullable>
     <RootNamespace>HKW.HKWReactiveUI</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent>true</IsRoslynComponent>
     <LangVersion>latest</LangVersion>
@@ -30,6 +28,14 @@
     <PathMap Condition="'$(SolutionDir)' == ''"
       >$(MSBuildProjectDirectory)=/_/$(AssemblyName)/</PathMap
     >
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,23 +67,32 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Generator dependencies -->
+    <!-- 必须将dll导入NuGet分析器目录, 否则NuGet无法使用源生成 -->
+    <None
+      Include="$(OutputPath)\$(AssemblyName).dll"
+      Pack="true"
+      PackagePath="analyzers/dotnet/cs"
+      Visible="false"
+    />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 引用的包 -->
     <PackageReference
       Include="HKW.SourceGeneratorUtils"
-      Version="0.1.0"
+      Version="0.1.1"
       PrivateAssets="all"
       GeneratePathProperty="true"
     />
+    <!-- 将引用的包dll复制进分析器目录, 否则NuGet无法使用 -->
+    <None
+      Include="$(PkgHKW_SourceGeneratorUtils)\lib\netstandard2.0\*.dll"
+      Pack="true"
+      PackagePath="analyzers/dotnet/cs"
+      Visible="false"
+    >
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <!-- 项目分析器必须引用包, 否则 FileNotFoundException -->
+    <Analyzer Include="$(PkgHKW_SourceGeneratorUtils)\lib\netstandard2.0\*.dll" />
   </ItemGroup>
-  <PropertyGroup>
-    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-  </PropertyGroup>
-  <Target Name="GetDependencyTargetPaths">
-    <ItemGroup>
-      <TargetPathWithTargetPlatformMoniker
-        Include="$(PkgHKW_SourceGeneratorUtils)\lib\netstandard2.0\*.dll"
-        IncludeRuntimeDependency="false"
-      />
-    </ItemGroup>
-  </Target>
 </Project>
