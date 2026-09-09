@@ -30,19 +30,19 @@ internal class ObservableAsPropertyGenerator
     private void ProcessProperty(PropertySS ss)
     {
         ss.OutData(out var propertySyntax, out var propertySymbol);
-        if (propertySymbol.GetFirstAttribute(TypeFullNames.ObservableAsProperty) is null)
-            return;
-        // 如果有Set方法则异常
-        if (propertySymbol.SetMethod is not null)
-        {
-            var diagnostic = Diagnostic.Create(
-                Descriptors.PropertyHasSetMethod,
-                propertySyntax.GetLocation(),
-                nameof(TypeFullNames.ObservableAsProperty)
-            );
-            GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
-            return;
-        }
+        //if (propertySymbol.GetFirstAttribute(TypeFullNames.ObservableAsProperty) is null)
+        //    return;
+        //// 如果有Set方法则异常
+        //if (propertySymbol.SetMethod is not null)
+        //{
+        //    var diagnostic = Diagnostic.Create(
+        //        Descriptors.PropertyHasSetMethod,
+        //        propertySyntax.GetLocation(),
+        //        nameof(TypeFullNames.ObservableAsProperty)
+        //    );
+        //    GeneratorHelper.ProductionContext.ReportDiagnostic(diagnostic);
+        //    return;
+        //}
         if (propertySymbol.TryGetGetMethodContent(out var getMethod) is false)
             return;
         // 如果不是ToProperty方法则取消

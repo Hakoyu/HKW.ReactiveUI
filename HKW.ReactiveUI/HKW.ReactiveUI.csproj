@@ -55,18 +55,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.9.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <ProjectReference
-      Include="..\HKW.ReactiveUI.Fody\HKW.ReactiveUI.Fody.csproj"
-      ReferenceOutputAssembly="false"
-    />
-    <PackageReference Include="FodyPackaging" Version="6.9.3" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- 必须将dll导入NuGet分析器目录, 否则NuGet无法使用源生成 -->
     <None
       Include="$(OutputPath)\$(AssemblyName).dll"
@@ -79,7 +67,7 @@
     <!-- 引用的包 -->
     <PackageReference
       Include="HKW.SourceGeneratorUtils"
-      Version="0.1.1"
+      Version="0.1.3"
       PrivateAssets="all"
       GeneratePathProperty="true"
     />

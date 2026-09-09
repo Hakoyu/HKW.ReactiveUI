@@ -12,28 +12,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest" Version="4.3.3" />
+    <PackageReference Include="MSTest" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference
-      Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="true"
-    />
-    <PackageReference
-      Include="HKW.SourceGeneratorUtils"
-      Version="0.1.1"
-      GeneratePathProperty="true"
-    />
+    <ProjectReference Include="..\HKW.ReactiveUI\HKW.ReactiveUI.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+    <PackageReference Include="HKW.SourceGeneratorUtils" Version="0.1.3" GeneratePathProperty="true" />
     <Analyzer Include="$(PkgHKW_SourceGeneratorUtils)\lib\netstandard2.0\*.dll" />
-    <WeaverFiles Include="$(SolutionDir)HKW.ReactiveUI.Fody\bin\$(Configuration)\netstandard2.0\HKW.ReactiveUI.Fody.dll" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" />
-    <PackageReference Include="ReactiveUI" Version="24.1.0" />
+    <PackageReference Include="ReactiveUI" Version="24.2.0" />
   </ItemGroup>
 </Project>

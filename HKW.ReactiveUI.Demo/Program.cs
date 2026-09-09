@@ -101,12 +101,18 @@ public partial class TestModel : ReactiveObject
 {
     public TestModel() { }
 
-    //[ReactiveProperty]
-    //public string Name { get; set; } = string.Empty;
-    [ReactiveCommand]
-    public void Test1()
+    [ReactiveProperty]
+    public string Name { get; set; } = string.Empty;
+
+    public partial string Firstname { get; set; }
+}
+
+public partial class TestModel
+{
+    public partial string Firstname
     {
-        Console.WriteLine(nameof(Test1));
+        get => field;
+        set => this.RaiseAndSetIfChanged(ref field, value, nameof(Firstname));
     }
 }
 
@@ -162,13 +168,5 @@ internal partial class ObservablePoint<T> : ReactiveObject
     public override string ToString()
     {
         return $"X = {X}, Y = {Y}";
-    }
-
-    partial class ObservablePointReactiveObjectHelper
-    {
-        partial void OnXChanging(T oldValue, T newValue, ref bool cancel)
-        {
-            cancel = true;
-        }
     }
 }

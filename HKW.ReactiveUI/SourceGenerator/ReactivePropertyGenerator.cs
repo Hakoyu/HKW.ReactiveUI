@@ -48,7 +48,6 @@ internal class ReactivePropertyGenerator
 
         GeneratePartialMethod(propertySymbol);
         var contents = GenerateSetMethodContexts(propertySymbol);
-
         var raiseMethod = new MethodGenerateInfo(
             GeneratorHelper.TypeVoid,
             $"RaiseAndSet{propertySymbol.Name}",
@@ -62,6 +61,17 @@ internal class ReactivePropertyGenerator
                 new(typeName, "newValue"),
             },
         };
+        var partialProperty = new PropertyGenerateInfo(
+            propertySymbol.Name,
+            propertySymbol.Type.GetFullName(),
+            new("=>field;")
+        )
+        {
+            SetMethod = new(
+                $"=>{_classInfo.HelperPropertyName}.RaiseAndSet{propertySymbol.Name}(ref field, value);"
+            ),
+        };
+        _classInfo.Members.Add(partialProperty);
         _classInfo.HelperMembers.Add(raiseMethod);
     }
 

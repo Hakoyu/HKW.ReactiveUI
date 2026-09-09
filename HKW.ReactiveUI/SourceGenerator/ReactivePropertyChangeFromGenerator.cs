@@ -74,15 +74,15 @@ internal class ReactivePropertyChangeFromGenerator
             getMethod,
             propertyNames.Distinct().ToArray()
         );
-        if (
-            attributeParameters.TryGetParam<NotifyPropertyChangeFromCacheMode>(
-                nameof(NotifyPropertyChangeFromAttribute.CacheMode),
-                out var cacheMode
-            )
-        )
-        {
-            info.CacheMode = cacheMode;
-        }
+        //if (
+        //    attributeParameters.TryGetParam<NotifyPropertyChangeFromCacheMode>(
+        //        nameof(NotifyPropertyChangeFromAttribute.CacheMode),
+        //        out var cacheMode
+        //    )
+        //)
+        //{
+        //    info.CacheMode = cacheMode;
+        //}
 
         foreach (var param in info.Params)
         {

@@ -1,7 +1,5 @@
 ﻿// Source from https://github.com/SparkyTD/ReactiveCommand.SourceGenerator
 
-using System.CodeDom.Compiler;
-using System.Reflection;
 using HKW.SourceGeneratorUtils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,38 +12,40 @@ internal partial class Generator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var compilation = context.CompilationProvider.Select(static (c, _) => c);
-
         context.RegisterSourceOutput(
-            compilation,
+            context.CompilationProvider,
             static (spc, compilation) =>
             {
                 GeneratorHelper.Initialize(spc, compilation);
+
                 var reactiveUIType = compilation.GetTypeByMetadataName(
                     TypeFullNames.IReactiveObject
                 );
                 if (reactiveUIType is not null)
+                {
                     ReactiveUIVersionInfo.CurrentVersion = reactiveUIType
                         .ContainingAssembly
                         .Identity
                         .Version;
+                }
 
                 foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
-                    ParseSyntaxTree(syntaxTree);
+                    ParseSyntaxTree(compilation, syntaxTree);
                 }
             }
         );
     }
 
-    private static void ParseSyntaxTree(SyntaxTree syntaxTree)
+    private static void ParseSyntaxTree(Compilation compilation, SyntaxTree syntaxTree)
     {
-        var semanticModel = GeneratorHelper.Compilation.GetSemanticModel(syntaxTree);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var syntaxTreeInfo = new SyntaxTreeInfo(syntaxTree, semanticModel);
         var declaredClasses = syntaxTree
             .GetRoot()
             .DescendantNodesAndSelf()
             .OfType<ClassDeclarationSyntax>();
+
         foreach (var declaredClass in declaredClasses)
         {
             if (ClassValidator(syntaxTreeInfo, declaredClass) is not ClassInfo classInfo)
@@ -54,7 +54,7 @@ internal partial class Generator : IIncrementalGenerator
             ReactivePropertyChangeFromGenerator.Generate(classInfo);
             ReactivePropertyGenerator.Generate(classInfo);
             ReactiveCommandGenerator.Generate(classInfo);
-            ObservableAsPropertyGenerator.Generate(classInfo);
+            //ObservableAsPropertyGenerator.Generate(classInfo);
 
             ClassSourceWriter.Execute(classInfo);
         }
@@ -71,9 +71,8 @@ internal partial class Generator : IIncrementalGenerator
             classSymbol.AllInterfaces.Any(i => i.ToString() == TypeFullNames.IReactiveObject)
             is false
         )
-            return null; // 如果没有实现IReactiveObject接口,则跳过
+            return null;
 
-        // 如果不是分布类型,则触发异常
         if (declaredClass.Modifiers.Any(SyntaxKind.PartialKeyword) is false)
         {
             var diagnostic = Diagnostic.Create(
@@ -86,12 +85,10 @@ internal partial class Generator : IIncrementalGenerator
 
         var classInfo = new ClassInfo(syntaxTreeInfo, declaredClass, classSymbol);
 
-        // 分析所有成员
         foreach (var member in declaredClass.Members)
         {
             if (member is MethodDeclarationSyntax methodSyntax)
             {
-                methodSyntax.GetLocation();
                 var methodSymbol = (IMethodSymbol)
                     ModelExtensions.GetDeclaredSymbol(syntaxTreeInfo.SemanticModel, methodSyntax)!;
                 classInfo.MethodSymbols.Add(new(methodSyntax, methodSymbol));
@@ -106,6 +103,7 @@ internal partial class Generator : IIncrementalGenerator
                 classInfo.PropertySymbols.Add(new(propertySyntax, propertySymbol));
             }
         }
+
         return classInfo;
     }
 }
